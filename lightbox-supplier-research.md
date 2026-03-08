@@ -4,7 +4,92 @@ Research compiled on 2026-03-08 for trade show / expo backlit display walls (SEG
 
 ---
 
-## Top Suppliers
+## Price Comparison: US vs China Direct
+
+| Source | Product | Price |
+|--------|---------|-------|
+| JoyDisplays (US) | 10ft SEG Backlit Display | $2,107 |
+| JoyDisplays (US) | SEGO Modular Double-Sided 10x10 | $9,630 |
+| LookOurWay (US) | Backlit Trade Show Display SEG | $2,000–$5,000+ |
+| Trade Show House (US) | 10ft Backlit SEG Light Box Wall | $1,500–$3,000+ |
+| **Lintel Display (China)** | **120mm LED Frameless SEG Light Box** | **~$200/set FOB** |
+| **Alibaba suppliers (China)** | **10x10 SEG lightbox backwall kits** | **$200–$1,500 FOB** |
+| **Exhibition-Backdrop.com (China)** | **Full 10x20 booth kit (walls + counter + 8 graphics)** | **$5,300/set** |
+
+**Savings: 60–90% buying direct from China vs US resellers.**
+
+---
+
+## Recommended China Direct Suppliers (Best Value)
+
+### 1. Lintel Display (Changzhou, China)
+- **Website:** https://www.linteldisplay.com/SEGPRO-Light-Box.html
+- **Alibaba:** https://www.alibaba.com/product-detail/Lintel-Exhibition-Stands-Lighting-Boxes-For_1601022684061.html
+- **Sample price:** ~$200/set FOB
+- **MOQ:** 1 piece
+- **Experience:** 30+ years, customers in 138+ countries
+- **Key features:** Patented lock-and-snap aluminum frame, tool-free assembly in seconds, reusable, eco-friendly
+- **Why consider:** Most established China manufacturer, lowest entry price, proven global track record
+
+### 2. Shenzhen Tianlang Advertising Media Co., Ltd.
+- **Website:** https://tianlang.en.made-in-china.com
+- **Products:** Modular SEG lightbox exhibition walls, 3x6m booth kits, reusable tradeshow stands
+- **MOQ:** 1 piece
+- **Key features:** Factory-direct pricing, full customization, modular designs for any booth size
+
+### 3. Hawk Display (China)
+- **Website:** https://www.hawkdisplay.com/china-SEG-Lightbox-for-sale-china-Suppliers-Manufacturers-Factory-40269.html
+- **Products:** SEG lightbox, portable displays, EZ booth, truss systems
+- **Experience:** 20+ years
+- **Key features:** Full range of trade show display products, attending EuroShop 2026
+- **Why consider:** Long-established, full product ecosystem for booth accessories
+
+### 4. Adhaiwell (China)
+- **Website:** https://www.adhaiwell.com/flexible-stand-portable-seg-fabric-led-light-box-display.html
+- **Products:** 65mm–120mm thick silver aluminum SEG lightbox frames with pre-attached LED strips
+- **Key features:** Gold Member of Made-in-China and Canton Fair exhibitor, dye-sublimated graphics included
+- **Why consider:** Verified manufacturer with trade show presence
+
+### 5. Xinghangyun Technology (Guangzhou, China)
+- **Website:** https://www.hbmgz.com/
+- **Products:** Double-sided frameless fabric LED light boxes for exhibition display
+- **Experience:** 17+ years in advertising light box manufacturing
+- **Key features:** Professional design team, one-stop lightbox solutions
+
+### 6. Milinad (China)
+- **Website:** https://www.milinad.com/light-box/
+- **Products:** LED lightbox modular display kits, freestanding and wall-mounted
+- **Key features:** Reusable, portable, modular — can build custom booth configurations
+
+### 7. Exhibition-Backdrop.com (China)
+- **Website:** https://www.exhibition-backdrop.com
+- **Products:** Full SEG lightbox booth kits (10x10, 10x20, 20x20)
+- **Pricing:** ~$5,300 for a complete 10x20 kit (backwall + sidewall + divider + counter + 8 custom graphics + storage bags)
+- **Why consider:** All-in-one turnkey booth solution at a fraction of US price
+
+---
+
+## How to Order from China
+
+1. **Contact 2-3 suppliers** via Alibaba or Made-in-China messaging to request quotes
+2. **Specify your booth size** (e.g., 10ft x 8ft back wall, single or double-sided)
+3. **Ask about:** FOB price, shipping cost to your port/city, lead time, whether graphics printing is included
+4. **Request a sample** if possible (many offer 1-piece MOQ)
+5. **Shipping:** Sea freight is cheapest (3-5 weeks); air freight is faster (5-10 days) but more expensive
+6. **Payment:** Most accept Trade Assurance (Alibaba buyer protection), T/T, or PayPal
+7. **Graphics:** Some suppliers print your SEG fabric graphics; others sell frame-only — confirm before ordering
+
+### Tips
+- Use **Alibaba Trade Assurance** for buyer protection on your first order
+- Ask for **product videos** showing assembly and light output
+- Request **photos of the product in use** at actual trade shows
+- Confirm the **LED strip brand and brightness (lumens)** — cheap LEDs create hotspots
+- Check if **carrying cases/bags** are included or extra
+- Factor in **shipping + import duties** (typically adds $200–$500 for a single unit via sea freight to US)
+
+---
+
+## US-Based Suppliers (for reference/comparison)
 
 ### 1. BriteBooth
 - **Website:** https://britebooth.com
