@@ -20,50 +20,111 @@ Research compiled on 2026-03-08 for trade show / expo backlit display walls (SEG
 
 ---
 
+## Direct Product Links — China Suppliers (with prices)
+
+### Alibaba Product Listings
+
+1. **Lintel 10x10 SEG Backlit Backwall Lightbox** — ~$200/set FOB, MOQ 1 pc
+   - https://www.alibaba.com/product-detail/Lintel-Exhibition-Stands-Lighting-Boxes-For_1601022684061.html
+
+2. **10x10 Tradeshow Booth Display SEG Backlit Exhibition**
+   - https://www.alibaba.com/product-detail/10x10-Tradeshow-Booth-Display-SEG-Backlit_11000028598645.html
+
+3. **SEG Backlit Pop Up Booth 10ft Backdrop, 10x10 Backlit LED**
+   - https://www.alibaba.com/product-detail/SEG-Backlit-Pop-Up-Booth-10ft_1600839468149.html
+
+4. **10x10 Trade Show Booth Light Box Stand Illuminated Display**
+   - https://www.alibaba.com/product-detail/10x10-Trade-Show-Booth-Light-Box_1601434496597.html
+
+5. **8ft/10ft Fabric Trade Show Backdrop SEG LED Light Pop Up Booth**
+   - https://www.alibaba.com/product-detail/8ft-10ft-10-x-10-Fabric_1600465609278.html
+
+6. **10x20ft Modular LED Backlit with SEG Graphic**
+   - https://www.alibaba.com/product-detail/10x20ft-Modular-Led-Backlit-with-Seg_1601405393019.html
+
+7. **10x20ft Modular LED Backlit with SEG Graphic (variant)**
+   - https://www.alibaba.com/product-detail/10x20-Ft-Modular-LED-Backlit-With_1601356029576.html
+
+### Made-in-China Product Listings (with verified prices)
+
+**Changzhou Gaochuang Exhibition Products Co., Ltd.** — 60 LED SEG products:
+1. Tension Fabric LED SEG Lightbox — **$150–$200/set**
+   - https://czgaochuang.en.made-in-china.com/product/nSgJxwhLaPWe/
+2. Tension Fabric SEG Reframe LED Sign Lightbox — **$50–$150/set**
+   - https://czgaochuang.en.made-in-china.com/product/VBunmCWGJzcg/
+3. Fashion Tension Fabric SEG Lightbox Display — **$150–$250/set**
+   - https://czgaochuang.en.made-in-china.com/product/BvuExghVYPkI/
+4. Popular SEG Fabric LED Lightbox for Exhibition — **$150–$250/set**
+   - https://czgaochuang.en.made-in-china.com/product/cXLxmnkjaghW/
+5. Modular Free Standing Double Sided Exhibition Lightbox — **$200–$350/set**
+   - https://czgaochuang.en.made-in-china.com/product/ZvPnECcWAghM/
+6. Modular Fabric Lightbox (larger) — **$250–$550/set**
+   - https://czgaochuang.en.made-in-china.com/product/MKyxDtIGbgVS/
+7. SEG Fabric Lightbox Exhibition Sign Display — **$400–$600/set**
+   - https://czgaochuang.en.made-in-china.com/product/kvCnXwSliqVs/
+8. Modular SEG Tension Fabric Lightbox — **$200–$500/set**
+   - https://czgaochuang.en.made-in-china.com/product/UXjQBcvhwbWd/
+
+**Shanghai Yongjia International Trading Co., Ltd.** — 64 SEG products:
+1. SEG Light Box Advertising Frame Backlit LED — **$80–$380/pc**
+   - https://shyongjia.en.made-in-china.com/product/vdjGShzDwKVc/
+2. Stand-up Frameless SEG Light Box — **$300–$2,000/pc** (size dependent)
+   - https://shyongjia.en.made-in-china.com/product/PdwaOUXvPKcq/
+3. Double Sided Aluminum Freestanding SEG Display — **$300–$2,000/pc**
+   - https://shyongjia.en.made-in-china.com/product/SOJGauPcHZWf/
+4. 120mm Tool Free Double Sided SEG Light Box — **$150/pc**
+   - https://shyongjia.en.made-in-china.com/product/WOJaTtLvHFcu/
+5. Quick Install Aluminium Tool Free SEG Light Box — **$150/pc**
+   - https://shyongjia.en.made-in-china.com/product/MOmTWZzxAdhD/
+
+**Shanghai Zita Display Industry Co., Ltd.** — 15 years experience:
+1. Zita LED Lightbox Backlit Fabric Exhibition Stand 4000x3000mm — **$560–$580/pc**, MOQ 1, 27kg, 2yr warranty
+   - https://shzitadisplay.en.made-in-china.com/product/zTtrDoxKjEUR/
+
+---
+
 ## Recommended China Direct Suppliers (Best Value)
 
-### 1. Lintel Display (Changzhou, China)
+### 1. Changzhou Gaochuang Exhibition Products Co., Ltd.
+- **Made-in-China store:** https://czgaochuang.en.made-in-china.com/product-group/gbiQjNAVgUka/Led-SEG-Light-Box-1.html
+- **Price range:** $50–$600/set depending on size
+- **MOQ:** 1 set
+- **Product count:** 60 LED SEG lightbox products
+- **Why consider:** Widest selection, lowest starting prices, transparent pricing on every listing
+
+### 2. Lintel Display (Changzhou, China)
 - **Website:** https://www.linteldisplay.com/SEGPRO-Light-Box.html
 - **Alibaba:** https://www.alibaba.com/product-detail/Lintel-Exhibition-Stands-Lighting-Boxes-For_1601022684061.html
 - **Sample price:** ~$200/set FOB
 - **MOQ:** 1 piece
 - **Experience:** 30+ years, customers in 138+ countries
-- **Key features:** Patented lock-and-snap aluminum frame, tool-free assembly in seconds, reusable, eco-friendly
-- **Why consider:** Most established China manufacturer, lowest entry price, proven global track record
+- **Why consider:** Most established manufacturer, proven global track record
 
-### 2. Shenzhen Tianlang Advertising Media Co., Ltd.
+### 3. Shanghai Yongjia International Trading Co., Ltd.
+- **Made-in-China store:** https://shyongjia.en.made-in-china.com/product-group/AbWGkyTUJuVL/SEG-Light-Box-1.html
+- **Price range:** $80–$2,000/pc (size dependent)
+- **Product count:** 64 SEG lightbox products
+- **Why consider:** Large catalog, includes double-sided and tool-free options
+
+### 4. Shanghai Zita Display Industry Co., Ltd.
+- **Product link:** https://shzitadisplay.en.made-in-china.com/product/zTtrDoxKjEUR/
+- **Price:** $560–$580 for a 4m x 3m (13ft x 10ft) backlit exhibition stand
+- **MOQ:** 1 piece, 2-year warranty, CE certified
+- **Why consider:** Excellent value for a large-format wall, verified specs (320W, 27kg)
+
+### 5. Shenzhen Tianlang Advertising Media Co., Ltd.
 - **Website:** https://tianlang.en.made-in-china.com
 - **Products:** Modular SEG lightbox exhibition walls, 3x6m booth kits, reusable tradeshow stands
 - **MOQ:** 1 piece
-- **Key features:** Factory-direct pricing, full customization, modular designs for any booth size
+- **Why consider:** Global patent on modular assembly system, tool-free
 
-### 3. Hawk Display (China)
+### 6. Hawk Display (China)
 - **Website:** https://www.hawkdisplay.com/china-SEG-Lightbox-for-sale-china-Suppliers-Manufacturers-Factory-40269.html
-- **Products:** SEG lightbox, portable displays, EZ booth, truss systems
 - **Experience:** 20+ years
-- **Key features:** Full range of trade show display products, attending EuroShop 2026
-- **Why consider:** Long-established, full product ecosystem for booth accessories
-
-### 4. Adhaiwell (China)
-- **Website:** https://www.adhaiwell.com/flexible-stand-portable-seg-fabric-led-light-box-display.html
-- **Products:** 65mm–120mm thick silver aluminum SEG lightbox frames with pre-attached LED strips
-- **Key features:** Gold Member of Made-in-China and Canton Fair exhibitor, dye-sublimated graphics included
-- **Why consider:** Verified manufacturer with trade show presence
-
-### 5. Xinghangyun Technology (Guangzhou, China)
-- **Website:** https://www.hbmgz.com/
-- **Products:** Double-sided frameless fabric LED light boxes for exhibition display
-- **Experience:** 17+ years in advertising light box manufacturing
-- **Key features:** Professional design team, one-stop lightbox solutions
-
-### 6. Milinad (China)
-- **Website:** https://www.milinad.com/light-box/
-- **Products:** LED lightbox modular display kits, freestanding and wall-mounted
-- **Key features:** Reusable, portable, modular — can build custom booth configurations
+- **Why consider:** Full booth ecosystem (lightboxes, counters, truss), attending EuroShop 2026
 
 ### 7. Exhibition-Backdrop.com (China)
 - **Website:** https://www.exhibition-backdrop.com
-- **Products:** Full SEG lightbox booth kits (10x10, 10x20, 20x20)
 - **Pricing:** ~$5,300 for a complete 10x20 kit (backwall + sidewall + divider + counter + 8 custom graphics + storage bags)
 - **Why consider:** All-in-one turnkey booth solution at a fraction of US price
 
