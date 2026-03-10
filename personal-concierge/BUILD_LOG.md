@@ -113,3 +113,12 @@ Notes:
 - Updated `config.py` with Session 2 env vars (OPENWEATHER, AMBEE, PUBMED)
 - Updated `.env.example`, `requirements.txt`, `run_migrations.py`
 - Backend loads cleanly with all changes
+
+## S2 Task 2 — Blood Work Module
+Status: Complete
+Notes:
+- `services/bloodwork.py`: BloodWorkService with PDF extraction (PyPDF2), Claude-powered biomarker parsing, optimal ranges (35+ markers with longevity-focused thresholds), trend queries, delta reports
+- `routers/bloodwork.py`: POST /upload (PDF), GET /biomarkers, GET /biomarkers/{name}/trend, GET /delta, GET /uploads, GET /flagged
+- `mobile/screens/BloodWork.tsx`: Four-tab screen (Dashboard, Upload, Trends, Delta) with status dots, biomarker cards, upload flow via DocumentPicker, delta comparison view
+- `mobile/lib/api.ts`: Added Biomarker, BloodWorkUpload, UploadResult, DeltaEntry, DeltaReport interfaces + 6 API functions
+- Installed python-multipart for file upload support
