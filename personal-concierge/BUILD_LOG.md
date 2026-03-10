@@ -129,3 +129,86 @@ Notes:
 - `services/supplements.py`: SupplementService with stack management, Claude-powered interaction checking, adherence logging, streak calculation, schedule organization by timing
 - `routers/supplements.py`: GET /stack, POST /add (with interaction check), PUT /{id}, DELETE /{id}, POST /log, GET /today, GET /stats, GET /schedule, POST /check-interactions
 - `mobile/screens/Supplements.tsx`: Four-tab screen (Today/Stack/Add/Stats) with checkbox toggle for daily adherence, progress bar, add form with timing picker, adherence stats with per-supplement breakdown bars
+
+## S2 Task 4 — Environmental Intelligence
+Status: Complete
+Notes:
+- `services/environment.py`: OpenWeatherMap + Open-Meteo (free fallback) + Ambee pollen
+- UV risk levels, outdoor safety assessment, air quality notes
+- Daily caching in environmental_data table
+- `routers/environment.py`: GET /today with optional lat/lon
+
+## S2 Task 5 — Science & Research Engine
+Status: Complete
+Notes:
+- `services/research.py`: PubMed E-utilities search + XML parsing
+- Profile-aware query generation (supplements, biomarkers, goals trigger different queries)
+- Claude-powered relevance grading with evidence grades and study types
+- `routers/research.py`: POST /sweep, GET /articles, save/dismiss
+
+## S2 Task 6 — Longevity Dashboard
+Status: Complete
+Notes:
+- `services/longevity.py`: HRV/RHR/sleep/cardiovascular/metabolic/recovery scoring
+- Biological age estimation from composite data (±5 years range)
+- Claude-powered insights and recommendations
+- `routers/longevity.py`: POST /calculate, GET /latest, GET /history
+
+## S2 Task 7 — Coaching Style Engine
+Status: Complete
+Notes:
+- `services/coaching.py`: 4 modes (drill_sergeant, supportive_friend, data_scientist, adaptive)
+- Adaptive mode auto-escalates based on compliance drift score
+- Drift tracking from compliance events across fitness/nutrition/supplement domains
+- `routers/coaching.py`: settings, mode, modes, compliance, drift
+
+## S2 Task 8 — Command Center Upgrade
+Status: Complete
+Notes:
+- CommandCenter: Added 4-module grid (Blood Work, Supplements, Longevity, Research)
+- Flagged biomarker count badge on Blood Work card
+- Created `mobile/screens/Longevity.tsx`: Bio age hero, component score rings, AI insights
+- Created `mobile/screens/Research.tsx`: Article cards with evidence grades, sweep button
+- Updated App.tsx with 4 new stack screens in HomeStack
+
+## S2 Task 9 — Cross-Module Intelligence
+Status: Complete
+Notes:
+- `services/arbitrator.py`: Gathers data from all modules (wearable, checkin, environment, biomarkers, supplements, coaching)
+- Claude synthesizes into non-contradictory daily plan
+- Coaching tone from active mode applied to output
+- `routers/daily.py`: GET /daily/plan
+
+## S2 Task 10 — Notifications & Reminders
+Status: Complete
+Notes:
+- `services/reminders.py`: Time-aware reminders (morning/midday/evening/bedtime)
+- Check-in, Oura sync, workout, meal logging, supplement adherence, profile questions
+- Supplement reminders match timing windows
+- `routers/reminders.py`: GET /reminders/pending
+
+## S2 Task 11 — Final Integration & Polish
+Status: Complete
+Notes:
+- Wired all 8 new routers into main.py (12 total routers, 44 routes)
+- Updated version to 2.0.0
+- Updated README.md with all modules, endpoints, and project structure
+- Backend loads cleanly with all modules
+- No hardcoded credentials anywhere
+
+---
+
+## Session 2 Summary
+Completed: All 11 tasks
+New files: 20+ backend files, 4 mobile screens
+Total routes: 44
+Total services: 10 (memory, oura, bloodwork, supplements, environment, research, longevity, coaching, arbitrator, reminders)
+Total screens: 8 (CommandCenter, CheckIn, WorkoutDetail, MealPlan, BloodWork, Supplements, Longevity, Research)
+
+### Blocked on:
+- Database creation requires SUPABASE_URL + SUPABASE_SERVICE_KEY
+- AI features require ANTHROPIC_API_KEY
+- Environment data requires OPENWEATHER_API_KEY or uses Open-Meteo free fallback
+- Pollen data requires AMBEE_API_KEY (optional)
+- PubMed uses PUBMED_EMAIL for E-utilities courtesy (optional)
+- All services degrade gracefully when credentials are missing
