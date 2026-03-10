@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Personal Concierge",
+    "slug": "personal-concierge",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0D0D1A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.personalconcierge.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0D1A"
+      },
+      "package": "com.personalconcierge.app"
+    }
+  }
+}
