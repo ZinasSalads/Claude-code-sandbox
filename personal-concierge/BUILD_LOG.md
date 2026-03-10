@@ -122,3 +122,10 @@ Notes:
 - `mobile/screens/BloodWork.tsx`: Four-tab screen (Dashboard, Upload, Trends, Delta) with status dots, biomarker cards, upload flow via DocumentPicker, delta comparison view
 - `mobile/lib/api.ts`: Added Biomarker, BloodWorkUpload, UploadResult, DeltaEntry, DeltaReport interfaces + 6 API functions
 - Installed python-multipart for file upload support
+
+## S2 Task 3 — Supplement Stack Manager
+Status: Complete
+Notes:
+- `services/supplements.py`: SupplementService with stack management, Claude-powered interaction checking, adherence logging, streak calculation, schedule organization by timing
+- `routers/supplements.py`: GET /stack, POST /add (with interaction check), PUT /{id}, DELETE /{id}, POST /log, GET /today, GET /stats, GET /schedule, POST /check-interactions
+- `mobile/screens/Supplements.tsx`: Four-tab screen (Today/Stack/Add/Stats) with checkbox toggle for daily adherence, progress bar, add form with timing picker, adherence stats with per-supplement breakdown bars
