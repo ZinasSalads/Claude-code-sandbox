@@ -151,6 +151,101 @@ export async function logMeal(mealId: string): Promise<{ status: string } | null
   });
 }
 
+// --- Blood Work ---
+
+interface Biomarker {
+  name: string;
+  value: number;
+  unit: string;
+  date: string;
+  flag: string;
+  reference_min?: number | null;
+  reference_max?: number | null;
+  optimal_min?: number;
+  optimal_max?: number;
+  optimal_status?: 'optimal' | 'suboptimal' | 'high' | 'low';
+}
+
+interface BloodWorkUpload {
+  id: string;
+  upload_date: string;
+  lab_name: string;
+  test_date: string;
+  pdf_filename: string;
+  biomarker_count: number;
+  processing_status: string;
+}
+
+interface UploadResult {
+  upload_id: string;
+  lab_name: string;
+  test_date: string;
+  biomarkers_found: number;
+  biomarkers_saved: number;
+  biomarkers: Biomarker[];
+}
+
+interface DeltaEntry {
+  name: string;
+  old_value?: number;
+  new_value?: number;
+  old_date?: string;
+  new_date?: string;
+  unit?: string;
+  change?: number;
+  change_pct?: number;
+  direction?: string;
+}
+
+interface DeltaReport {
+  date_old: string;
+  date_new: string;
+  deltas: DeltaEntry[];
+  total_markers: number;
+  error?: string;
+}
+
+export async function uploadBloodWork(file: { uri: string; name: string; type: string }): Promise<UploadResult | null> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file as unknown as Blob);
+    const resp = await fetch(`${API_URL}/bloodwork/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch (e) {
+    console.error('Blood work upload failed:', e);
+    return null;
+  }
+}
+
+export async function getBiomarkers(): Promise<Biomarker[]> {
+  return (await fetchApi<Biomarker[]>('/bloodwork/biomarkers')) || [];
+}
+
+export async function getBiomarkerTrend(name: string, days?: number): Promise<{ name: string; data: Biomarker[] } | null> {
+  const q = days ? `?days=${days}` : '';
+  return fetchApi(`/bloodwork/biomarkers/${encodeURIComponent(name)}/trend${q}`);
+}
+
+export async function getBloodWorkDelta(date1?: string, date2?: string): Promise<DeltaReport | null> {
+  const params = new URLSearchParams();
+  if (date1) params.set('date1', date1);
+  if (date2) params.set('date2', date2);
+  const q = params.toString() ? `?${params}` : '';
+  return fetchApi(`/bloodwork/delta${q}`);
+}
+
+export async function getBloodWorkUploads(): Promise<BloodWorkUpload[]> {
+  return (await fetchApi<BloodWorkUpload[]>('/bloodwork/uploads')) || [];
+}
+
+export async function getFlaggedBiomarkers(): Promise<Biomarker[]> {
+  return (await fetchApi<Biomarker[]>('/bloodwork/flagged')) || [];
+}
+
 export type {
   HealthData,
   CheckIn,
@@ -160,4 +255,9 @@ export type {
   Workout,
   Meal,
   MealPlan,
+  Biomarker,
+  BloodWorkUpload,
+  UploadResult,
+  DeltaEntry,
+  DeltaReport,
 };

@@ -104,8 +104,11 @@ def run_migrations():
         print(f"  Processed {success_count + error_count} statements ({success_count} OK, {error_count} need manual run)")
 
     print("\nMigration complete.")
-    print("Tables expected: health_data, check_ins, workouts, meals, biomarkers,")
+    print("Tables expected (Session 1): health_data, check_ins, workouts, meals, biomarkers,")
     print("  supplements, supplement_log, user_profile, memories, profile_questions")
+    print("Tables expected (Session 2): blood_work_uploads, environmental_data,")
+    print("  research_articles, longevity_metrics, coaching_settings, compliance_events,")
+    print("  life_profile, profile_questions (updated)")
     print("\nIf any statements failed, run the SQL manually in the Supabase SQL Editor.")
 
 
