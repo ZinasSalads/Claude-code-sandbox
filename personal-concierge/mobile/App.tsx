@@ -10,6 +10,10 @@ import CommandCenter from './screens/CommandCenter';
 import CheckIn from './screens/CheckIn';
 import WorkoutDetail from './screens/WorkoutDetail';
 import MealPlan from './screens/MealPlan';
+import BloodWork from './screens/BloodWork';
+import Supplements from './screens/Supplements';
+import Longevity from './screens/Longevity';
+import Research from './screens/Research';
 
 // Dark theme
 const DarkTheme = {
@@ -82,6 +86,26 @@ function HomeStackScreen() {
         name="MealPlan"
         component={MealPlan}
         options={{ title: 'Meal Plan' }}
+      />
+      <HomeStack.Screen
+        name="BloodWork"
+        component={BloodWork}
+        options={{ title: 'Blood Work' }}
+      />
+      <HomeStack.Screen
+        name="Supplements"
+        component={Supplements}
+        options={{ title: 'Supplements' }}
+      />
+      <HomeStack.Screen
+        name="Longevity"
+        component={Longevity}
+        options={{ title: 'Longevity' }}
+      />
+      <HomeStack.Screen
+        name="Research"
+        component={Research}
+        options={{ title: 'Research' }}
       />
     </HomeStack.Navigator>
   );

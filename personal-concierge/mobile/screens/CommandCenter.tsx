@@ -17,8 +17,10 @@ import {
   getTodayWorkout,
   getTodayMeals,
   syncOura,
+  getFlaggedBiomarkers,
+  getBiomarkers,
 } from '../lib/api';
-import type { HealthData, CheckIn, Workout, MealPlan } from '../lib/api';
+import type { HealthData, CheckIn, Workout, MealPlan, Biomarker } from '../lib/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -48,21 +50,24 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
   const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [mealPlan, setMealPlan] = useState<MealPlan | null>(null);
+  const [flaggedBiomarkers, setFlaggedBiomarkers] = useState<Biomarker[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
   const fetchAll = useCallback(async () => {
-    const [h, c, w, m] = await Promise.all([
+    const [h, c, w, m, fb] = await Promise.all([
       getTodayHealth(),
       getTodayCheckIn(),
       getTodayWorkout(),
       getTodayMeals(),
+      getFlaggedBiomarkers(),
     ]);
     setHealth(h);
     setCheckIn(c);
     setWorkout(w);
     setMealPlan(m);
+    setFlaggedBiomarkers(fb);
     setLoading(false);
   }, []);
 
@@ -212,6 +217,51 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
         </View>
       )}
 
+      {/* Quick Access Modules */}
+      <Text style={styles.sectionTitle}>MODULES</Text>
+      <View style={styles.modulesGrid}>
+        <TouchableOpacity
+          style={styles.moduleCard}
+          onPress={() => navigation.navigate('BloodWork')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.moduleEmoji}>🩸</Text>
+          <Text style={styles.moduleTitle}>Blood Work</Text>
+          {flaggedBiomarkers.length > 0 && (
+            <View style={styles.moduleBadge}>
+              <Text style={styles.moduleBadgeText}>{flaggedBiomarkers.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.moduleCard}
+          onPress={() => navigation.navigate('Supplements')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.moduleEmoji}>💊</Text>
+          <Text style={styles.moduleTitle}>Supplements</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.moduleCard}
+          onPress={() => navigation.navigate('Longevity')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.moduleEmoji}>🧬</Text>
+          <Text style={styles.moduleTitle}>Longevity</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.moduleCard}
+          onPress={() => navigation.navigate('Research')}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.moduleEmoji}>📚</Text>
+          <Text style={styles.moduleTitle}>Research</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Check-In Card */}
       {!loading && !checkIn && (
         <TouchableOpacity
@@ -348,6 +398,45 @@ const styles = StyleSheet.create({
   checkInSubtitle: {
     fontSize: 13,
     color: 'rgba(255,255,255,0.4)',
+  },
+  modulesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  moduleCard: {
+    backgroundColor: '#1A1A2E',
+    borderRadius: 14,
+    padding: 16,
+    width: (SCREEN_WIDTH - 40) / 2,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  moduleEmoji: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  moduleTitle: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  moduleBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#F44336',
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  moduleBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
   },
   bottomSpacer: {
     height: 32,
