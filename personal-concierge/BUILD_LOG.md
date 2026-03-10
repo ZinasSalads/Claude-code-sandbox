@@ -93,3 +93,23 @@ Blocked:
 5. Add push notifications for morning check-in reminders
 6. Add workout completion feedback loop (did the workout feel too easy/hard?)
 7. Seed user_profile with initial preferences (macro targets, dietary restrictions)
+
+---
+
+# Build Log — Session 2
+
+## Started: 2026-03-10
+
+## S2 Task 1 — Memory & Life Profile Deep Integration
+Status: Complete
+Notes:
+- Rewrote `services/memory.py` as `MemoryService` class with `build_full_context()` assembling: background, health, goals, fitness prefs, nutrition prefs, active supplements, flagged biomarkers, 30-day wearable trends, recent observations
+- Added `get_today_question()`, `answer_question()`, `skip_question()` for progressive profile building
+- `set_profile_fact()` / `get_profile_fact()` / `get_profile_category()` for structured life profile storage
+- `extract_and_store_from_checkin()` / `extract_and_store_from_conversation()` for auto-extraction
+- Preserved backward-compatible top-level functions (`add_memory`, `search_memories`, `build_user_context`) so existing agents work unchanged
+- Created `migrations/002_session2_schema.sql` with all Session 2 tables
+- Created `scripts/seed_profile_questions.py` with 50 questions across 10 categories
+- Updated `config.py` with Session 2 env vars (OPENWEATHER, AMBEE, PUBMED)
+- Updated `.env.example`, `requirements.txt`, `run_migrations.py`
+- Backend loads cleanly with all changes
