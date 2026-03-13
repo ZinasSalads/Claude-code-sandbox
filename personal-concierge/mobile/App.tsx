@@ -6,6 +6,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
+// Session 1-2 screens
 import CommandCenter from './screens/CommandCenter';
 import CheckIn from './screens/CheckIn';
 import WorkoutDetail from './screens/WorkoutDetail';
@@ -14,6 +15,15 @@ import BloodWork from './screens/BloodWork';
 import Supplements from './screens/Supplements';
 import Longevity from './screens/Longevity';
 import Research from './screens/Research';
+
+// Session 4 screens
+import Voice from './screens/Voice';
+import Travel from './screens/Travel';
+import Social from './screens/Social';
+import Growth from './screens/Growth';
+import Career from './screens/Career';
+import WardrobeScreen from './screens/Wardrobe';
+import Financial from './screens/Financial';
 
 // Dark theme
 const DarkTheme = {
@@ -30,7 +40,7 @@ const DarkTheme = {
   },
 };
 
-// Simple icon components using SVG paths
+// SVG icon components
 function HomeIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -45,11 +55,11 @@ function HomeIcon({ color, size }: { color: string; size: number }) {
   );
 }
 
-function ClipboardIcon({ color, size }: { color: string; size: number }) {
+function HeartIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Path
-        d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M12 12H15M12 16H15M9 12H9.01M9 16H9.01"
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
         stroke={color}
         strokeWidth={2}
         strokeLinecap="round"
@@ -59,59 +69,106 @@ function ClipboardIcon({ color, size }: { color: string; size: number }) {
   );
 }
 
-// Stack navigator for Home tab
-const HomeStack = createNativeStackNavigator();
+function LifeIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
 
+function MicIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+function UserIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+const stackScreenOptions = {
+  headerStyle: { backgroundColor: '#0D0D1A' },
+  headerTintColor: '#fff',
+  headerTitleStyle: { fontWeight: '600' as const },
+  headerShadowVisible: false,
+};
+
+// Home stack (Command Center + detail screens)
+const HomeStack = createNativeStackNavigator();
 function HomeStackScreen() {
   return (
-    <HomeStack.Navigator
-      screenOptions={{
-        headerStyle: { backgroundColor: '#0D0D1A' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '600' },
-        headerShadowVisible: false,
-      }}
-    >
-      <HomeStack.Screen
-        name="CommandCenter"
-        component={CommandCenter}
-        options={{ headerShown: false }}
-      />
-      <HomeStack.Screen
-        name="WorkoutDetail"
-        component={WorkoutDetail}
-        options={{ title: 'Workout' }}
-      />
-      <HomeStack.Screen
-        name="MealPlan"
-        component={MealPlan}
-        options={{ title: 'Meal Plan' }}
-      />
-      <HomeStack.Screen
-        name="BloodWork"
-        component={BloodWork}
-        options={{ title: 'Blood Work' }}
-      />
-      <HomeStack.Screen
-        name="Supplements"
-        component={Supplements}
-        options={{ title: 'Supplements' }}
-      />
-      <HomeStack.Screen
-        name="Longevity"
-        component={Longevity}
-        options={{ title: 'Longevity' }}
-      />
-      <HomeStack.Screen
-        name="Research"
-        component={Research}
-        options={{ title: 'Research' }}
-      />
+    <HomeStack.Navigator screenOptions={stackScreenOptions}>
+      <HomeStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
+      <HomeStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
+      <HomeStack.Screen name="MealPlan" component={MealPlan} options={{ title: 'Meal Plan' }} />
     </HomeStack.Navigator>
   );
 }
 
-// Bottom tab navigator
+// Health stack (Fitness, Nutrition, Blood Work, Supplements, Longevity)
+const HealthStack = createNativeStackNavigator();
+function HealthStackScreen() {
+  return (
+    <HealthStack.Navigator screenOptions={stackScreenOptions}>
+      <HealthStack.Screen name="BloodWork" component={BloodWork} options={{ title: 'Blood Work' }} />
+      <HealthStack.Screen name="Supplements" component={Supplements} options={{ title: 'Supplements' }} />
+      <HealthStack.Screen name="Longevity" component={Longevity} options={{ title: 'Longevity' }} />
+      <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
+    </HealthStack.Navigator>
+  );
+}
+
+// Life stack (Social, Growth, Career, Travel, Wardrobe, Financial)
+const LifeStack = createNativeStackNavigator();
+function LifeStackScreen() {
+  return (
+    <LifeStack.Navigator screenOptions={stackScreenOptions}>
+      <LifeStack.Screen name="Social" component={Social} options={{ title: 'Social Health' }} />
+      <LifeStack.Screen name="Growth" component={Growth} options={{ title: '1% Growth' }} />
+      <LifeStack.Screen name="Career" component={Career} options={{ title: 'Career' }} />
+      <LifeStack.Screen name="Travel" component={Travel} options={{ title: 'Travel' }} />
+      <LifeStack.Screen name="Wardrobe" component={WardrobeScreen} options={{ title: 'Wardrobe' }} />
+      <LifeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
+    </LifeStack.Navigator>
+  );
+}
+
+// Profile stack (Check-in + settings)
+const ProfileStack = createNativeStackNavigator();
+function ProfileStackScreen() {
+  return (
+    <ProfileStack.Navigator screenOptions={stackScreenOptions}>
+      <ProfileStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check In' }} />
+    </ProfileStack.Navigator>
+  );
+}
+
+// Bottom tab navigator — 5 tabs
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -131,35 +188,40 @@ export default function App() {
             },
             tabBarActiveTintColor: '#6C63FF',
             tabBarInactiveTintColor: 'rgba(255,255,255,0.3)',
-            tabBarLabelStyle: {
-              fontSize: 11,
-              fontWeight: '600',
-            },
+            tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
             headerShown: false,
           }}
         >
           <Tab.Screen
             name="Home"
             component={HomeStackScreen}
-            options={{
-              tabBarIcon: ({ color, size }) => (
-                <HomeIcon color={color} size={size} />
-              ),
-            }}
+            options={{ tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }}
           />
           <Tab.Screen
-            name="Check In"
-            component={CheckIn}
+            name="Health"
+            component={HealthStackScreen}
+            options={{ tabBarIcon: ({ color, size }) => <HeartIcon color={color} size={size} /> }}
+          />
+          <Tab.Screen
+            name="Life"
+            component={LifeStackScreen}
+            options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
+          />
+          <Tab.Screen
+            name="Voice"
+            component={Voice}
             options={{
-              tabBarIcon: ({ color, size }) => (
-                <ClipboardIcon color={color} size={size} />
-              ),
+              tabBarIcon: ({ color, size }) => <MicIcon color={color} size={size} />,
               headerShown: true,
               headerStyle: { backgroundColor: '#0D0D1A' },
               headerTintColor: '#fff',
               headerShadowVisible: false,
-              headerTitle: '',
             }}
+          />
+          <Tab.Screen
+            name="Profile"
+            component={ProfileStackScreen}
+            options={{ tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} /> }}
           />
         </Tab.Navigator>
       </NavigationContainer>

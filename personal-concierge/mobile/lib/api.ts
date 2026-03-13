@@ -246,6 +246,272 @@ export async function getFlaggedBiomarkers(): Promise<Biomarker[]> {
   return (await fetchApi<Biomarker[]>('/bloodwork/flagged')) || [];
 }
 
+// --- Session 4: Voice ---
+
+interface VoiceCommandResult {
+  response_text: string;
+  action: string | null;
+  action_data: Record<string, unknown>;
+}
+
+export async function getMorningBriefing(): Promise<{ text: string } | null> {
+  return fetchApi('/voice/morning-briefing');
+}
+
+export async function getEveningWindDown(): Promise<{ text: string } | null> {
+  return fetchApi('/voice/evening-wind-down');
+}
+
+export async function processVoiceCommand(transcript: string, sessionType: string = 'command'): Promise<VoiceCommandResult | null> {
+  return fetchApi('/voice/command', {
+    method: 'POST',
+    body: JSON.stringify({ transcript, session_type: sessionType }),
+  });
+}
+
+// --- Session 4: Travel ---
+
+interface Trip {
+  id: string;
+  destination: string;
+  departure_date: string;
+  return_date: string;
+  trip_type: string;
+  travel_companions: string;
+  status: string;
+  prep_done: boolean;
+  notes: string | null;
+}
+
+export async function getTrips(): Promise<Trip[]> {
+  return (await fetchApi<Trip[]>('/travel/trips')) || [];
+}
+
+export async function getActiveTrip(): Promise<Trip | null> {
+  return fetchApi('/travel/active');
+}
+
+export async function createTrip(data: Partial<Trip>): Promise<Trip | null> {
+  return fetchApi('/travel/trips', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getPreTripPlan(tripId: string): Promise<Record<string, unknown> | null> {
+  return fetchApi(`/travel/trips/${tripId}/prep`);
+}
+
+// --- Session 4: Social ---
+
+interface SocialContact {
+  id: string;
+  name: string;
+  relationship_type: string | null;
+  importance_weight: number;
+  target_contact_days: number;
+  last_contact_date: string | null;
+  days_since_contact: number | null;
+  is_overdue: boolean;
+  preferred_activities: string[] | null;
+}
+
+interface SocialBriefing {
+  score: number;
+  overdue_connections: SocialContact[];
+  nudge: string | null;
+}
+
+interface SocialScore {
+  score: number;
+  connection_score: number;
+  quality_score: number;
+  leisure_score: number;
+  balance_score: number;
+  nudges: string[];
+}
+
+export async function getSocialCircle(): Promise<SocialContact[]> {
+  return (await fetchApi<SocialContact[]>('/social/circle')) || [];
+}
+
+export async function getSocialBriefing(): Promise<SocialBriefing | null> {
+  return fetchApi('/social/briefing');
+}
+
+export async function getSocialScore(): Promise<SocialScore | null> {
+  return fetchApi('/social/score');
+}
+
+export async function addSocialContact(data: Partial<SocialContact>): Promise<SocialContact | null> {
+  return fetchApi('/social/circle', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function logSocialConnection(contactId: string, data: Record<string, unknown>): Promise<unknown> {
+  return fetchApi('/social/log', { method: 'POST', body: JSON.stringify({ contact_id: contactId, ...data }) });
+}
+
+// --- Session 4: Financial ---
+
+interface FinancialContext {
+  monthly_lifestyle_budget: number | null;
+  city_tier: string | null;
+  socioeconomic_tier: string | null;
+}
+
+interface Subscription {
+  id: string;
+  service_name: string;
+  category: string | null;
+  monthly_cost: number;
+  usage_frequency: string | null;
+  active: boolean;
+}
+
+interface SubscriptionAudit {
+  total_monthly_cost: number;
+  dormant_subscriptions: Subscription[];
+  cancellation_candidates: Subscription[];
+  monthly_savings_potential: number;
+}
+
+export async function getFinancialContext(): Promise<FinancialContext | null> {
+  return fetchApi('/financial/context');
+}
+
+export async function getSubscriptions(): Promise<Subscription[]> {
+  return (await fetchApi<Subscription[]>('/financial/subscriptions')) || [];
+}
+
+export async function getSubscriptionAudit(): Promise<SubscriptionAudit | null> {
+  return fetchApi('/financial/audit');
+}
+
+export async function addSubscription(data: Partial<Subscription>): Promise<Subscription | null> {
+  return fetchApi('/financial/subscriptions', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// --- Session 4: Growth ---
+
+interface GrowthHabit {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+  current_streak: number;
+  longest_streak: number;
+  total_completions: number;
+  completed_today: boolean;
+  active: boolean;
+}
+
+interface TodayHabits {
+  habits: GrowthHabit[];
+  completion_rate: number;
+  completed: number;
+  total: number;
+  streak_at_risk: GrowthHabit[];
+}
+
+interface CompoundScore {
+  score: number;
+  domains: Record<string, number>;
+}
+
+export async function getTodayHabits(): Promise<TodayHabits | null> {
+  return fetchApi('/growth/today');
+}
+
+export async function logHabitCompletion(habitId: string, completed: boolean = true): Promise<unknown> {
+  return fetchApi('/growth/log', { method: 'POST', body: JSON.stringify({ habit_id: habitId, completed }) });
+}
+
+export async function getGrowthScore(): Promise<CompoundScore | null> {
+  return fetchApi('/growth/score');
+}
+
+export async function suggestNextHabit(): Promise<Record<string, unknown> | null> {
+  return fetchApi('/growth/suggest');
+}
+
+export async function addGrowthHabit(data: Partial<GrowthHabit>): Promise<GrowthHabit | null> {
+  return fetchApi('/growth/habits', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// --- Session 4: Career ---
+
+interface CareerProfile {
+  current_role: string | null;
+  industry: string | null;
+  satisfaction_score: number | null;
+  stress_level: number | null;
+  next_milestone: string | null;
+}
+
+interface BurnoutRisk {
+  risk_score: number;
+  risk_level: string;
+  contributing_factors: string[];
+  recommendations: string[];
+}
+
+export async function getCareerProfile(): Promise<CareerProfile | null> {
+  return fetchApi('/career/profile');
+}
+
+export async function getBurnoutRisk(): Promise<BurnoutRisk | null> {
+  return fetchApi('/career/burnout');
+}
+
+export async function getCareerCoaching(): Promise<{ coaching: string } | null> {
+  return fetchApi('/career/coaching');
+}
+
+export async function logCareerReflection(data: Record<string, unknown>): Promise<unknown> {
+  return fetchApi('/career/reflection', { method: 'POST', body: JSON.stringify(data) });
+}
+
+// --- Session 4: Wardrobe ---
+
+interface WardrobeItem {
+  id: string;
+  item_name: string;
+  category: string | null;
+  color: string | null;
+  times_worn: number;
+  condition: string;
+  active: boolean;
+}
+
+interface OutfitSuggestion {
+  outfit_items: { id: string; name: string; category: string }[];
+  reasoning: string;
+  weather_appropriate: boolean;
+}
+
+export async function getWardrobeItems(): Promise<WardrobeItem[]> {
+  return (await fetchApi<WardrobeItem[]>('/wardrobe/items')) || [];
+}
+
+export async function getOutfitSuggestion(occasion: string = 'casual'): Promise<OutfitSuggestion | null> {
+  return fetchApi(`/wardrobe/suggest?occasion=${occasion}`);
+}
+
+export async function getTomorrowOutfit(): Promise<OutfitSuggestion | null> {
+  return fetchApi('/wardrobe/tomorrow');
+}
+
+export async function addWardrobeItem(data: Partial<WardrobeItem>): Promise<WardrobeItem | null> {
+  return fetchApi('/wardrobe/items', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getWardrobeAudit(): Promise<Record<string, unknown> | null> {
+  return fetchApi('/wardrobe/audit');
+}
+
+// --- Notifications ---
+
+export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
+  return fetchApi('/notifications/register', { method: 'POST', body: JSON.stringify({ token, platform }) });
+}
+
 export type {
   HealthData,
   CheckIn,
@@ -260,4 +526,19 @@ export type {
   UploadResult,
   DeltaEntry,
   DeltaReport,
+  VoiceCommandResult,
+  Trip,
+  SocialContact,
+  SocialBriefing,
+  SocialScore,
+  FinancialContext,
+  Subscription,
+  SubscriptionAudit,
+  GrowthHabit,
+  TodayHabits,
+  CompoundScore,
+  CareerProfile,
+  BurnoutRisk,
+  WardrobeItem,
+  OutfitSuggestion,
 };

@@ -145,6 +145,12 @@ textarea {
   <div class="tab" data-page="nutrition">Nutrition</div>
   <div class="tab" data-page="supplements">Supplements</div>
   <div class="tab" data-page="bloodwork">Blood Work</div>
+  <div class="tab" data-page="social">Social</div>
+  <div class="tab" data-page="growth">Growth</div>
+  <div class="tab" data-page="career">Career</div>
+  <div class="tab" data-page="travel">Travel</div>
+  <div class="tab" data-page="wardrobe">Wardrobe</div>
+  <div class="tab" data-page="financial">Financial</div>
 </div>
 
 <div class="content">
@@ -276,6 +282,48 @@ textarea {
     <div id="bwLoading" class="loading"><div class="spinner"></div>Loading biomarkers...</div>
     <div id="bwContent" style="display:none"></div>
     <div id="bwEmpty" class="empty" style="display:none"><div class="icon">&#129656;</div><p>No blood work uploaded yet.</p></div>
+  </div>
+
+  <!-- SOCIAL -->
+  <div class="page" id="page-social">
+    <div id="socialLoading" class="loading" style="display:none"><div class="spinner"></div>Loading social data...</div>
+    <div id="socialContent"></div>
+    <button class="btn btn-primary" onclick="loadSocialData()">Load Social Health</button>
+  </div>
+
+  <!-- GROWTH -->
+  <div class="page" id="page-growth">
+    <div id="growthLoading" class="loading" style="display:none"><div class="spinner"></div>Loading habits...</div>
+    <div id="growthContent"></div>
+    <button class="btn btn-primary" onclick="loadGrowthData()">Load Growth Data</button>
+  </div>
+
+  <!-- CAREER -->
+  <div class="page" id="page-career">
+    <div id="careerLoading" class="loading" style="display:none"><div class="spinner"></div>Loading career data...</div>
+    <div id="careerContent"></div>
+    <button class="btn btn-primary" onclick="loadCareerData()">Load Career Data</button>
+  </div>
+
+  <!-- TRAVEL -->
+  <div class="page" id="page-travel">
+    <div id="travelLoading" class="loading" style="display:none"><div class="spinner"></div>Loading trips...</div>
+    <div id="travelContent"></div>
+    <button class="btn btn-primary" onclick="loadTravelData()">Load Travel Data</button>
+  </div>
+
+  <!-- WARDROBE -->
+  <div class="page" id="page-wardrobe">
+    <div id="wardrobeLoading" class="loading" style="display:none"><div class="spinner"></div>Loading wardrobe...</div>
+    <div id="wardrobeContent"></div>
+    <button class="btn btn-primary" onclick="loadWardrobeData()">Load Wardrobe</button>
+  </div>
+
+  <!-- FINANCIAL -->
+  <div class="page" id="page-financial">
+    <div id="financialLoading" class="loading" style="display:none"><div class="spinner"></div>Loading financial data...</div>
+    <div id="financialContent"></div>
+    <button class="btn btn-primary" onclick="loadFinancialData()">Load Financial Data</button>
   </div>
 </div>
 
@@ -704,6 +752,166 @@ async function loadNutrition() {
   }
 }
 
+// --- Social ---
+async function loadSocialData() {
+  document.getElementById('socialLoading').style.display = 'flex';
+  try {
+    const briefing = await api('/social/briefing');
+    document.getElementById('socialLoading').style.display = 'none';
+    const el = document.getElementById('socialContent');
+    let html = `<div class="card"><div class="card-header">
+      <div><div class="card-title">Social Health Score</div></div>
+      <div style="font-size:32px;font-weight:700;color:${scoreColor(briefing.score||0)}">${briefing.score||0}</div>
+    </div></div>`;
+    if (briefing.nudge) html += `<div class="card coaching-note">${briefing.nudge}</div>`;
+    if (briefing.overdue_connections && briefing.overdue_connections.length > 0) {
+      html += `<div class="card"><div class="card-title">Overdue Connections</div>`;
+      briefing.overdue_connections.forEach(c => {
+        html += `<div class="trend-row"><div class="trend-date">${c.name}</div>
+          <div class="trend-vals"><div class="trend-val">${c.days_since_contact||'?'} days<div class="trend-label">${c.relationship_type||'Contact'}</div></div></div></div>`;
+      });
+      html += `</div>`;
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('socialLoading').style.display = 'none';
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Growth ---
+async function loadGrowthData() {
+  document.getElementById('growthLoading').style.display = 'flex';
+  try {
+    const data = await api('/growth/today');
+    const score = await api('/growth/score');
+    document.getElementById('growthLoading').style.display = 'none';
+    const el = document.getElementById('growthContent');
+    let html = `<div class="card"><div class="card-header">
+      <div><div class="card-title">Compound Score</div><div class="card-subtitle">${data.completed}/${data.total} habits done today</div></div>
+      <div style="font-size:32px;font-weight:700;color:${scoreColor(score.score||0)}">${score.score||0}</div>
+    </div></div>`;
+    if (data.habits) {
+      html += `<div class="card"><div class="card-title">Today's Habits</div>`;
+      data.habits.forEach(h => {
+        const done = h.completed_today ? '✓' : '○';
+        const color = h.completed_today ? 'var(--green)' : 'var(--text-dim)';
+        html += `<div class="exercise"><div class="name" style="color:${color}">${done} ${h.name}</div>
+          <div class="detail">${h.category} · Streak: ${h.current_streak}${h.current_streak > 0 ? ' 🔥' : ''}</div></div>`;
+      });
+      html += `</div>`;
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('growthLoading').style.display = 'none';
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Career ---
+async function loadCareerData() {
+  document.getElementById('careerLoading').style.display = 'flex';
+  try {
+    const burnout = await api('/career/burnout');
+    document.getElementById('careerLoading').style.display = 'none';
+    const el = document.getElementById('careerContent');
+    const riskColor = burnout.risk_level === 'high' ? 'var(--red)' : burnout.risk_level === 'elevated' ? 'var(--yellow)' : 'var(--green)';
+    let html = `<div class="card" style="border-left:3px solid ${riskColor}">
+      <div class="card-header"><div><div class="card-title">Burnout Risk</div>
+      <div class="card-subtitle">${burnout.risk_level.toUpperCase()}</div></div>
+      <div style="font-size:32px;font-weight:700;color:${riskColor}">${burnout.risk_score}</div></div>`;
+    if (burnout.contributing_factors.length > 0) {
+      burnout.contributing_factors.forEach(f => { html += `<div style="font-size:13px;color:var(--text-dim);margin-top:4px">• ${f}</div>`; });
+    }
+    if (burnout.recommendations.length > 0) {
+      burnout.recommendations.forEach(r => { html += `<div style="font-size:13px;color:var(--accent-light);margin-top:4px">→ ${r}</div>`; });
+    }
+    html += `</div>`;
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('careerLoading').style.display = 'none';
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Travel ---
+async function loadTravelData() {
+  document.getElementById('travelLoading').style.display = 'flex';
+  try {
+    const trips = await api('/travel/trips');
+    document.getElementById('travelLoading').style.display = 'none';
+    const el = document.getElementById('travelContent');
+    if (!trips || !trips.length) { el.innerHTML = '<div class="empty"><p>No trips yet.</p></div>'; return; }
+    let html = '';
+    trips.forEach(t => {
+      const statusColor = t.status === 'active' ? 'var(--green)' : t.status === 'upcoming' ? 'var(--accent)' : 'var(--text-muted)';
+      html += `<div class="card" style="border-left:3px solid ${statusColor}">
+        <div class="card-header"><div><div class="card-title">${t.destination}</div>
+        <div class="card-subtitle">${t.departure_date} → ${t.return_date}</div></div>
+        <div style="font-size:12px;font-weight:600;color:${statusColor};text-transform:uppercase">${t.status}</div></div>
+        <div style="font-size:12px;color:var(--text-muted)">${t.trip_type||''} · ${t.travel_companions||''}</div>
+      </div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('travelLoading').style.display = 'none';
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Wardrobe ---
+async function loadWardrobeData() {
+  document.getElementById('wardrobeLoading').style.display = 'flex';
+  try {
+    const items = await api('/wardrobe/items');
+    document.getElementById('wardrobeLoading').style.display = 'none';
+    const el = document.getElementById('wardrobeContent');
+    if (!items || !items.length) { el.innerHTML = '<div class="empty"><p>No wardrobe items yet.</p></div>'; return; }
+    const categories = {};
+    items.forEach(i => { const c = i.category || 'other'; if (!categories[c]) categories[c] = []; categories[c].push(i); });
+    let html = `<div class="card"><div class="card-title">Wardrobe Overview</div><div class="metrics">`;
+    Object.entries(categories).forEach(([cat, items]) => {
+      html += `<div class="metric"><div class="label">${cat}</div><div class="value">${items.length}</div></div>`;
+    });
+    html += `</div></div>`;
+    items.forEach(i => {
+      html += `<div class="card"><div class="card-header"><div>
+        <div class="card-title">${i.item_name}</div>
+        <div class="card-subtitle">${i.category||''} · ${i.color||''}</div></div>
+        <div class="card-subtitle">Worn ${i.times_worn}x</div></div></div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('wardrobeLoading').style.display = 'none';
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Financial ---
+async function loadFinancialData() {
+  document.getElementById('financialLoading').style.display = 'flex';
+  try {
+    const subs = await api('/financial/subscriptions');
+    document.getElementById('financialLoading').style.display = 'none';
+    const el = document.getElementById('financialContent');
+    const total = subs.reduce((acc, s) => acc + (s.monthly_cost || 0), 0);
+    let html = `<div class="card"><div class="card-title">Monthly Subscriptions</div>
+      <div style="font-size:32px;font-weight:700;color:var(--text);margin-top:8px">$${total.toFixed(2)}/mo</div>
+      <div class="card-subtitle">${subs.length} active subscriptions</div></div>`;
+    subs.forEach(s => {
+      html += `<div class="card"><div class="card-header"><div>
+        <div class="card-title">${s.service_name}</div>
+        <div class="card-subtitle">${s.category||'Uncategorized'} · ${s.usage_frequency||''}</div></div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">$${(s.monthly_cost||0).toFixed(2)}</div></div></div>`;
+    });
+    if (subs.length === 0) html += '<div class="empty"><p>No subscriptions tracked yet.</p></div>';
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('financialLoading').style.display = 'none';
+    showToast('Error: ' + e.message);
+  }
+}
+
 // --- Page loader ---
 const loaded = {};
 function loadPage(page) {
@@ -715,7 +923,7 @@ function loadPage(page) {
     case 'checkin': loadCheckin(); break;
     case 'supplements': loadSupplements(); break;
     case 'bloodwork': loadBloodwork(); break;
-    // dailyplan, workout, nutrition load on button click
+    // all other pages load on button click
   }
 }
 loadPage('dashboard');
