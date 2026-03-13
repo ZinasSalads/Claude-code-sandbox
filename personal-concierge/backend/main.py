@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("concierge")
 
-app = FastAPI(title="Personal Concierge", version="4.0.0")
+app = FastAPI(title="Personal Concierge", version="5.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,6 +30,8 @@ from routers import health, fitness, nutrition, sync
 from routers import bloodwork, supplements, environment, research
 from routers import longevity, coaching, daily, reminders
 from routers import voice, travel, social, financial, growth, career, wardrobe, notifications
+from routers import personality, onboarding, feedback, legacy, home_environment, learning, privacy
+from routers import calendar as calendar_router
 
 # Session 1 routers
 app.include_router(health.router, prefix="/checkin", tags=["Check-In"])
@@ -56,6 +58,16 @@ app.include_router(growth.router, prefix="/growth", tags=["Growth"])
 app.include_router(career.router, prefix="/career", tags=["Career"])
 app.include_router(wardrobe.router, prefix="/wardrobe", tags=["Wardrobe"])
 app.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
+
+# Session 5 routers
+app.include_router(personality.router, prefix="/personality", tags=["Personality"])
+app.include_router(onboarding.router, prefix="/onboarding", tags=["Onboarding"])
+app.include_router(feedback.router, prefix="/feedback", tags=["Feedback"])
+app.include_router(legacy.router, prefix="/legacy", tags=["Legacy"])
+app.include_router(home_environment.router, prefix="/home", tags=["Home Environment"])
+app.include_router(learning.router, prefix="/learning", tags=["Learning"])
+app.include_router(privacy.router, prefix="/privacy", tags=["Privacy"])
+app.include_router(calendar_router.router, prefix="/calendar", tags=["Calendar"])
 
 
 @app.get("/health")

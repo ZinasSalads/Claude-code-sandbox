@@ -1,6 +1,6 @@
 # Personal Concierge App
 
-A personal health & life concierge powered by AI. Combines Oura Ring biometric data, daily check-ins, blood work analysis, supplement management, environmental intelligence, voice interface, travel intelligence, social health tracking, financial context, habit coaching, career development, wardrobe planning, and Claude AI to deliver a comprehensive daily life plan.
+A personal health & life concierge powered by AI. Combines Oura Ring biometric data, Apple Health integration, daily check-ins, blood work analysis, supplement management, environmental intelligence, voice interface, travel intelligence, social health tracking, financial context, habit coaching, career development, wardrobe planning, personality assessment, progressive onboarding, legacy vision, home environment optimization, learning tracking, feedback learning engine, Google Calendar integration, data privacy controls, and Claude AI to deliver a fully personalized daily life plan.
 
 ## Architecture
 
@@ -35,6 +35,15 @@ A personal health & life concierge powered by AI. Combines Oura Ring biometric d
 | **Career & Development** | Burnout monitoring, weekly reflection, health-performance correlation |
 | **Style & Wardrobe** | Closet inventory, weather-aware outfit suggestions, wardrobe audit |
 | **Push Notifications** | Expo push, morning briefing, habit nudges, supplement reminders |
+| **Personality & Values** | MBTI assessment, values orientation, coaching style adaptation |
+| **Progressive Onboarding** | 14-step guided setup, celebration milestones, habit seeding |
+| **Apple Health** | Gap-filling biometric sync when Oura isn't worn |
+| **Google Calendar** | OAuth2 integration, event classification, workout window detection |
+| **Feedback Learning** | Preference ratings, pattern extraction, surprise mode |
+| **Legacy & Vision** | 10-year goals, milestone timeline, values drift detection |
+| **Home Environment** | Air quality, lighting, ergonomics, budget-aware recommendations |
+| **Learning & Education** | Books, courses, language goals, streak tracking |
+| **Data Privacy** | Full data export, per-category deletion, amnesia mode |
 
 ## Setup
 
@@ -67,6 +76,9 @@ Copy `.env.example` to `.env` in the project root and fill in:
 | `PUBMED_EMAIL` | Your email (PubMed E-utilities courtesy) | Optional |
 | `OPENAI_API_KEY` | platform.openai.com → API Keys (Whisper STT + TTS) | Optional |
 | `ELEVENLABS_API_KEY` | elevenlabs.io (premium TTS voice) | Optional |
+| `GOOGLE_CALENDAR_CLIENT_ID` | Google Cloud Console → OAuth 2.0 credentials | Optional |
+| `GOOGLE_CALENDAR_CLIENT_SECRET` | Google Cloud Console → OAuth 2.0 credentials | Optional |
+| `GOOGLE_CALENDAR_REDIRECT_URI` | Your callback URL (e.g. `http://localhost:8000/calendar/callback`) | Optional |
 
 Copy `mobile/.env.example` to `mobile/.env` and fill in:
 
@@ -84,7 +96,7 @@ python scripts/run_migrations.py
 python scripts/seed_profile_questions.py  # Optional: seed profile questions
 ```
 
-If the script can't execute DDL via API, copy the contents of `backend/migrations/001_initial_schema.sql` and `002_session2_schema.sql` and paste into the Supabase SQL Editor.
+If the script can't execute DDL via API, copy the contents of `backend/migrations/001_initial_schema.sql`, `002_session2_schema.sql`, `003_session4_schema.sql`, and `004_session5_schema.sql` and paste into the Supabase SQL Editor.
 
 ### 4. Sync your Oura data
 
@@ -275,6 +287,99 @@ Scan the QR code with Expo Go on your phone.
 | POST | `/notifications/send-habits` | Trigger habit nudge |
 | POST | `/notifications/schedule` | Run full notification check |
 
+### Apple Health (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/sync/apple-health` | Sync Apple Health data (gap-fill) |
+| GET | `/sync/gaps` | Get dates with missing biometric data |
+
+### Personality (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/personality/questions` | Get MBTI + values assessment questions |
+| POST | `/personality/score` | Score completed assessment |
+| GET | `/personality/profile` | Get personality profile |
+| GET | `/personality/insight` | AI personality insight |
+| GET | `/personality/coaching-style` | Coaching style from personality |
+| PUT | `/personality/profile` | Update personality profile |
+
+### Onboarding (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/onboarding/status` | Onboarding progress status |
+| GET | `/onboarding/steps` | All onboarding steps |
+| GET | `/onboarding/step/{name}` | Get step content |
+| POST | `/onboarding/step/{name}` | Complete a step |
+| POST | `/onboarding/step/{name}/skip` | Skip a step |
+| GET | `/onboarding/habits-suggest` | Suggest habits from profile |
+
+### Calendar (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/calendar/auth` | Get Google OAuth2 authorization URL |
+| GET | `/calendar/callback` | OAuth2 callback handler |
+| GET | `/calendar/status` | Calendar connection status |
+| POST | `/calendar/sync` | Sync calendar events |
+| GET | `/calendar/today` | Today's events |
+| GET | `/calendar/tomorrow` | Tomorrow's events |
+| GET | `/calendar/workout-windows` | Available workout time slots |
+| GET | `/calendar/detect-trips` | Detect trips from calendar |
+| DELETE | `/calendar/disconnect` | Disconnect Google Calendar |
+
+### Feedback (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/feedback/rate` | Submit preference rating |
+| GET | `/feedback/patterns` | Get all preference patterns |
+| GET | `/feedback/patterns/{category}` | Patterns for one category |
+| GET | `/feedback/summary` | Learning summary |
+
+### Legacy (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/legacy/profile` | Legacy vision profile |
+| PUT | `/legacy/profile` | Update legacy profile |
+| GET | `/legacy/milestones` | Life milestones |
+| POST | `/legacy/milestones` | Add milestone |
+| GET | `/legacy/drift` | Values drift analysis |
+| GET | `/legacy/bridge` | Daily bridge moment |
+| GET | `/legacy/annual-review` | Annual review |
+
+### Home Environment (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/home/profile` | Home environment profile |
+| PUT | `/home/profile` | Update home profile |
+| GET | `/home/recommendations` | Get recommendations |
+| POST | `/home/recommendations/generate` | Generate AI recommendations |
+| PUT | `/home/recommendations/{id}/complete` | Mark recommendation complete |
+| GET | `/home/correlations` | Health-environment correlations |
+
+### Learning (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/learning/profile` | Learning profile |
+| PUT | `/learning/profile` | Update learning profile |
+| POST | `/learning/log` | Log study session |
+| GET | `/learning/today` | Today's recommendation |
+| GET | `/learning/books` | Book list |
+| POST | `/learning/books` | Add book |
+| PUT | `/learning/books/{id}` | Update book |
+| GET | `/learning/courses` | Course list |
+| POST | `/learning/courses` | Add course |
+| PUT | `/learning/courses/{id}` | Update course |
+| GET | `/learning/language/{lang}` | Language plan |
+| GET | `/learning/weekly` | Weekly learning insight |
+
+### Privacy (Session 5)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/privacy/summary` | Data summary by category |
+| POST | `/privacy/export` | Export full profile |
+| DELETE | `/privacy/category/{cat}` | Delete category data |
+| PUT | `/privacy/sensitivity` | Set sensitivity tier |
+| POST | `/privacy/amnesia` | Activate amnesia mode |
+
 ## How It Works
 
 1. **Morning:** Open the app, see your Oura readiness score and biometrics
@@ -293,17 +398,17 @@ Scan the QR code with Expo Go on your phone.
 ```
 personal-concierge/
 ├── backend/
-│   ├── main.py              # FastAPI entry point (100+ routes)
+│   ├── main.py              # FastAPI entry point (155+ routes)
 │   ├── config.py            # Environment + Supabase init
 │   ├── agents/              # AI agents (fitness, nutrition)
-│   ├── routers/             # API endpoints (20 routers)
-│   ├── services/            # Business logic (18 services)
+│   ├── routers/             # API endpoints (28 routers)
+│   ├── services/            # Business logic (26 services)
 │   ├── scripts/             # Migration + sync + seed scripts
 │   ├── static/              # Web dashboard (standalone.html)
-│   └── migrations/          # SQL schema (3 migration files)
+│   └── migrations/          # SQL schema (4 migration files)
 └── mobile/
     ├── App.tsx              # 5-tab navigation root
-    ├── screens/             # 15 screens
+    ├── screens/             # 22 screens
     │   ├── CommandCenter    # Main dashboard
     │   ├── CheckIn          # Morning check-in
     │   ├── WorkoutDetail    # Exercise breakdown
@@ -318,7 +423,14 @@ personal-concierge/
     │   ├── Growth           # 1% habit engine
     │   ├── Career           # Career + burnout monitoring
     │   ├── Wardrobe         # Closet + outfit planning
-    │   └── Financial        # Subscriptions + audit
+    │   ├── Financial        # Subscriptions + audit
+    │   ├── Personality      # MBTI + values assessment
+    │   ├── Onboarding       # Progressive setup flow
+    │   ├── AppleHealth      # Health data gap-filling
+    │   ├── Legacy           # 10-year vision + milestones
+    │   ├── HomeEnvironment  # Air, light, ergonomics
+    │   ├── Learning         # Books, courses, languages
+    │   └── Privacy          # Data export + deletion
     ├── components/          # ReadinessCircle, MetricCard, etc.
     └── lib/                 # Supabase client, API client
 ```

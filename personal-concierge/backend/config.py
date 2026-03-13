@@ -31,6 +31,11 @@ PUBMED_EMAIL = os.getenv("PUBMED_EMAIL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
+# --- Session 5: Google Calendar ---
+GOOGLE_CALENDAR_CLIENT_ID = os.getenv("GOOGLE_CALENDAR_CLIENT_ID")
+GOOGLE_CALENDAR_CLIENT_SECRET = os.getenv("GOOGLE_CALENDAR_CLIENT_SECRET")
+GOOGLE_CALENDAR_REDIRECT_URI = os.getenv("GOOGLE_CALENDAR_REDIRECT_URI")
+
 # --- Init Supabase client ---
 supabase = None
 if SUPABASE_URL and SUPABASE_SERVICE_KEY:
@@ -67,4 +72,12 @@ def get_service_status() -> dict:
         "career": True,
         "wardrobe": True,
         "notifications": True,
+        "personality": True,
+        "onboarding": True,
+        "feedback": True,
+        "legacy": True,
+        "home_environment": True,
+        "learning": True,
+        "privacy": True,
+        "google_calendar": bool(GOOGLE_CALENDAR_CLIENT_ID),
     }

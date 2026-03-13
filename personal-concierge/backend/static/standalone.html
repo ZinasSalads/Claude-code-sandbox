@@ -151,6 +151,11 @@ textarea {
   <div class="tab" data-page="travel">Travel</div>
   <div class="tab" data-page="wardrobe">Wardrobe</div>
   <div class="tab" data-page="financial">Financial</div>
+  <div class="tab" data-page="personality">Personality</div>
+  <div class="tab" data-page="legacy">Legacy</div>
+  <div class="tab" data-page="learning">Learning</div>
+  <div class="tab" data-page="home">Home Env</div>
+  <div class="tab" data-page="onboarding">Onboarding</div>
 </div>
 
 <div class="content">
@@ -324,6 +329,32 @@ textarea {
     <div id="financialLoading" class="loading" style="display:none"><div class="spinner"></div>Loading financial data...</div>
     <div id="financialContent"></div>
     <button class="btn btn-primary" onclick="loadFinancialData()">Load Financial Data</button>
+  </div>
+
+  <!-- SESSION 5 PAGES -->
+  <div class="page" id="page-personality">
+    <div id="personalityContent"></div>
+    <button class="btn btn-primary" onclick="loadPersonalityData()">Load Personality Profile</button>
+  </div>
+
+  <div class="page" id="page-legacy">
+    <div id="legacyContent"></div>
+    <button class="btn btn-primary" onclick="loadLegacyData()">Load Legacy & Vision</button>
+  </div>
+
+  <div class="page" id="page-learning">
+    <div id="learningContent"></div>
+    <button class="btn btn-primary" onclick="loadLearningData()">Load Learning Data</button>
+  </div>
+
+  <div class="page" id="page-home">
+    <div id="homeEnvContent"></div>
+    <button class="btn btn-primary" onclick="loadHomeEnvData()">Load Home Environment</button>
+  </div>
+
+  <div class="page" id="page-onboarding">
+    <div id="onboardingContent"></div>
+    <button class="btn btn-primary" onclick="loadOnboardingData()">Load Onboarding Status</button>
   </div>
 </div>
 
@@ -910,6 +941,125 @@ async function loadFinancialData() {
     document.getElementById('financialLoading').style.display = 'none';
     showToast('Error: ' + e.message);
   }
+}
+
+// --- Session 5: Personality ---
+async function loadPersonalityData() {
+  try {
+    const profile = await api('/personality/profile');
+    const el = document.getElementById('personalityContent');
+    if (profile && profile.mbti_type) {
+      const dims = profile.mbti_dimensions || {};
+      el.innerHTML = `
+        <div class="card"><div class="card-title">Personality Profile</div>
+          <div style="font-size:36px;font-weight:800;color:var(--accent);margin:12px 0">${profile.mbti_type}</div>
+          <div class="card-subtitle">${profile.mbti_label || ''}</div>
+          <div style="margin-top:16px">
+            <div class="card-subtitle">E/I: ${(dims.EI||0.5).toFixed(2)} · S/N: ${(dims.SN||0.5).toFixed(2)} · T/F: ${(dims.TF||0.5).toFixed(2)} · J/P: ${(dims.JP||0.5).toFixed(2)}</div>
+            <div style="margin-top:8px;color:var(--text-dim)">Energy: ${profile.energy_source || '—'} · Decision: ${profile.decision_style || '—'} · Structure: ${profile.structure_preference || '—'}</div>
+          </div>
+        </div>`;
+    } else {
+      el.innerHTML = '<div class="empty"><p>No personality assessment yet. Complete it in the mobile app.</p></div>';
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 5: Legacy ---
+async function loadLegacyData() {
+  try {
+    const [profile, milestones, drift] = await Promise.all([
+      api('/legacy/profile'), api('/legacy/milestones?limit=10'), api('/legacy/drift')
+    ]);
+    const el = document.getElementById('legacyContent');
+    let html = '';
+    if (profile && profile.ten_year_vision) {
+      html += `<div class="card"><div class="card-title">10-Year Vision</div><p style="color:var(--text-dim);line-height:1.6">${profile.ten_year_vision}</p></div>`;
+    }
+    if (drift && drift.detected) {
+      html += `<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Values Drift Detected</div><p style="color:var(--text-dim)">${drift.gentle_observation}</p></div>`;
+    }
+    if (milestones && milestones.length) {
+      html += '<div class="card"><div class="card-title">Milestones</div>';
+      milestones.forEach(m => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><strong>${m.title}</strong><br><span class="card-subtitle">${m.milestone_date} · ${m.category}</span></div>`;
+      });
+      html += '</div>';
+    }
+    if (!html) html = '<div class="empty"><p>No legacy profile yet.</p></div>';
+    el.innerHTML = html;
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 5: Learning ---
+async function loadLearningData() {
+  try {
+    const [profile, books, weekly] = await Promise.all([
+      api('/learning/profile'), api('/learning/books'), api('/learning/weekly')
+    ]);
+    const el = document.getElementById('learningContent');
+    let html = '';
+    if (weekly) {
+      html += `<div class="metrics">
+        <div class="metric"><div class="label">Streak</div><div class="value">${weekly.current_streak||0}</div><div class="unit">days</div></div>
+        <div class="metric"><div class="label">This Week</div><div class="value">${weekly.minutes_this_week||0}</div><div class="unit">min</div></div>
+        <div class="metric"><div class="label">Books/Mo</div><div class="value">${weekly.books_completed_this_month||0}</div></div>
+      </div>`;
+    }
+    if (books && books.length) {
+      html += '<div class="card"><div class="card-title">Books</div>';
+      books.forEach(b => {
+        const pct = b.total_pages ? Math.round((b.current_page||0)/b.total_pages*100) : 0;
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><strong>${b.title}</strong> ${b.author?'by '+b.author:''}<br><span class="card-subtitle">${b.status} ${b.status==='reading'?pct+'%':''}</span></div>`;
+      });
+      html += '</div>';
+    }
+    if (!html) html = '<div class="empty"><p>No learning data yet.</p></div>';
+    el.innerHTML = html;
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 5: Home Environment ---
+async function loadHomeEnvData() {
+  try {
+    const [profile, recs] = await Promise.all([
+      api('/home/profile'), api('/home/recommendations')
+    ]);
+    const el = document.getElementById('homeEnvContent');
+    let html = '';
+    if (profile && profile.id) {
+      html += `<div class="card"><div class="card-title">Home Profile</div>
+        <div class="card-subtitle">Type: ${profile.home_type||'—'} · Noise: ${profile.noise_level||'—'} · Light: ${profile.natural_light_quality||'—'}</div></div>`;
+    }
+    if (recs && recs.length) {
+      const done = recs.filter(r=>r.completed).length;
+      html += `<div class="card"><div class="card-title">Recommendations (${done}/${recs.length} done)</div>`;
+      recs.filter(r=>!r.completed).forEach(r => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><span style="color:${r.priority==='high'?'var(--red)':r.priority==='medium'?'var(--yellow)':'var(--text-dim)'}">[${r.priority}]</span> ${r.recommendation}</div>`;
+      });
+      html += '</div>';
+    }
+    if (!html) html = '<div class="empty"><p>No home profile yet.</p></div>';
+    el.innerHTML = html;
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 5: Onboarding ---
+async function loadOnboardingData() {
+  try {
+    const status = await api('/onboarding/status');
+    const el = document.getElementById('onboardingContent');
+    if (status) {
+      const pct = status.completion_percent || 0;
+      el.innerHTML = `<div class="card"><div class="card-title">Onboarding Progress</div>
+        <div style="background:var(--card-border);border-radius:4px;height:8px;margin:12px 0">
+          <div style="background:var(--green);height:8px;border-radius:4px;width:${pct}%"></div></div>
+        <div class="card-subtitle">${status.completed_steps}/${status.total_steps} steps complete (${Math.round(pct)}%)</div>
+        ${status.next_step ? '<div style="margin-top:8px;color:var(--text-dim)">Next: '+status.next_step+'</div>' : '<div style="margin-top:8px;color:var(--green)">Setup complete!</div>'}
+        ${status.skipped_steps.length ? '<div style="margin-top:8px;color:var(--yellow)">Skipped: '+status.skipped_steps.join(', ')+'</div>' : ''}
+      </div>`;
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 // --- Page loader ---

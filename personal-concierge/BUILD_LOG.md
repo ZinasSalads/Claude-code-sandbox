@@ -472,3 +472,98 @@ Voice, Travel, Social, Financial, Growth, Career, Wardrobe, Notifications
 5. Add calendar integration for occasion-aware outfit suggestions
 6. Build progressive onboarding flow for life profile setup
 7. Add data export and privacy controls
+
+---
+
+# Build Log — Session 5
+
+## Started: 2026-03-13
+
+## Task 1 — Personality & Values Assessment
+Status: Complete
+Notes: PersonalityService with 20 MBTI situational questions + 10 values questions. Claude-powered scoring returns continuous 0-1 dimensions (not binary). Coaching style derivation from personality. Router with 6 endpoints. Mobile screen with intro → question carousel → scoring → result reveal with dimension sliders.
+
+## Task 2 — Progressive Onboarding Flow
+Status: Complete
+Notes: OnboardingService with 14 ONBOARDING_STEPS covering basics, health, lifestyle, goals, and personality. Dynamic STEP_CONTENT with field definitions (number/text/select/multiselect/action). Celebration milestones at 4/7/14 steps. Router with 6 endpoints. Mobile screen with dynamic form rendering and skip buttons.
+
+## Task 3 — Apple Health Integration
+Status: Complete
+Notes: POST /sync/apple-health merges Apple Health data into health_data table, only filling NULL fields (never overwrites Oura). GET /sync/gaps returns dates with missing data. Mobile lib with graceful degradation (catches require error for Expo Go). AppleHealth screen with gap visualization and manual sync.
+
+## Task 4 — Google Calendar Integration
+Status: Complete
+Notes: Full OAuth2 flow (auth URL → callback → token storage → refresh). CalendarService syncs events, classifies by keywords (travel/social/formal/sport), detects workout windows, detects trips. Router with 9 endpoints. Returns "not_configured" gracefully when credentials missing.
+
+## Task 5 — Feedback Learning Engine
+Status: Complete
+Notes: LearningEngine service with log_rating, Claude-powered attribute extraction via update_patterns, filter_suggestions using learned preferences, surprise mode trigger after 30 days. Router with 4 endpoints. RatingBar component (loved_it/fine/not_for_me) auto-submits to API.
+
+## Task 6 — Legacy & Long-Term Vision
+Status: Complete
+Notes: LegacyService with save_profile (10-year vision, values, goals), milestone logging, weekly values_drift detection (compares stated values to actual behavior from check-ins/social/growth logs), daily bridge moment connecting behavior to vision. Router with 7 endpoints. Mobile screen with vision editor, milestone timeline, drift alerts, bridge cards.
+
+## Task 7 — Home Environment Optimization
+Status: Complete
+Notes: HomeEnvironmentService with 10-field profile (booleans for air purifier, blackout curtains, standing desk, etc.), Claude-powered recommendations with budget awareness, fallback recommendations, health correlations. Router with 6 endpoints. Mobile screen with toggle-based profile, recommendation list with effort badges.
+
+## Task 8 — Learning & Education Tracking
+Status: Complete
+Notes: LearningService with books/courses CRUD, session logging with streak tracking, today_recommendation priority system (current book → active course → language → topic), trip-aware language plans. Router with 12 endpoints. Mobile screen with streak counter, session logging, book/course lists, weekly insight.
+
+## Task 9 — Data Export & Privacy Controls
+Status: Complete
+Notes: PrivacyService with CATEGORY_TABLES mapping 14 categories to 25+ tables. Full export_full_profile collects all user data. Per-category deletion with cascade. Sensitivity tiers (standard/silent/private). Amnesia mode clears check-ins, memories, coaching, feedback. Router with 5 endpoints. Mobile screen with data summary, export, delete confirmations, amnesia buttons.
+
+## Task 10 — Mobile UX Polish Pass
+Status: Complete
+Notes: Created EmptyState component (icon, title, description, optional CTA). Created ErrorState component (retry button, collapsible error details). Added SkeletonCard, SkeletonList, SkeletonRing to LoadingSkeleton. All dark-theme compatible with existing color scheme.
+
+## Task 11 — Final Integration & Dashboard Upgrade
+Status: Complete
+Notes: Updated main.py to v5.0.0 with 8 new router imports. Updated config.py with Google Calendar env vars and 8 new service statuses. Updated .env.example with 3 new variables. Updated standalone.html with 5 new tabs (Personality, Legacy, Learning, Home Env, Onboarding). Updated README.md with all Session 5 endpoints, screens, env vars, project structure. Verified all 55 new routes import cleanly.
+
+---
+
+## Session 5 Summary
+Completed: All 11 tasks
+New routes: 55 (total now 155+)
+New DB tables: 15 (total now 39+)
+New services: 8 (total now 26)
+New routers: 8 (total now 28)
+New mobile screens: 7 (total now 22)
+New components: 3 (EmptyState, ErrorState, RatingBar)
+
+### What's working:
+- MBTI personality assessment with continuous dimension scoring and coaching style adaptation
+- 14-step progressive onboarding with dynamic forms and celebration milestones
+- Apple Health gap-filling when Oura isn't worn (graceful degradation for Expo Go)
+- Google Calendar OAuth2 with event classification and workout window detection
+- Preference learning engine with Claude-powered pattern extraction and surprise mode
+- Legacy vision with 10-year goals, milestone timeline, and weekly values drift detection
+- Home environment optimization with budget-aware AI recommendations
+- Learning tracker with books, courses, language goals, and streak tracking
+- Full data export, per-category deletion, sensitivity tiers, and amnesia mode
+- 3 new reusable components for empty states, error handling, and preference rating
+
+### Architecture:
+- **Personality layer** → Coaching style adapts based on MBTI dimensions + values orientation
+- **Onboarding** → Seeds profile data into existing services (health, lifestyle, goals)
+- **Calendar** → OAuth2 token management with automatic refresh, event classification
+- **Feedback loop** → Ratings feed into pattern extraction, patterns filter future suggestions
+- **Legacy** → Weekly drift detection compares stated values to actual behavior across modules
+- **Privacy** → Category-based data management with 14 categories mapping to 25+ tables
+
+### Blocked on:
+- Migration 004 needs to be run in Supabase SQL Editor (15 new tables)
+- Migration 003 still needs to be run if not done yet (Session 4 tables)
+- Google Calendar credentials need to be configured (CLIENT_ID, SECRET, REDIRECT_URI)
+
+### Decisions made:
+- MBTI scoring uses continuous 0-1 dimensions instead of binary types (more nuanced)
+- Apple Health sync only fills NULL fields, never overwrites Oura data
+- Calendar event classification uses keyword-based approach (extensible without AI cost)
+- Feedback surprise mode triggers after 30 days to break preference bubbles
+- Values drift detection runs weekly, comparing 3 data sources (check-ins, social, growth)
+- Privacy amnesia mode preserves profile/settings but clears behavioral data
+- Onboarding celebrations at 4, 7, and 14 steps completed
