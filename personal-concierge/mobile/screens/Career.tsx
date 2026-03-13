@@ -98,8 +98,8 @@ export default function Career() {
       {profile && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Profile</Text>
-          {profile.current_role && (
-            <Text style={styles.profileText}>{profile.current_role} · {profile.industry || 'N/A'}</Text>
+          {profile.role_title && (
+            <Text style={styles.profileText}>{profile.role_title} · {profile.industry || 'N/A'}</Text>
           )}
           {profile.satisfaction_score != null && (
             <View style={styles.metricRow}>
@@ -110,7 +110,7 @@ export default function Career() {
           {profile.next_milestone && (
             <Text style={styles.milestone}>Next: {profile.next_milestone}</Text>
           )}
-          {!profile.current_role && <Text style={styles.emptyText}>Set up your career profile via the API.</Text>}
+          {!profile.role_title && <Text style={styles.emptyText}>Set up your career profile via the API.</Text>}
         </View>
       )}
 

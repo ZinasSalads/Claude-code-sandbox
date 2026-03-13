@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 class CareerProfileUpdate(BaseModel):
-    current_role: Optional[str] = None
+    role_title: Optional[str] = None
     industry: Optional[str] = None
     years_experience: Optional[int] = None
     career_goals: Optional[list[str]] = None

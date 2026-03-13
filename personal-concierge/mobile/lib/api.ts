@@ -438,7 +438,7 @@ export async function addGrowthHabit(data: Partial<GrowthHabit>): Promise<Growth
 // --- Session 4: Career ---
 
 interface CareerProfile {
-  current_role: string | null;
+  role_title: string | null;
   industry: string | null;
   satisfaction_score: number | null;
   stress_level: number | null;

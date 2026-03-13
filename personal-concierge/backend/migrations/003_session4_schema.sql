@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS growth_log (
 -- Career profile & goals
 CREATE TABLE IF NOT EXISTS career_profile (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    current_role VARCHAR(255),
+    role_title VARCHAR(255),
     industry VARCHAR(255),
     years_experience INTEGER,
     career_goals TEXT[],
