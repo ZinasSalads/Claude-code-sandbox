@@ -140,6 +140,9 @@ textarea {
   <div class="tab active" data-page="dashboard">Dashboard</div>
   <div class="tab" data-page="trends">Trends</div>
   <div class="tab" data-page="checkin">Check-In</div>
+  <div class="tab" data-page="dailyplan">Daily Plan</div>
+  <div class="tab" data-page="workout">Workout</div>
+  <div class="tab" data-page="nutrition">Nutrition</div>
   <div class="tab" data-page="supplements">Supplements</div>
   <div class="tab" data-page="bloodwork">Blood Work</div>
 </div>
@@ -229,6 +232,45 @@ textarea {
     <div id="suppEmpty" class="empty" style="display:none"><div class="icon">&#128138;</div><p>No supplements added yet.</p></div>
   </div>
 
+  <!-- DAILY PLAN -->
+  <div class="page" id="page-dailyplan">
+    <div id="planLoading" class="loading" style="display:none"><div class="spinner"></div>Generating your daily plan...</div>
+    <div id="planContent" style="display:none"></div>
+    <div id="planStart">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px">Daily Intelligence Brief</div>
+        <div class="card-subtitle">AI-generated plan based on your biometrics, goals, and schedule.</div>
+      </div>
+      <button class="btn btn-primary" onclick="generateDailyPlan()">Generate Today's Plan</button>
+    </div>
+  </div>
+
+  <!-- WORKOUT -->
+  <div class="page" id="page-workout">
+    <div id="workoutLoading" class="loading" style="display:none"><div class="spinner"></div>Generating workout...</div>
+    <div id="workoutContent" style="display:none"></div>
+    <div id="workoutStart">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px">Today's Workout</div>
+        <div class="card-subtitle">AI-tailored workout based on your readiness and recovery data.</div>
+      </div>
+      <button class="btn btn-primary" onclick="loadWorkout()">Get Today's Workout</button>
+    </div>
+  </div>
+
+  <!-- NUTRITION -->
+  <div class="page" id="page-nutrition">
+    <div id="nutritionLoading" class="loading" style="display:none"><div class="spinner"></div>Generating meal plan...</div>
+    <div id="nutritionContent" style="display:none"></div>
+    <div id="nutritionStart">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px">Today's Meal Plan</div>
+        <div class="card-subtitle">AI-generated nutrition plan aligned with your training and goals.</div>
+      </div>
+      <button class="btn btn-primary" onclick="loadNutrition()">Get Today's Meals</button>
+    </div>
+  </div>
+
   <!-- BLOOD WORK -->
   <div class="page" id="page-bloodwork">
     <div id="bwLoading" class="loading"><div class="spinner"></div>Loading biomarkers...</div>
@@ -240,7 +282,10 @@ textarea {
 <div class="toast" id="toast"></div>
 
 <script>
-// --- Supabase Config (direct connection, no backend needed) ---
+// --- Backend API (Railway) ---
+const API_URL = 'https://claude-code-sandbox-production.up.railway.app';
+
+// --- Supabase Config (direct connection for health data & check-ins) ---
 const SUPABASE_URL = 'https://iuoezfwsqmzpkdeihagp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1b2V6ZndzcW16cGtkZWloYWdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNjU3NTQsImV4cCI6MjA4ODk0MTc1NH0.SWB7XrROf17O73sUv_iflJnf5TNA8IAnSuWjphECBQk';
 
@@ -491,6 +536,174 @@ async function loadBloodwork() {
   }
 }
 
+// --- Backend API helper ---
+async function api(path) {
+  const res = await fetch(`${API_URL}${path}`);
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+async function apiPost(path, data = {}) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// --- Daily Plan ---
+async function generateDailyPlan() {
+  document.getElementById('planStart').style.display = 'none';
+  document.getElementById('planLoading').style.display = 'flex';
+  try {
+    const plan = await api('/daily/plan');
+    document.getElementById('planLoading').style.display = 'none';
+    const el = document.getElementById('planContent');
+    el.style.display = 'block';
+
+    let html = '';
+    if (plan.greeting) html += `<div class="card coaching-note">${plan.greeting}</div>`;
+
+    if (plan.workout_summary || plan.workout) {
+      const w = plan.workout_summary || plan.workout;
+      html += `<div class="card"><div class="card-title">Workout</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof w === 'string' ? w : JSON.stringify(w, null, 2)}</div></div>`;
+    }
+    if (plan.nutrition_summary || plan.nutrition) {
+      const n = plan.nutrition_summary || plan.nutrition;
+      html += `<div class="card"><div class="card-title">Nutrition</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof n === 'string' ? n : JSON.stringify(n, null, 2)}</div></div>`;
+    }
+    if (plan.supplement_reminders || plan.supplements) {
+      const s = plan.supplement_reminders || plan.supplements;
+      html += `<div class="card"><div class="card-title">Supplements</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof s === 'string' ? s : JSON.stringify(s, null, 2)}</div></div>`;
+    }
+    if (plan.coaching_notes || plan.insights) {
+      const c = plan.coaching_notes || plan.insights;
+      html += `<div class="card"><div class="card-title">Coaching Notes</div>
+        <div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`;
+    }
+
+    // Fallback: render entire response if no specific fields matched
+    if (!html) {
+      html = `<div class="card"><div class="card-title">Today's Plan</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(plan, null, 2)}</div></div>`;
+    }
+
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('planLoading').style.display = 'none';
+    document.getElementById('planStart').style.display = 'block';
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Workout ---
+async function loadWorkout() {
+  document.getElementById('workoutStart').style.display = 'none';
+  document.getElementById('workoutLoading').style.display = 'flex';
+  try {
+    const data = await api('/fitness/today');
+    document.getElementById('workoutLoading').style.display = 'none';
+    const el = document.getElementById('workoutContent');
+    el.style.display = 'block';
+
+    let html = '';
+    if (data.workout_type || data.type) {
+      html += `<div class="card"><div class="card-header"><div>
+        <div class="card-title">${data.workout_type || data.type || 'Workout'}</div>
+        <div class="card-subtitle">${data.focus || data.muscle_groups || ''}</div></div>
+        <div class="card-subtitle">${data.duration || ''}</div></div>`;
+      if (data.coaching_note) html += `<div class="coaching-note" style="margin-top:12px">${data.coaching_note}</div>`;
+      html += `</div>`;
+    }
+
+    if (data.exercises && Array.isArray(data.exercises)) {
+      html += `<div class="card"><div class="card-title">Exercises</div>`;
+      data.exercises.forEach(ex => {
+        html += `<div class="exercise">
+          <div class="name">${ex.name || ex.exercise}</div>
+          <div class="detail">${ex.sets || ''}${ex.sets ? ' sets' : ''} ${ex.reps ? '× ' + ex.reps : ''} ${ex.weight ? '@ ' + ex.weight : ''} ${ex.rest ? '| Rest: ' + ex.rest : ''}</div>
+          ${ex.notes ? `<div class="notes">${ex.notes}</div>` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (!html) {
+      html = `<div class="card"><div class="card-title">Today's Workout</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(data, null, 2)}</div></div>`;
+    }
+
+    html += `<button class="btn btn-primary" style="margin-top:8px" onclick="completeWorkout()">Mark Workout Complete</button>`;
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('workoutLoading').style.display = 'none';
+    document.getElementById('workoutStart').style.display = 'block';
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function completeWorkout() {
+  try {
+    await apiPost('/fitness/complete', { notes: 'Completed via dashboard' });
+    showToast('Workout marked complete!');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Nutrition ---
+async function loadNutrition() {
+  document.getElementById('nutritionStart').style.display = 'none';
+  document.getElementById('nutritionLoading').style.display = 'flex';
+  try {
+    const data = await api('/nutrition/today');
+    document.getElementById('nutritionLoading').style.display = 'none';
+    const el = document.getElementById('nutritionContent');
+    el.style.display = 'block';
+
+    let html = '';
+    if (data.target_calories || data.calories) {
+      html += `<div class="card"><div class="card-title">Daily Targets</div>
+        <div class="metrics" style="margin-top:12px">
+          <div class="metric"><div class="label">Calories</div><div class="value">${data.target_calories || data.calories || '--'}</div><div class="unit">kcal</div></div>
+          <div class="metric"><div class="label">Protein</div><div class="value">${data.protein || '--'}</div><div class="unit">g</div></div>
+          <div class="metric"><div class="label">Carbs</div><div class="value">${data.carbs || '--'}</div><div class="unit">g</div></div>
+          <div class="metric"><div class="label">Fat</div><div class="value">${data.fat || '--'}</div><div class="unit">g</div></div>
+        </div></div>`;
+    }
+
+    if (data.meals && Array.isArray(data.meals)) {
+      data.meals.forEach(meal => {
+        html += `<div class="card">
+          <div class="card-header"><div>
+            <div class="card-title">${meal.name || meal.meal_type || 'Meal'}</div>
+            <div class="card-subtitle">${meal.time || meal.timing || ''}</div></div>
+            <div class="card-subtitle">${meal.calories ? meal.calories + ' cal' : ''}</div>
+          </div>
+          <div style="font-size:14px;color:var(--text-dim);white-space:pre-wrap">${meal.description || meal.foods || ''}</div>
+          ${meal.macros ? `<div class="macros"><div class="macro">P: <span>${meal.macros.protein || ''}g</span></div><div class="macro">C: <span>${meal.macros.carbs || ''}g</span></div><div class="macro">F: <span>${meal.macros.fat || ''}g</span></div></div>` : ''}
+        </div>`;
+      });
+    }
+
+    if (!html) {
+      html = `<div class="card"><div class="card-title">Today's Meal Plan</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(data, null, 2)}</div></div>`;
+    }
+
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('nutritionLoading').style.display = 'none';
+    document.getElementById('nutritionStart').style.display = 'block';
+    showToast('Error: ' + e.message);
+  }
+}
+
 // --- Page loader ---
 const loaded = {};
 function loadPage(page) {
@@ -502,9 +715,17 @@ function loadPage(page) {
     case 'checkin': loadCheckin(); break;
     case 'supplements': loadSupplements(); break;
     case 'bloodwork': loadBloodwork(); break;
+    // dailyplan, workout, nutrition load on button click
   }
 }
 loadPage('dashboard');
+
+// Check backend status
+fetch(`${API_URL}/health`).then(r => {
+  document.getElementById('serverStatus').style.background = r.ok ? 'var(--green)' : 'var(--yellow)';
+}).catch(() => {
+  document.getElementById('serverStatus').style.background = 'var(--red)';
+});
 </script>
 </body>
 </html>
