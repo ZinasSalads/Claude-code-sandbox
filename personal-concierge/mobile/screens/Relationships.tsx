@@ -51,7 +51,7 @@ export default function Relationships() {
 
   const fetchData = useCallback(async () => {
     const [score, rels, brief] = await Promise.all([
-      api<{ score: number }>('/relationships/score'),
+      api<{ score: number }>('/relationships/health'),
       api<Relationship[]>('/relationships'),
       api<WeeklyBriefing>('/relationships/briefing'),
     ]);

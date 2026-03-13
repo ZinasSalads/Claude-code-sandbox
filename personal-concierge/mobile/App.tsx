@@ -214,16 +214,15 @@ function LifeStackScreen() {
   );
 }
 
-// Insights stack (new for Session 6)
-const InsightsStack = createNativeStackNavigator();
-function InsightsStackScreen() {
+// Voice & Intelligence stack
+const VoiceStack = createNativeStackNavigator();
+function VoiceStackScreen() {
   return (
-    <InsightsStack.Navigator screenOptions={stackScreenOptions}>
-      <InsightsStack.Screen name="Reviews" component={Reviews} options={{ title: 'Reviews' }} />
-      <InsightsStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
-      <InsightsStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
-      <InsightsStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
-    </InsightsStack.Navigator>
+    <VoiceStack.Navigator screenOptions={stackScreenOptions}>
+      <VoiceStack.Screen name="VoiceMain" component={Voice} options={{ title: 'Voice' }} />
+      <VoiceStack.Screen name="Reviews" component={Reviews} options={{ title: 'Reviews' }} />
+      <VoiceStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
+    </VoiceStack.Navigator>
   );
 }
 
@@ -234,6 +233,8 @@ function ProfileStackScreen() {
     <ProfileStack.Navigator screenOptions={stackScreenOptions}>
       <ProfileStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check In' }} />
       <ProfileStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
+      <ProfileStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
+      <ProfileStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
       <ProfileStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
     </ProfileStack.Navigator>
   );
@@ -282,9 +283,9 @@ export default function App() {
               options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
             />
             <Tab.Screen
-              name="Insights"
-              component={InsightsStackScreen}
-              options={{ tabBarIcon: ({ color, size }) => <InsightsIcon color={color} size={size} /> }}
+              name="Voice"
+              component={VoiceStackScreen}
+              options={{ tabBarIcon: ({ color, size }) => <MicIcon color={color} size={size} /> }}
             />
             <Tab.Screen
               name="Profile"

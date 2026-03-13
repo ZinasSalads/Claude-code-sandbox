@@ -30,8 +30,19 @@ async function apiPost<T>(path: string, body: any): Promise<T | null> {
   } catch { return null; }
 }
 
-interface Product { id: string; name: string; step: number; routine: 'morning' | 'evening'; conflicts?: string[] }
-interface SkinProfile { skin_type: string; concerns: string[]; sensitivity: string }
+async function apiPut<T>(path: string, body: any): Promise<T | null> {
+  try {
+    const r = await fetch(`${API_URL}${path}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+interface Product { id: string; product_name: string; brand: string; product_type: string; active_ingredients: string[]; routine_slot: 'morning' | 'evening'; application_order: number; frequency: string; conflicts?: string[] }
+interface SkinProfile { skin_type: string; concerns: string[]; sensitivity_level: string; allergies: string[]; climate: string; age_range: string; goals: string[]; notes: string }
 interface CheckIn { date: string; condition: number; note: string }
 interface WeeklyTrend { avg_condition: number; breakout_days: number; trend: string }
 interface HealthCorrelation { factor: string; impact: string; detail: string }
@@ -48,15 +59,28 @@ export default function Skincare() {
   const [checkInNote, setCheckInNote] = useState('');
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProductName, setNewProductName] = useState('');
+  const [newProductBrand, setNewProductBrand] = useState('');
+  const [newProductType, setNewProductType] = useState('cleanser');
+  const [newProductIngredients, setNewProductIngredients] = useState('');
   const [newProductRoutine, setNewProductRoutine] = useState<'morning' | 'evening'>('morning');
-  const [newProductStep, setNewProductStep] = useState('1');
+  const [newProductOrder, setNewProductOrder] = useState('1');
+  const [newProductFrequency, setNewProductFrequency] = useState('daily');
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [editSkinType, setEditSkinType] = useState('');
+  const [editSensitivity, setEditSensitivity] = useState('');
+  const [editConcerns, setEditConcerns] = useState('');
+  const [editAllergies, setEditAllergies] = useState('');
+  const [editClimate, setEditClimate] = useState('');
+  const [editAgeRange, setEditAgeRange] = useState('');
+  const [editGoals, setEditGoals] = useState('');
+  const [editNotes, setEditNotes] = useState('');
 
   const fetchData = useCallback(async () => {
     const [p, m, e, w, c] = await Promise.all([
       api<SkinProfile>('/skincare/profile'),
       api<Product[]>('/skincare/routine/morning'),
       api<Product[]>('/skincare/routine/evening'),
-      api<WeeklyTrend>('/skincare/trend/weekly'),
+      api<WeeklyTrend>('/skincare/weekly'),
       api<HealthCorrelation[]>('/skincare/correlations'),
     ]);
     setProfile(p);
@@ -85,13 +109,48 @@ export default function Skincare() {
   const handleAddProduct = useCallback(async () => {
     if (!newProductName.trim()) return;
     await apiPost('/skincare/products', {
-      name: newProductName, routine: newProductRoutine, step: parseInt(newProductStep) || 1,
+      product_name: newProductName,
+      brand: newProductBrand,
+      product_type: newProductType,
+      active_ingredients: newProductIngredients.split(',').map(s => s.trim()).filter(Boolean),
+      routine_slot: newProductRoutine,
+      application_order: parseInt(newProductOrder) || 1,
+      frequency: newProductFrequency,
     });
-    setNewProductName('');
-    setNewProductStep('1');
+    setNewProductName(''); setNewProductBrand(''); setNewProductIngredients('');
+    setNewProductOrder('1');
     setShowAddProduct(false);
     fetchData();
-  }, [newProductName, newProductRoutine, newProductStep, fetchData]);
+  }, [newProductName, newProductBrand, newProductType, newProductIngredients, newProductRoutine, newProductOrder, newProductFrequency, fetchData]);
+
+  const handleSaveProfile = useCallback(async () => {
+    await apiPut('/skincare/profile', {
+      skin_type: editSkinType,
+      sensitivity_level: editSensitivity,
+      concerns: editConcerns.split(',').map(s => s.trim()).filter(Boolean),
+      allergies: editAllergies.split(',').map(s => s.trim()).filter(Boolean),
+      climate: editClimate,
+      age_range: editAgeRange,
+      goals: editGoals.split(',').map(s => s.trim()).filter(Boolean),
+      notes: editNotes,
+    });
+    setShowProfileEditor(false);
+    fetchData();
+  }, [editSkinType, editSensitivity, editConcerns, editAllergies, editClimate, editAgeRange, editGoals, editNotes, fetchData]);
+
+  const openProfileEditor = useCallback(() => {
+    if (profile) {
+      setEditSkinType(profile.skin_type || '');
+      setEditSensitivity(profile.sensitivity_level || '');
+      setEditConcerns((profile.concerns || []).join(', '));
+      setEditAllergies((profile.allergies || []).join(', '));
+      setEditClimate(profile.climate || '');
+      setEditAgeRange(profile.age_range || '');
+      setEditGoals((profile.goals || []).join(', '));
+      setEditNotes(profile.notes || '');
+    }
+    setShowProfileEditor(true);
+  }, [profile]);
 
   const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
 
@@ -102,13 +161,13 @@ export default function Skincare() {
   const renderRoutine = (title: string, products: Product[]) => (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{title}</Text>
-      {products.sort((a, b) => a.step - b.step).map((p) => (
+      {products.sort((a, b) => a.application_order - b.application_order).map((p) => (
         <View key={p.id} style={styles.productRow}>
           <View style={styles.stepBadge}>
-            <Text style={styles.stepText}>{p.step}</Text>
+            <Text style={styles.stepText}>{p.application_order}</Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.productName}>{p.name}</Text>
+            <Text style={styles.productName}>{p.product_name}{p.brand ? ` (${p.brand})` : ''}</Text>
             {p.conflicts && p.conflicts.length > 0 && (
               <View style={styles.conflictRow}>
                 {p.conflicts.map((c, i) => (
@@ -135,22 +194,66 @@ export default function Skincare() {
 
       {profile && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Skin Profile</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.cardTitle}>Skin Profile</Text>
+            <TouchableOpacity onPress={openProfileEditor}>
+              <Text style={{ color: '#6C63FF', fontSize: 13, fontWeight: '600' }}>Edit</Text>
+            </TouchableOpacity>
+          </View>
           <View style={styles.profileRow}>
             <Text style={styles.profileLabel}>Type</Text>
             <Text style={styles.profileValue}>{profile.skin_type}</Text>
           </View>
           <View style={styles.profileRow}>
             <Text style={styles.profileLabel}>Sensitivity</Text>
-            <Text style={styles.profileValue}>{profile.sensitivity}</Text>
+            <Text style={styles.profileValue}>{profile.sensitivity_level}</Text>
           </View>
+          {profile.climate ? <View style={styles.profileRow}><Text style={styles.profileLabel}>Climate</Text><Text style={styles.profileValue}>{profile.climate}</Text></View> : null}
+          {profile.age_range ? <View style={styles.profileRow}><Text style={styles.profileLabel}>Age Range</Text><Text style={styles.profileValue}>{profile.age_range}</Text></View> : null}
           <Text style={styles.profileLabel}>Concerns</Text>
           <View style={styles.tagRow}>
-            {profile.concerns.map((c, i) => (
+            {(profile.concerns || []).map((c, i) => (
               <View key={i} style={styles.tag}>
                 <Text style={styles.tagText}>{c}</Text>
               </View>
             ))}
+          </View>
+          {profile.goals && profile.goals.length > 0 && (
+            <>
+              <Text style={[styles.profileLabel, { marginTop: 8 }]}>Goals</Text>
+              <View style={styles.tagRow}>
+                {profile.goals.map((g, i) => (
+                  <View key={i} style={styles.tag}><Text style={styles.tagText}>{g}</Text></View>
+                ))}
+              </View>
+            </>
+          )}
+        </View>
+      )}
+      {!profile && (
+        <TouchableOpacity style={styles.addBtn} onPress={openProfileEditor}>
+          <Text style={styles.addBtnText}>+ Set Up Skin Profile</Text>
+        </TouchableOpacity>
+      )}
+
+      {showProfileEditor && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Edit Skin Profile</Text>
+          <TextInput style={styles.input} placeholder="Skin type (oily, dry, combination, normal, sensitive)" placeholderTextColor="#555577" value={editSkinType} onChangeText={setEditSkinType} />
+          <TextInput style={styles.input} placeholder="Sensitivity level (low, medium, high)" placeholderTextColor="#555577" value={editSensitivity} onChangeText={setEditSensitivity} />
+          <TextInput style={styles.input} placeholder="Concerns (comma-separated)" placeholderTextColor="#555577" value={editConcerns} onChangeText={setEditConcerns} />
+          <TextInput style={styles.input} placeholder="Allergies (comma-separated)" placeholderTextColor="#555577" value={editAllergies} onChangeText={setEditAllergies} />
+          <TextInput style={styles.input} placeholder="Climate (humid, dry, temperate, tropical)" placeholderTextColor="#555577" value={editClimate} onChangeText={setEditClimate} />
+          <TextInput style={styles.input} placeholder="Age range (20s, 30s, 40s, 50s+)" placeholderTextColor="#555577" value={editAgeRange} onChangeText={setEditAgeRange} />
+          <TextInput style={styles.input} placeholder="Goals (comma-separated)" placeholderTextColor="#555577" value={editGoals} onChangeText={setEditGoals} />
+          <TextInput style={styles.input} placeholder="Notes" placeholderTextColor="#555577" value={editNotes} onChangeText={setEditNotes} multiline />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: 'rgba(255,255,255,0.1)' }]} onPress={() => setShowProfileEditor(false)}>
+              <Text style={styles.primaryBtnText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1 }]} onPress={handleSaveProfile}>
+              <Text style={styles.primaryBtnText}>Save Profile</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -230,6 +333,16 @@ export default function Skincare() {
       {showAddProduct && (
         <View style={styles.card}>
           <TextInput style={styles.input} placeholder="Product name" placeholderTextColor="#555577" value={newProductName} onChangeText={setNewProductName} />
+          <TextInput style={styles.input} placeholder="Brand" placeholderTextColor="#555577" value={newProductBrand} onChangeText={setNewProductBrand} />
+          <Text style={styles.formLabel}>Product Type</Text>
+          <View style={styles.typeRow}>
+            {['cleanser', 'toner', 'serum', 'moisturizer', 'sunscreen', 'treatment', 'mask', 'eye cream'].map((t) => (
+              <TouchableOpacity key={t} style={[styles.typeChip, newProductType === t && styles.typeChipActive]} onPress={() => setNewProductType(t)}>
+                <Text style={[styles.typeChipText, newProductType === t && styles.typeChipTextActive]}>{t}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <TextInput style={styles.input} placeholder="Active ingredients (comma-separated)" placeholderTextColor="#555577" value={newProductIngredients} onChangeText={setNewProductIngredients} />
           <View style={styles.toggleRow}>
             <TouchableOpacity
               style={[styles.toggleBtn, newProductRoutine === 'morning' && styles.toggleBtnActive]}
@@ -244,7 +357,15 @@ export default function Skincare() {
               <Text style={[styles.toggleText, newProductRoutine === 'evening' && styles.toggleTextActive]}>Evening</Text>
             </TouchableOpacity>
           </View>
-          <TextInput style={styles.input} placeholder="Step number" placeholderTextColor="#555577" keyboardType="numeric" value={newProductStep} onChangeText={setNewProductStep} />
+          <TextInput style={styles.input} placeholder="Application order" placeholderTextColor="#555577" keyboardType="numeric" value={newProductOrder} onChangeText={setNewProductOrder} />
+          <Text style={styles.formLabel}>Frequency</Text>
+          <View style={styles.typeRow}>
+            {['daily', 'twice-daily', 'weekly', 'as-needed'].map((f) => (
+              <TouchableOpacity key={f} style={[styles.typeChip, newProductFrequency === f && styles.typeChipActive]} onPress={() => setNewProductFrequency(f)}>
+                <Text style={[styles.typeChipText, newProductFrequency === f && styles.typeChipTextActive]}>{f}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAddProduct}>
             <Text style={styles.primaryBtnText}>Add Product</Text>
           </TouchableOpacity>
@@ -301,6 +422,12 @@ const styles = StyleSheet.create({
   },
   primaryBtn: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center' },
   primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  formLabel: { fontSize: 12, color: '#8888aa', fontWeight: '600', marginBottom: 6, marginTop: 4 },
+  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  typeChip: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
+  typeChipActive: { backgroundColor: 'rgba(108,99,255,0.2)' },
+  typeChipText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
+  typeChipTextActive: { color: '#6C63FF' },
   addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
   addBtnText: { color: '#6C63FF', fontWeight: '600', fontSize: 15 },
   toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },

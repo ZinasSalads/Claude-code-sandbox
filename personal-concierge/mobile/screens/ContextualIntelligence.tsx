@@ -42,10 +42,9 @@ export default function ContextualIntelligence() {
   const [refreshing, setRefreshing] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   const fetchData = useCallback(async () => {
-    const s = await api<Signal[]>('/contextual-intelligence/signals');
+    const s = await api<Signal[]>('/context/signals?days=7');
     setSignals(s || []);
     setLoading(false);
   }, []);
@@ -60,15 +59,10 @@ export default function ContextualIntelligence() {
 
   const handleSubmitSignal = useCallback(async () => {
     if (!manualInput.trim()) return;
-    await apiPost('/contextual-intelligence/signals', { text: manualInput, source: 'manual' });
+    await apiPost('/context/signal', { signal_text: manualInput, source: 'manual' });
     setManualInput('');
     fetchData();
   }, [manualInput, fetchData]);
-
-  const handleDismiss = useCallback((id: string) => {
-    setDismissedIds((prev) => new Set(prev).add(id));
-    apiPost(`/contextual-intelligence/signals/${id}/dismiss`, {});
-  }, []);
 
   const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
 
@@ -76,7 +70,7 @@ export default function ContextualIntelligence() {
     return <View style={styles.container}><Text style={styles.loading}>Loading intelligence...</Text></View>;
   }
 
-  const anomalies = signals.filter((s) => s.is_anomaly && !dismissedIds.has(s.id));
+  const anomalies = signals.filter((s) => s.is_anomaly);
   const regularSignals = signals.filter((s) => !s.is_anomaly);
 
   return (
@@ -114,9 +108,6 @@ export default function ContextualIntelligence() {
                 <View style={styles.anomalyBadge}>
                   <Text style={styles.anomalyBadgeText}>Anomaly</Text>
                 </View>
-                <TouchableOpacity style={styles.dismissBtn} onPress={() => handleDismiss(signal.id)}>
-                  <Text style={styles.dismissBtnText}>Dismiss</Text>
-                </TouchableOpacity>
               </View>
               <Text style={styles.signalText}>{signal.text}</Text>
               <Text style={styles.signalMeta}>{signal.source} · {signal.timestamp}</Text>
@@ -223,8 +214,6 @@ const styles = StyleSheet.create({
   anomalyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   anomalyBadge: { backgroundColor: 'rgba(225,112,85,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 3 },
   anomalyBadgeText: { color: '#e17055', fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-  dismissBtn: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 4 },
-  dismissBtnText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
   signalRow: { flexDirection: 'row', alignItems: 'flex-start' },
   sourceDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10, marginTop: 4 },
   signalText: { fontSize: 14, color: '#fff', lineHeight: 20, marginBottom: 4 },

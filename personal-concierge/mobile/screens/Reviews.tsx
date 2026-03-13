@@ -54,8 +54,8 @@ export default function Reviews() {
 
   const fetchData = useCallback(async () => {
     const [current, hist] = await Promise.all([
-      api<Review>(`/reviews/current?type=${viewType}`),
-      api<Review[]>(`/reviews/history?type=${viewType}`),
+      api<Review>(`/reviews/${viewType}`),
+      api<Review[]>(`/reviews/history/${viewType}`),
     ]);
     setCurrentReview(current);
     setHistory(hist || []);
@@ -72,17 +72,16 @@ export default function Reviews() {
 
   const handleGenerate = useCallback(async () => {
     setGenerating(true);
-    await apiPost(`/reviews/generate`, { type: viewType });
+    await apiPost(`/reviews/${viewType}/generate`, {});
     await fetchData();
     setGenerating(false);
   }, [viewType, fetchData]);
 
-  const handleSaveIntention = useCallback(async () => {
+  const handleSaveIntention = useCallback(() => {
     if (!currentReview) return;
-    await apiPost(`/reviews/${currentReview.id}/intention`, { intention: draftIntention });
+    setCurrentReview({ ...currentReview, intention: draftIntention });
     setEditingIntention(false);
-    fetchData();
-  }, [currentReview, draftIntention, fetchData]);
+  }, [currentReview, draftIntention]);
 
   const handleToggleType = useCallback((type: 'weekly' | 'monthly') => {
     if (type !== viewType) {

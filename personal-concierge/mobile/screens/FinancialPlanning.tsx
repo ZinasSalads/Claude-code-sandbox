@@ -30,6 +30,17 @@ async function apiPost<T>(path: string, body: any): Promise<T | null> {
   } catch { return null; }
 }
 
+async function apiPut<T>(path: string, body: any): Promise<T | null> {
+  try {
+    const r = await fetch(`${API_URL}${path}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
 interface FinancialGoal {
   id: string; name: string; type: string; current_amount: number;
   target_amount: number; target_date: string; life_goal_alignment?: string;
@@ -55,9 +66,9 @@ export default function FinancialPlanning() {
 
   const fetchData = useCallback(async () => {
     const [g, s, a] = await Promise.all([
-      api<FinancialGoal[]>('/financial/goals'),
-      api<StressLog[]>('/financial/stress-logs'),
-      api<AnnualReview>('/financial/annual-review'),
+      api<FinancialGoal[]>('/financial-planning/goals'),
+      api<StressLog[]>('/financial-planning/stress-flag'),
+      api<AnnualReview>('/financial-planning/annual-prompt'),
     ]);
     setGoals(g || []);
     setStressLogs(s || []);
@@ -75,7 +86,7 @@ export default function FinancialPlanning() {
 
   const handleAddGoal = useCallback(async () => {
     if (!newGoalName.trim() || !newGoalTarget) return;
-    await apiPost('/financial/goals', {
+    await apiPost('/financial-planning/goals', {
       name: newGoalName, type: newGoalType,
       target_amount: parseFloat(newGoalTarget), target_date: newGoalDate || undefined,
     });
@@ -86,7 +97,7 @@ export default function FinancialPlanning() {
 
   const handleUpdateProgress = useCallback(async () => {
     if (!updateGoalId || !updateAmount) return;
-    await apiPost(`/financial/goals/${updateGoalId}/progress`, {
+    await apiPut(`/financial-planning/goals/${updateGoalId}/progress`, {
       current_amount: parseFloat(updateAmount),
     });
     setUpdateGoalId(null); setUpdateAmount('');
@@ -94,7 +105,7 @@ export default function FinancialPlanning() {
   }, [updateGoalId, updateAmount, fetchData]);
 
   const handleLogStress = useCallback(async () => {
-    await apiPost('/financial/stress-log', { level: stressLevel });
+    await apiPost('/financial-planning/stress', { stress_level: stressLevel, primary_stressor: '' });
     setStressLevel(5);
     fetchData();
   }, [stressLevel, fetchData]);
@@ -126,7 +137,7 @@ export default function FinancialPlanning() {
           <Text style={styles.dimText}>
             Last review: {annualReview.last_review_date || 'Never'}
           </Text>
-          <TouchableOpacity style={[styles.primaryBtn, { marginTop: 10 }]} onPress={() => apiPost('/financial/annual-review/start', {})}>
+          <TouchableOpacity style={[styles.primaryBtn, { marginTop: 10 }]} onPress={() => api('/financial-planning/alignment')}>
             <Text style={styles.primaryBtnText}>Start Annual Review</Text>
           </TouchableOpacity>
         </View>

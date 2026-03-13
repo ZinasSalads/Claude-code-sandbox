@@ -49,10 +49,14 @@ export default function Hobbies() {
   const [newName, setNewName] = useState('');
   const [newCategory, setNewCategory] = useState('creative');
   const [newTargetHours, setNewTargetHours] = useState('2');
+  const [logHobbyId, setLogHobbyId] = useState<string | null>(null);
+  const [logDuration, setLogDuration] = useState('30');
+  const [logQuality, setLogQuality] = useState(5);
+  const [logNotes, setLogNotes] = useState('');
 
   const fetchData = useCallback(async () => {
     const [score, h, s, c] = await Promise.all([
-      api<{ score: number }>('/hobbies/score'),
+      api<{ score: number }>('/hobbies/health-score'),
       api<Hobby[]>('/hobbies'),
       api<SeasonalUpcoming[]>('/hobbies/seasonal'),
       api<PriorityConflict[]>('/hobbies/conflicts'),
@@ -82,6 +86,17 @@ export default function Hobbies() {
     setShowAddForm(false);
     fetchData();
   }, [newName, newCategory, newTargetHours, fetchData]);
+
+  const handleLogSession = useCallback(async () => {
+    if (!logHobbyId) return;
+    await apiPost(`/hobbies/${logHobbyId}/log`, {
+      duration_minutes: parseInt(logDuration) || 30,
+      quality_rating: logQuality,
+      notes: logNotes,
+    });
+    setLogHobbyId(null); setLogDuration('30'); setLogQuality(5); setLogNotes('');
+    fetchData();
+  }, [logHobbyId, logDuration, logQuality, logNotes, fetchData]);
 
   const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
   const categories = ['creative', 'physical', 'intellectual', 'social', 'outdoor', 'other'];
@@ -126,7 +141,29 @@ export default function Hobbies() {
             <View style={styles.progressBarBg}>
               <View style={[styles.progressBarFill, { width: `${pct}%`, backgroundColor: scoreColor(pct) }]} />
             </View>
-            <Text style={styles.dimText}>Last activity: {h.last_activity_date}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={styles.dimText}>Last activity: {h.last_activity_date}</Text>
+              <TouchableOpacity onPress={() => setLogHobbyId(logHobbyId === h.id ? null : h.id)}>
+                <Text style={{ color: '#6C63FF', fontSize: 12, fontWeight: '600' }}>Log Session</Text>
+              </TouchableOpacity>
+            </View>
+            {logHobbyId === h.id && (
+              <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', paddingTop: 12 }}>
+                <TextInput style={styles.input} placeholder="Duration (minutes)" placeholderTextColor="#555577" keyboardType="numeric" value={logDuration} onChangeText={setLogDuration} />
+                <Text style={styles.formLabel}>Quality ({logQuality}/10)</Text>
+                <View style={styles.typeRow}>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
+                    <TouchableOpacity key={v} style={[styles.typeChip, logQuality === v && styles.typeChipActive]} onPress={() => setLogQuality(v)}>
+                      <Text style={[styles.typeChipText, logQuality === v && styles.typeChipTextActive]}>{v}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TextInput style={styles.input} placeholder="Notes (optional)" placeholderTextColor="#555577" value={logNotes} onChangeText={setLogNotes} />
+                <TouchableOpacity style={styles.primaryBtn} onPress={handleLogSession}>
+                  <Text style={styles.primaryBtnText}>Submit</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         );
       })}

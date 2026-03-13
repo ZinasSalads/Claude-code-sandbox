@@ -440,6 +440,10 @@ export async function addGrowthHabit(data: Partial<GrowthHabit>): Promise<Growth
 interface CareerProfile {
   role_title: string | null;
   industry: string | null;
+  years_experience: number | null;
+  career_goals: string[] | null;
+  skills_to_develop: string[] | null;
+  skills_strong: string[] | null;
   satisfaction_score: number | null;
   stress_level: number | null;
   next_milestone: string | null;
@@ -466,6 +470,10 @@ export async function getCareerCoaching(): Promise<{ coaching: string } | null> 
 
 export async function logCareerReflection(data: Record<string, unknown>): Promise<unknown> {
   return fetchApi('/career/reflection', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateCareerProfile(data: Record<string, unknown>): Promise<unknown> {
+  return fetchApi('/career/profile', { method: 'PUT', body: JSON.stringify(data) });
 }
 
 // --- Session 4: Wardrobe ---

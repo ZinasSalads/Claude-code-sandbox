@@ -679,3 +679,55 @@ Architecture:
 - Financial stress flag → budget-conscious mode across all suggestions
 
 Build complete.
+
+---
+
+## Functional Audit — Mobile App (Session 7)
+
+Full cross-check of all 30 mobile screens against backend routers and specs.
+
+### API Path Fixes
+| Screen | Wrong Path | Correct Path |
+|---|---|---|
+| DigitalIdentity.tsx | `/digital-identity/*` | `/digital/*` (6 paths) |
+| ContextualIntelligence.tsx | `/contextual-intelligence/signals` | `/context/signals?days=7` |
+| ContextualIntelligence.tsx | POST `{ text }` | POST `{ signal_text }` to `/context/signal` |
+| FinancialPlanning.tsx | `/financial/goals` etc. | `/financial-planning/goals` etc. (6 paths) |
+| FinancialPlanning.tsx | progress POST | progress PUT |
+| Reviews.tsx | `/reviews/current?type=X` | `/reviews/weekly` or `/reviews/monthly` |
+| Reviews.tsx | `/reviews/history?type=X` | `/reviews/history/weekly` or `/reviews/history/monthly` |
+| Skincare.tsx | `/skincare/trend/weekly` | `/skincare/weekly` |
+| Hobbies.tsx | `/hobbies/score` | `/hobbies/health-score` |
+| Relationships.tsx | `/relationships/score` | `/relationships/health` |
+
+### Missing Functionality Added
+| Screen | Added |
+|---|---|
+| DigitalIdentity.tsx | Profile editor form (11 fields) with edit mode toggle |
+| Skincare.tsx | Full product form (product_name, brand, product_type, active_ingredients, routine_slot, application_order, frequency) |
+| Skincare.tsx | Skin profile editor (skin_type, sensitivity_level, concerns, allergies, climate, age_range, goals, notes) |
+| Hobbies.tsx | Log session form (duration_minutes, quality_rating, notes) per hobby |
+| Career.tsx | Career profile editor (role_title, industry, years_experience, career_goals, skills_to_develop, skills_strong, satisfaction_score, next_milestone) |
+
+### Navigation Restructure
+- Tab 4 changed from "Insights" → "Voice" (with Mic icon)
+- Voice screen moved to be primary screen in Voice tab
+- Reviews and Contextual Intel remain in Voice tab as sub-screens
+- DigitalIdentity and FinancialPlanning moved from Insights → Profile tab
+- 5 tabs now: Home | Health | Life | Voice | Profile
+
+### api.ts Updates
+- Added `updateCareerProfile()` PUT function
+- Extended `CareerProfile` interface with missing fields (years_experience, career_goals, skills_to_develop, skills_strong)
+
+### Files Modified (10)
+1. `mobile/App.tsx` — Navigation restructure
+2. `mobile/lib/api.ts` — Added updateCareerProfile, extended CareerProfile
+3. `mobile/screens/DigitalIdentity.tsx` — Path fixes + profile editor
+4. `mobile/screens/ContextualIntelligence.tsx` — Path fixes + body format
+5. `mobile/screens/FinancialPlanning.tsx` — Path fixes + PUT method
+6. `mobile/screens/Reviews.tsx` — Path fixes
+7. `mobile/screens/Skincare.tsx` — Path fix + product form + profile editor
+8. `mobile/screens/Hobbies.tsx` — Path fix + session logging
+9. `mobile/screens/Relationships.tsx` — Path fix
+10. `mobile/screens/Career.tsx` — Profile editor form

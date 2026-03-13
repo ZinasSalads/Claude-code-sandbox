@@ -8,7 +8,7 @@ import {
   TextInput,
   RefreshControl,
 } from 'react-native';
-import { getCareerProfile, getBurnoutRisk, getCareerCoaching, logCareerReflection } from '../lib/api';
+import { getCareerProfile, getBurnoutRisk, getCareerCoaching, logCareerReflection, updateCareerProfile } from '../lib/api';
 import type { CareerProfile, BurnoutRisk } from '../lib/api';
 
 export default function Career() {
@@ -21,6 +21,15 @@ export default function Career() {
   const [wins, setWins] = useState('');
   const [challenges, setChallenges] = useState('');
   const [productivity, setProductivity] = useState('7');
+  const [showProfileEditor, setShowProfileEditor] = useState(false);
+  const [editRole, setEditRole] = useState('');
+  const [editIndustry, setEditIndustry] = useState('');
+  const [editYears, setEditYears] = useState('');
+  const [editGoals, setEditGoals] = useState('');
+  const [editSkillsDev, setEditSkillsDev] = useState('');
+  const [editSkillsStrong, setEditSkillsStrong] = useState('');
+  const [editSatisfaction, setEditSatisfaction] = useState('7');
+  const [editMilestone, setEditMilestone] = useState('');
 
   const fetchData = useCallback(async () => {
     const [p, b] = await Promise.all([getCareerProfile(), getBurnoutRisk()]);
@@ -53,6 +62,35 @@ export default function Career() {
     setWins(''); setChallenges(''); setProductivity('7');
     fetchData();
   }, [wins, challenges, productivity, fetchData]);
+
+  const openProfileEditor = useCallback(() => {
+    if (profile) {
+      setEditRole(profile.role_title || '');
+      setEditIndustry(profile.industry || '');
+      setEditYears(profile.years_experience?.toString() || '');
+      setEditGoals((profile.career_goals || []).join(', '));
+      setEditSkillsDev((profile.skills_to_develop || []).join(', '));
+      setEditSkillsStrong((profile.skills_strong || []).join(', '));
+      setEditSatisfaction(profile.satisfaction_score?.toString() || '7');
+      setEditMilestone(profile.next_milestone || '');
+    }
+    setShowProfileEditor(true);
+  }, [profile]);
+
+  const handleSaveProfile = useCallback(async () => {
+    await updateCareerProfile({
+      role_title: editRole,
+      industry: editIndustry,
+      years_experience: parseInt(editYears) || undefined,
+      career_goals: editGoals.split(',').map(s => s.trim()).filter(Boolean),
+      skills_to_develop: editSkillsDev.split(',').map(s => s.trim()).filter(Boolean),
+      skills_strong: editSkillsStrong.split(',').map(s => s.trim()).filter(Boolean),
+      satisfaction_score: parseInt(editSatisfaction) || 7,
+      next_milestone: editMilestone,
+    });
+    setShowProfileEditor(false);
+    fetchData();
+  }, [editRole, editIndustry, editYears, editGoals, editSkillsDev, editSkillsStrong, editSatisfaction, editMilestone, fetchData]);
 
   const riskColor = (level: string) => {
     switch (level) {
@@ -97,7 +135,12 @@ export default function Career() {
 
       {profile && (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Profile</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.cardTitle}>Profile</Text>
+            <TouchableOpacity onPress={openProfileEditor}>
+              <Text style={{ color: '#a29bfe', fontSize: 13, fontWeight: '600' }}>Edit</Text>
+            </TouchableOpacity>
+          </View>
           {profile.role_title && (
             <Text style={styles.profileText}>{profile.role_title} · {profile.industry || 'N/A'}</Text>
           )}
@@ -110,7 +153,33 @@ export default function Career() {
           {profile.next_milestone && (
             <Text style={styles.milestone}>Next: {profile.next_milestone}</Text>
           )}
-          {!profile.role_title && <Text style={styles.emptyText}>Set up your career profile via the API.</Text>}
+          {!profile.role_title && (
+            <TouchableOpacity onPress={openProfileEditor}>
+              <Text style={styles.emptyText}>Tap to set up your career profile</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+
+      {showProfileEditor && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Edit Career Profile</Text>
+          <TextInput style={styles.input} placeholder="Role / Title" placeholderTextColor="#555577" value={editRole} onChangeText={setEditRole} />
+          <TextInput style={styles.input} placeholder="Industry" placeholderTextColor="#555577" value={editIndustry} onChangeText={setEditIndustry} />
+          <TextInput style={styles.input} placeholder="Years of experience" placeholderTextColor="#555577" keyboardType="numeric" value={editYears} onChangeText={setEditYears} />
+          <TextInput style={styles.input} placeholder="Career goals (comma-separated)" placeholderTextColor="#555577" value={editGoals} onChangeText={setEditGoals} />
+          <TextInput style={styles.input} placeholder="Skills to develop (comma-separated)" placeholderTextColor="#555577" value={editSkillsDev} onChangeText={setEditSkillsDev} />
+          <TextInput style={styles.input} placeholder="Strong skills (comma-separated)" placeholderTextColor="#555577" value={editSkillsStrong} onChangeText={setEditSkillsStrong} />
+          <TextInput style={styles.input} placeholder="Satisfaction (1-10)" placeholderTextColor="#555577" keyboardType="numeric" value={editSatisfaction} onChangeText={setEditSatisfaction} />
+          <TextInput style={styles.input} placeholder="Next milestone" placeholderTextColor="#555577" value={editMilestone} onChangeText={setEditMilestone} />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: 'rgba(255,255,255,0.1)' }]} onPress={() => setShowProfileEditor(false)}>
+              <Text style={styles.primaryBtnText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1 }]} onPress={handleSaveProfile}>
+              <Text style={styles.primaryBtnText}>Save</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 

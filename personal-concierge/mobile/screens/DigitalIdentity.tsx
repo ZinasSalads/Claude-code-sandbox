@@ -30,9 +30,79 @@ async function apiPost<T>(path: string, body: any): Promise<T | null> {
   } catch { return null; }
 }
 
+async function apiPut<T>(path: string, body: any): Promise<T | null> {
+  try {
+    const r = await fetch(`${API_URL}${path}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
 interface Platform { name: string; active: boolean; last_updated: string; profile_url?: string }
 interface AuditResult { score: number; strengths: string[]; improvements: string[]; run_at: string }
 interface ContentSuggestion { title: string; platform: string; topic: string; type: string }
+
+interface ProfileData {
+  brand_statement: string;
+  thought_leadership: boolean;
+  platforms_active: Platform[];
+  linkedin_url: string;
+  linkedin_headline: string;
+  linkedin_summary: string;
+  personal_website: string;
+  github_url: string;
+  twitter_handle: string;
+  content_style: string;
+  target_audience: string;
+  brand_keywords: string;
+  visibility_comfort: string;
+  notes: string;
+}
+
+const PROFILE_FIELDS: { key: keyof ProfileFormData; label: string; multiline?: boolean }[] = [
+  { key: 'linkedin_url', label: 'LinkedIn URL' },
+  { key: 'linkedin_headline', label: 'LinkedIn Headline' },
+  { key: 'linkedin_summary', label: 'LinkedIn Summary', multiline: true },
+  { key: 'personal_website', label: 'Personal Website' },
+  { key: 'github_url', label: 'GitHub URL' },
+  { key: 'twitter_handle', label: 'Twitter Handle' },
+  { key: 'content_style', label: 'Content Style' },
+  { key: 'target_audience', label: 'Target Audience' },
+  { key: 'brand_keywords', label: 'Brand Keywords' },
+  { key: 'visibility_comfort', label: 'Visibility Comfort' },
+  { key: 'notes', label: 'Notes', multiline: true },
+];
+
+interface ProfileFormData {
+  linkedin_url: string;
+  linkedin_headline: string;
+  linkedin_summary: string;
+  personal_website: string;
+  github_url: string;
+  twitter_handle: string;
+  content_style: string;
+  target_audience: string;
+  brand_keywords: string;
+  visibility_comfort: string;
+  notes: string;
+}
+
+const emptyForm: ProfileFormData = {
+  linkedin_url: '',
+  linkedin_headline: '',
+  linkedin_summary: '',
+  personal_website: '',
+  github_url: '',
+  twitter_handle: '',
+  content_style: '',
+  target_audience: '',
+  brand_keywords: '',
+  visibility_comfort: '',
+  notes: '',
+};
 
 export default function DigitalIdentity() {
   const [brandStatement, setBrandStatement] = useState('');
@@ -47,17 +117,31 @@ export default function DigitalIdentity() {
   const [refreshing, setRefreshing] = useState(false);
   const [auditRunning, setAuditRunning] = useState(false);
   const [expandedAuditIdx, setExpandedAuditIdx] = useState<number | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState<ProfileFormData>({ ...emptyForm });
 
   const fetchData = useCallback(async () => {
-    const [profile, plats, audits, suggestions] = await Promise.all([
-      api<{ brand_statement: string; thought_leadership: boolean }>('/digital-identity/profile'),
-      api<Platform[]>('/digital-identity/platforms'),
-      api<AuditResult[]>('/digital-identity/audits'),
-      api<ContentSuggestion[]>('/digital-identity/content-suggestions'),
+    const [profile, audits, suggestions] = await Promise.all([
+      api<ProfileData>('/digital/profile'),
+      api<AuditResult[]>('/digital/audit-history'),
+      api<ContentSuggestion[]>('/digital/content-suggestions'),
     ]);
     setBrandStatement(profile?.brand_statement || '');
     setThoughtLeadership(profile?.thought_leadership ?? false);
-    setPlatforms(plats || []);
+    setPlatforms(profile?.platforms_active || []);
+    setProfileForm({
+      linkedin_url: profile?.linkedin_url || '',
+      linkedin_headline: profile?.linkedin_headline || '',
+      linkedin_summary: profile?.linkedin_summary || '',
+      personal_website: profile?.personal_website || '',
+      github_url: profile?.github_url || '',
+      twitter_handle: profile?.twitter_handle || '',
+      content_style: profile?.content_style || '',
+      target_audience: profile?.target_audience || '',
+      brand_keywords: profile?.brand_keywords || '',
+      visibility_comfort: profile?.visibility_comfort || '',
+      notes: profile?.notes || '',
+    });
     setAuditHistory(audits || []);
     if (audits && audits.length > 0) setLatestAudit(audits[0]);
     setContentSuggestions(suggestions || []);
@@ -73,7 +157,7 @@ export default function DigitalIdentity() {
   }, [fetchData]);
 
   const handleSaveBrand = useCallback(async () => {
-    await apiPost('/digital-identity/profile', { brand_statement: draftBrand });
+    await apiPut('/digital/profile', { brand_statement: draftBrand });
     setBrandStatement(draftBrand);
     setEditingBrand(false);
     fetchData();
@@ -81,10 +165,20 @@ export default function DigitalIdentity() {
 
   const handleRunAudit = useCallback(async () => {
     setAuditRunning(true);
-    await apiPost('/digital-identity/audits/run', {});
+    await apiPost('/digital/linkedin-audit', {});
     await fetchData();
     setAuditRunning(false);
   }, [fetchData]);
+
+  const handleSaveProfile = useCallback(async () => {
+    await apiPut('/digital/profile', profileForm);
+    setEditingProfile(false);
+    fetchData();
+  }, [profileForm, fetchData]);
+
+  const updateFormField = useCallback((key: keyof ProfileFormData, value: string) => {
+    setProfileForm(prev => ({ ...prev, [key]: value }));
+  }, []);
 
   const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
 
@@ -127,6 +221,54 @@ export default function DigitalIdentity() {
               {brandStatement || 'Tap to define your personal brand statement...'}
             </Text>
           </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.auditHeader}>
+          <Text style={styles.cardTitle}>Profile Details</Text>
+          <TouchableOpacity
+            style={styles.runBtn}
+            onPress={() => setEditingProfile(!editingProfile)}
+          >
+            <Text style={styles.runBtnText}>{editingProfile ? 'Cancel' : 'Edit'}</Text>
+          </TouchableOpacity>
+        </View>
+        {editingProfile ? (
+          <>
+            {PROFILE_FIELDS.map(({ key, label, multiline }) => (
+              <View key={key} style={{ marginBottom: 10 }}>
+                <Text style={styles.fieldLabel}>{label}</Text>
+                <TextInput
+                  style={[styles.input, multiline ? { minHeight: 70, textAlignVertical: 'top' } : {}]}
+                  multiline={multiline}
+                  value={profileForm[key]}
+                  onChangeText={(v) => updateFormField(key, v)}
+                  placeholder={label}
+                  placeholderTextColor="#555577"
+                />
+              </View>
+            ))}
+            <TouchableOpacity style={styles.primaryBtn} onPress={handleSaveProfile}>
+              <Text style={styles.primaryBtnText}>Save Profile</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <View>
+            {PROFILE_FIELDS.map(({ key, label }) => {
+              const val = profileForm[key];
+              if (!val) return null;
+              return (
+                <View key={key} style={{ marginBottom: 6 }}>
+                  <Text style={styles.fieldLabel}>{label}</Text>
+                  <Text style={styles.fieldValue}>{val}</Text>
+                </View>
+              );
+            })}
+            {PROFILE_FIELDS.every(({ key }) => !profileForm[key]) && (
+              <Text style={styles.dimText}>No profile details set. Tap "Edit" to add your information.</Text>
+            )}
+          </View>
         )}
       </View>
 
@@ -280,4 +422,6 @@ const styles = StyleSheet.create({
   historyDate: { fontSize: 14, color: '#fff' },
   historyScore: { fontSize: 16, fontWeight: '700' },
   historyDetail: { fontSize: 13, color: '#00b894', lineHeight: 20 },
+  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#8888aa', marginBottom: 4 },
+  fieldValue: { fontSize: 14, color: '#fff', lineHeight: 20 },
 });
