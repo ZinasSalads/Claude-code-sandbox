@@ -645,6 +645,32 @@ export async function getLegacyBridge(): Promise<any | null> {
   return fetchApi('/legacy/bridge');
 }
 
+// --- Session 5: Home Environment ---
+
+export async function getHomeProfile(): Promise<any | null> {
+  return fetchApi('/home/profile');
+}
+
+export async function updateHomeProfile(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/home/profile', { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export async function getHomeRecommendations(completed: boolean = false): Promise<any[]> {
+  return (await fetchApi<any[]>(`/home/recommendations?completed=${completed}`)) || [];
+}
+
+export async function generateHomeRecommendations(): Promise<any[]> {
+  return (await fetchApi<any[]>('/home/recommendations/generate', { method: 'POST' })) || [];
+}
+
+export async function completeHomeRecommendation(id: string): Promise<any | null> {
+  return fetchApi(`/home/recommendations/${id}/complete`, { method: 'PUT' });
+}
+
+export async function getHomeCorrelations(): Promise<any[]> {
+  return (await fetchApi<any[]>('/home/correlations')) || [];
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
