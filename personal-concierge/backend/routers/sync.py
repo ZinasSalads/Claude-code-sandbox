@@ -13,7 +13,7 @@ logger = logging.getLogger("concierge.sync")
 router = APIRouter()
 
 
-@router.post("/oura")
+@router.api_route("/oura", methods=["GET", "POST"])
 async def sync_oura(days: int = 7):
     """Trigger Oura data sync for the last N days."""
     if not OURA_TOKEN:
