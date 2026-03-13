@@ -596,6 +596,29 @@ export async function getOnboardingHabitSuggestions(): Promise<any[]> {
   return (await fetchApi<any[]>('/onboarding/habits-suggest')) || [];
 }
 
+// --- Session 5: Feedback Learning ---
+
+interface RatingSubmit {
+  category: string;
+  item_id: string;
+  item_description: string;
+  rating: string;
+  explicit_feedback?: string;
+}
+
+export async function submitRating(data: RatingSubmit): Promise<any | null> {
+  return fetchApi('/feedback/rate', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getPreferencePatterns(category?: string): Promise<any | null> {
+  const path = category ? `/feedback/patterns/${category}` : '/feedback/patterns';
+  return fetchApi(path);
+}
+
+export async function getLearningSummary(): Promise<any | null> {
+  return fetchApi('/feedback/summary');
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
