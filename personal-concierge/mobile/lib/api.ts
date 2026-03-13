@@ -506,6 +506,55 @@ export async function getWardrobeAudit(): Promise<Record<string, unknown> | null
   return fetchApi('/wardrobe/audit');
 }
 
+// --- Session 5: Personality ---
+
+interface PersonalityProfile {
+  id?: string;
+  mbti_type: string | null;
+  mbti_label: string | null;
+  mbti_dimensions: { EI: number; SN: number; TF: number; JP: number } | null;
+  energy_source: string | null;
+  decision_style: string | null;
+  structure_preference: string | null;
+  stress_response: string | null;
+  urban_nature_score: number | null;
+  style_orientation: string | null;
+  comfort_appearance_balance: number | null;
+  reassess_due: string | null;
+}
+
+interface CoachingStyle {
+  communication_style: string;
+  motivation_frame: string;
+  feedback_preference: string;
+  structure_preference: string;
+  surprise_tolerance: number;
+}
+
+export async function getPersonalityQuestions(): Promise<any | null> {
+  return fetchApi('/personality/questions');
+}
+
+export async function scorePersonalityAssessment(responses: any[]): Promise<PersonalityProfile | null> {
+  return fetchApi('/personality/score', { method: 'POST', body: JSON.stringify({ responses }) });
+}
+
+export async function getPersonalityProfile(): Promise<PersonalityProfile | null> {
+  return fetchApi('/personality/profile');
+}
+
+export async function getPersonalityInsight(): Promise<{ insight: string } | null> {
+  return fetchApi('/personality/insight');
+}
+
+export async function getCoachingStyle(): Promise<CoachingStyle | null> {
+  return fetchApi('/personality/coaching-style');
+}
+
+export async function updatePersonalityProfile(data: Partial<PersonalityProfile>): Promise<PersonalityProfile | null> {
+  return fetchApi('/personality/profile', { method: 'PUT', body: JSON.stringify(data) });
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
