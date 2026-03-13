@@ -555,6 +555,37 @@ export async function updatePersonalityProfile(data: Partial<PersonalityProfile>
   return fetchApi('/personality/profile', { method: 'PUT', body: JSON.stringify(data) });
 }
 
+// --- Session 5: Onboarding ---
+
+interface OnboardingStatus {
+  total_steps: number;
+  completed_steps: number;
+  completion_percent: number;
+  next_step: string | null;
+  skipped_steps: string[];
+  is_complete: boolean;
+}
+
+export async function getOnboardingStatus(): Promise<OnboardingStatus | null> {
+  return fetchApi('/onboarding/status');
+}
+
+export async function getStepContent(name: string): Promise<any | null> {
+  return fetchApi(`/onboarding/step/${name}`);
+}
+
+export async function completeOnboardingStep(name: string, data?: Record<string, any>): Promise<any | null> {
+  return fetchApi(`/onboarding/step/${name}`, { method: 'POST', body: JSON.stringify({ data: data || {} }) });
+}
+
+export async function skipOnboardingStep(name: string): Promise<any | null> {
+  return fetchApi(`/onboarding/step/${name}/skip`, { method: 'POST' });
+}
+
+export async function getOnboardingHabitSuggestions(): Promise<any[]> {
+  return (await fetchApi<any[]>('/onboarding/habits-suggest')) || [];
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
