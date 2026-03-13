@@ -25,6 +25,15 @@ import Career from './screens/Career';
 import WardrobeScreen from './screens/Wardrobe';
 import Financial from './screens/Financial';
 
+// Session 5 screens
+import Personality from './screens/Personality';
+import Onboarding from './screens/Onboarding';
+import AppleHealth from './screens/AppleHealth';
+import Legacy from './screens/Legacy';
+import HomeEnvironment from './screens/HomeEnvironment';
+import Learning from './screens/Learning';
+import Privacy from './screens/Privacy';
+
 // Dark theme
 const DarkTheme = {
   ...DefaultTheme,
@@ -126,11 +135,12 @@ function HomeStackScreen() {
       <HomeStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
       <HomeStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
       <HomeStack.Screen name="MealPlan" component={MealPlan} options={{ title: 'Meal Plan' }} />
+      <HomeStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
     </HomeStack.Navigator>
   );
 }
 
-// Health stack (Fitness, Nutrition, Blood Work, Supplements, Longevity)
+// Health stack
 const HealthStack = createNativeStackNavigator();
 function HealthStackScreen() {
   return (
@@ -139,11 +149,12 @@ function HealthStackScreen() {
       <HealthStack.Screen name="Supplements" component={Supplements} options={{ title: 'Supplements' }} />
       <HealthStack.Screen name="Longevity" component={Longevity} options={{ title: 'Longevity' }} />
       <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
+      <HealthStack.Screen name="AppleHealth" component={AppleHealth} options={{ title: 'Apple Health' }} />
     </HealthStack.Navigator>
   );
 }
 
-// Life stack (Social, Growth, Career, Travel, Wardrobe, Financial)
+// Life stack (Social, Growth, Career, Travel, Wardrobe, Financial + Session 5)
 const LifeStack = createNativeStackNavigator();
 function LifeStackScreen() {
   return (
@@ -154,16 +165,21 @@ function LifeStackScreen() {
       <LifeStack.Screen name="Travel" component={Travel} options={{ title: 'Travel' }} />
       <LifeStack.Screen name="Wardrobe" component={WardrobeScreen} options={{ title: 'Wardrobe' }} />
       <LifeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
+      <LifeStack.Screen name="Legacy" component={Legacy} options={{ title: 'Legacy & Vision' }} />
+      <LifeStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
+      <LifeStack.Screen name="Learning" component={Learning} options={{ title: 'Learning' }} />
     </LifeStack.Navigator>
   );
 }
 
-// Profile stack (Check-in + settings)
+// Profile stack (Check-in, Personality, Privacy)
 const ProfileStack = createNativeStackNavigator();
 function ProfileStackScreen() {
   return (
     <ProfileStack.Navigator screenOptions={stackScreenOptions}>
       <ProfileStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check In' }} />
+      <ProfileStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
+      <ProfileStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
     </ProfileStack.Navigator>
   );
 }
