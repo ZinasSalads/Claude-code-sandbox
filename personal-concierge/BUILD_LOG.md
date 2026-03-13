@@ -303,3 +303,55 @@ Focus: Environment setup, data deployment, web dashboard
 3. Add optional API keys (OpenWeatherMap, Ambee, PubMed) for environmental/research features
 4. Enhance dashboard with workout/nutrition/daily plan tabs that call the hosted backend
 5. Add supplement and blood work management directly from the web dashboard
+
+---
+
+# Build Log — Session 4
+
+## Started: 2026-03-13
+
+## S4 Task 1 — Backend Deployment to Railway
+Status: Complete
+Notes:
+- Backend deployed to Railway at `https://claude-code-sandbox-production.up.railway.app`
+- All 44 API routes available publicly (fitness, nutrition, daily plan, reminders, etc.)
+- Supabase and Anthropic credentials configured in Railway environment
+
+## S4 Task 2 — Dashboard Connected to Live Backend
+Status: Complete
+Notes:
+- Updated `standalone.html` with `API_URL` constant pointing to Railway deployment
+- Added 3 new tabs: **Daily Plan**, **Workout**, **Nutrition**
+- **Daily Plan** tab: calls `GET /daily/plan` (arbitrator endpoint) — generates AI-synthesized daily brief covering workout, nutrition, supplements, and coaching notes
+- **Workout** tab: calls `GET /fitness/today` — displays AI-generated workout with exercises, sets, reps, rest periods; includes "Mark Workout Complete" button (`POST /fitness/complete`)
+- **Nutrition** tab: calls `GET /nutrition/today` — displays AI meal plan with daily macro targets and individual meal breakdowns
+- Added `api()` and `apiPost()` helper functions for Railway backend calls
+- Added backend health check — status dot pings `GET /health` on Railway (green = up, red = down)
+- Direct Supabase calls preserved for: Dashboard biometrics, Trends, Check-In, Supplements, Blood Work
+- All new tabs use button-triggered loading (not auto-load) since AI generation can take several seconds
+- Flexible response rendering: handles known field names with structured UI, falls back to formatted JSON for unknown response shapes
+
+---
+
+## Session 4 Summary
+Completed: 2 tasks
+Focus: Backend deployment + dashboard integration with live AI endpoints
+
+### What's working:
+- Backend API live at `https://claude-code-sandbox-production.up.railway.app`
+- Web dashboard (GitHub Pages) now has 8 tabs: Dashboard, Trends, Check-In, Daily Plan, Workout, Nutrition, Supplements, Blood Work
+- AI-powered workout generation accessible from phone via web dashboard
+- AI-powered meal plan generation accessible from phone via web dashboard
+- AI-powered daily intelligence brief (arbitrator) accessible from phone via web dashboard
+- Health status indicator shows backend availability in real-time
+
+### Architecture:
+- **Static data** (biometrics, check-ins, supplements, blood work) → Direct Supabase REST API calls from browser
+- **AI-generated content** (workouts, meals, daily plans) → Railway-hosted FastAPI backend → Claude API + Supabase
+
+### Next session should:
+1. Add Apple Health integration (react-native-health) for weight, workouts, heart rate
+2. Add optional API keys (OpenWeatherMap, Ambee, PubMed) for environmental/research features
+3. Add supplement and blood work management forms directly in the web dashboard
+4. Add workout history and nutrition logging to the web dashboard
+5. Add profile/settings page to the dashboard for coaching mode selection
