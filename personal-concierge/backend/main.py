@@ -1,10 +1,13 @@
 import logging
-from datetime import datetime, timezone
+import os
+from datetime import datetime, date, timezone, timedelta
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-from config import get_service_status
+from config import get_service_status, supabase
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,6 +54,61 @@ def health_check():
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "services": get_service_status(),
     }
+
+
+@app.get("/dashboard/summary")
+def dashboard_summary():
+    """Return today's health data + 7-day history for the web dashboard."""
+    if not supabase:
+        return {"today": None, "history": []}
+
+    today = date.today().isoformat()
+    week_ago = (date.today() - timedelta(days=7)).isoformat()
+
+    # Today's data
+    today_resp = (
+        supabase.table("health_data")
+        .select("*")
+        .eq("date", today)
+        .execute()
+    )
+    today_data = today_resp.data[0] if today_resp.data else None
+
+    # If no data for today, get most recent
+    if not today_data:
+        latest_resp = (
+            supabase.table("health_data")
+            .select("*")
+            .order("date", desc=True)
+            .limit(1)
+            .execute()
+        )
+        today_data = latest_resp.data[0] if latest_resp.data else None
+
+    # 7-day history
+    history_resp = (
+        supabase.table("health_data")
+        .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps")
+        .gte("date", week_ago)
+        .order("date")
+        .execute()
+    )
+
+    return {
+        "today": today_data,
+        "history": history_resp.data or [],
+    }
+
+
+# --- Serve web dashboard ---
+@app.get("/")
+def serve_dashboard():
+    return FileResponse(
+        os.path.join(os.path.dirname(__file__), "static", "index.html")
+    )
+
+
+app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 
 
 @app.on_event("startup")

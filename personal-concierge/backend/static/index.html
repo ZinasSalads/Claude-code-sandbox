@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Health Concierge</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --card: #141420;
+  --card-border: #1e1e30;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --green: #00b894;
+  --yellow: #fdcb6e;
+  --red: #e17055;
+  --orange: #e17055;
+  --text: #f0f0f5;
+  --text-dim: #8888aa;
+  --text-muted: #555577;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Nav */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--card-border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 100;
+}
+.nav h1 { font-size: 18px; font-weight: 700; }
+.nav .status { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 4px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--card-border);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  transition: all 0.2s;
+}
+.tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* Content */
+.content { padding: 20px; max-width: 600px; margin: 0 auto; }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.card-title { font-size: 15px; font-weight: 600; }
+.card-subtitle { font-size: 12px; color: var(--text-dim); }
+
+/* Score circle */
+.score-ring {
+  width: 120px; height: 120px;
+  margin: 0 auto 16px;
+  position: relative;
+}
+.score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-ring circle {
+  fill: none;
+  stroke-width: 8;
+  cx: 60; cy: 60; r: 52;
+}
+.score-ring .bg { stroke: var(--card-border); }
+.score-ring .fg { stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.score-value {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-value .num { font-size: 32px; font-weight: 700; }
+.score-value .label { font-size: 11px; color: var(--text-dim); }
+
+/* Metrics grid */
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.metric {
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+  padding: 14px;
+}
+.metric .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.metric .value { font-size: 20px; font-weight: 600; margin-top: 4px; }
+.metric .unit { font-size: 12px; color: var(--text-dim); }
+
+/* Check-in form */
+.slider-group { margin-bottom: 20px; }
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.slider-label .val { color: var(--accent-light); font-weight: 600; }
+input[type="range"] {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--card-border);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Buttons */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-light); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+/* Exercise list */
+.exercise {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.exercise:last-child { border-bottom: none; }
+.exercise .name { font-weight: 600; font-size: 14px; }
+.exercise .detail { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+.exercise .notes { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+
+/* Meal card */
+.meal-item {
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.meal-item:last-child { border-bottom: none; }
+.meal-type { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-light); font-weight: 600; }
+.meal-title { font-size: 15px; font-weight: 600; margin-top: 4px; }
+.meal-desc { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+.macros {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+.macro { font-size: 12px; color: var(--text-dim); }
+.macro span { color: var(--text); font-weight: 600; }
+
+/* Section headers */
+.section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+
+/* Coaching note */
+.coaching-note {
+  background: rgba(108, 92, 231, 0.1);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--accent-light);
+  line-height: 1.5;
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-dim);
+}
+.spinner {
+  width: 24px; height: 24px;
+  border: 3px solid var(--card-border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty state */
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+}
+.empty .icon { font-size: 40px; margin-bottom: 12px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--green);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 200;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* Daily plan */
+.plan-section { margin-bottom: 20px; }
+.plan-section h3 { font-size: 14px; margin-bottom: 8px; color: var(--accent-light); }
+.plan-text { font-size: 14px; line-height: 1.6; color: var(--text-dim); white-space: pre-wrap; }
+
+/* History chart bars */
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin-top: 12px; }
+.bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  position: relative;
+  transition: height 0.5s ease;
+}
+.bar-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Page sections */
+.page { display: none; }
+.page.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>Health Concierge</h1>
+  <div class="status" id="serverStatus"></div>
+</div>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-page="dashboard">Dashboard</div>
+  <div class="tab" data-page="checkin">Check-In</div>
+  <div class="tab" data-page="workout">Workout</div>
+  <div class="tab" data-page="nutrition">Nutrition</div>
+  <div class="tab" data-page="dailyplan">Daily Plan</div>
+  <div class="tab" data-page="supplements">Supplements</div>
+  <div class="tab" data-page="bloodwork">Blood Work</div>
+</div>
+
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div id="dashLoading" class="loading"><div class="spinner"></div>Loading biometrics...</div>
+    <div id="dashContent" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Readiness Score</div>
+            <div class="card-subtitle" id="dashDate"></div>
+          </div>
+        </div>
+        <div class="score-ring">
+          <svg viewBox="0 0 120 120">
+            <circle class="bg" />
+            <circle class="fg" id="readinessRing" />
+          </svg>
+          <div class="score-value">
+            <div class="num" id="readinessScore">--</div>
+            <div class="label">READINESS</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="label">HRV</div>
+          <div class="value" id="mHrv">--</div>
+          <div class="unit">ms</div>
+        </div>
+        <div class="metric">
+          <div class="label">Resting HR</div>
+          <div class="value" id="mRhr">--</div>
+          <div class="unit">bpm</div>
+        </div>
+        <div class="metric">
+          <div class="label">Sleep Score</div>
+          <div class="value" id="mSleep">--</div>
+          <div class="unit">/ 100</div>
+        </div>
+        <div class="metric">
+          <div class="label">Sleep Duration</div>
+          <div class="value" id="mSleepDur">--</div>
+          <div class="unit">hours</div>
+        </div>
+        <div class="metric">
+          <div class="label">Steps</div>
+          <div class="value" id="mSteps">--</div>
+          <div class="unit">today</div>
+        </div>
+        <div class="metric">
+          <div class="label">Active Cal</div>
+          <div class="value" id="mCals">--</div>
+          <div class="unit">kcal</div>
+        </div>
+        <div class="metric">
+          <div class="label">SpO2</div>
+          <div class="value" id="mSpo2">--</div>
+          <div class="unit">%</div>
+        </div>
+        <div class="metric">
+          <div class="label">Resp Rate</div>
+          <div class="value" id="mResp">--</div>
+          <div class="unit">br/min</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-title">Readiness — Last 7 Days</div>
+        <div class="bar-chart" id="readinessChart"></div>
+        <div style="display:flex;gap:4px;margin-top:4px;" id="readinessLabels"></div>
+      </div>
+    </div>
+    <div id="dashEmpty" class="empty" style="display:none">
+      <div class="icon">📡</div>
+      <p>No biometric data yet.<br>Sync your Oura Ring to get started.</p>
+      <button class="btn btn-primary" style="margin-top:16px;max-width:200px;margin-left:auto;margin-right:auto;" onclick="syncOura()">Sync Oura</button>
+    </div>
+  </div>
+
+  <!-- CHECK-IN -->
+  <div class="page" id="page-checkin">
+    <div id="checkinForm">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px;">Morning Check-In</div>
+        <div class="card-subtitle">How are you feeling today?</div>
+      </div>
+      <div class="card">
+        <div class="slider-group">
+          <div class="slider-label"><span>Energy</span><span class="val" id="energyVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="energy" oninput="document.getElementById('energyVal').textContent=this.value">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label"><span>Mood</span><span class="val" id="moodVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="mood" oninput="document.getElementById('moodVal').textContent=this.value">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label"><span>Stress</span><span class="val" id="stressVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="stress" oninput="document.getElementById('stressVal').textContent=this.value">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label"><span>Soreness</span><span class="val" id="sorenessVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="soreness" oninput="document.getElementById('sorenessVal').textContent=this.value">
+        </div>
+        <textarea id="checkinNotes" placeholder="Any notes? (optional)"></textarea>
+      </div>
+      <button class="btn btn-primary" id="checkinBtn" onclick="submitCheckin()">Submit Check-In</button>
+    </div>
+    <div id="checkinDone" style="display:none">
+      <div class="card">
+        <div class="empty">
+          <div class="icon">&#10003;</div>
+          <p>Check-in submitted for today!</p>
+          <div class="metrics" style="margin-top:16px;" id="checkinSummary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKOUT -->
+  <div class="page" id="page-workout">
+    <div id="workoutLoading" class="loading"><div class="spinner"></div>Generating workout...</div>
+    <div id="workoutContent" style="display:none"></div>
+  </div>
+
+  <!-- NUTRITION -->
+  <div class="page" id="page-nutrition">
+    <div id="nutritionLoading" class="loading"><div class="spinner"></div>Generating meal plan...</div>
+    <div id="nutritionContent" style="display:none"></div>
+  </div>
+
+  <!-- DAILY PLAN -->
+  <div class="page" id="page-dailyplan">
+    <div id="planLoading" class="loading"><div class="spinner"></div>Building your daily plan...</div>
+    <div id="planContent" style="display:none"></div>
+  </div>
+
+  <!-- SUPPLEMENTS -->
+  <div class="page" id="page-supplements">
+    <div id="suppLoading" class="loading"><div class="spinner"></div>Loading supplements...</div>
+    <div id="suppContent" style="display:none"></div>
+    <div id="suppEmpty" class="empty" style="display:none">
+      <div class="icon">&#128138;</div>
+      <p>No supplements added yet.</p>
+    </div>
+  </div>
+
+  <!-- BLOOD WORK -->
+  <div class="page" id="page-bloodwork">
+    <div id="bwLoading" class="loading"><div class="spinner"></div>Loading biomarkers...</div>
+    <div id="bwContent" style="display:none"></div>
+    <div id="bwEmpty" class="empty" style="display:none">
+      <div class="icon">&#129656;</div>
+      <p>No blood work uploaded yet.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+
+// --- Navigation ---
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    loadPage(tab.dataset.page);
+  });
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function scoreColor(score) {
+  if (score >= 75) return 'var(--green)';
+  if (score >= 50) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function setRing(id, score) {
+  const el = document.getElementById(id);
+  const circ = 2 * Math.PI * 52;
+  el.style.strokeDasharray = circ;
+  el.style.strokeDashoffset = circ - (score / 100) * circ;
+  el.style.stroke = scoreColor(score);
+}
+
+// --- API calls ---
+async function api(path, opts) {
+  const res = await fetch(API + path, opts);
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
+
+// --- Dashboard ---
+async function loadDashboard() {
+  try {
+    const data = await api('/checkin/history?days=7');
+    // Actually let's get health data directly
+    const health = await api('/sync/oura?days=0');
+  } catch(e) {}
+
+  try {
+    const res = await fetch(API + '/health');
+    const h = await res.json();
+    document.getElementById('serverStatus').style.background =
+      h.status === 'ok' ? 'var(--green)' : 'var(--red)';
+  } catch(e) {
+    document.getElementById('serverStatus').style.background = 'var(--red)';
+  }
+
+  // Fetch latest health data from Supabase via a custom endpoint
+  try {
+    const data = await api('/checkin/today');
+    // Check-in might be null
+  } catch(e) {}
+
+  // We need to get Oura data - let's use the fitness endpoint which returns readiness
+  try {
+    const resp = await fetch(API + '/fitness/today');
+    const workout = await resp.json();
+    if (workout.readiness_at_recommendation) {
+      // We have some data
+    }
+  } catch(e) {}
+
+  // Direct approach: fetch health_data from our API
+  // The app doesn't have a direct health_data GET endpoint, so let's add one
+  // For now, use what we can get
+  try {
+    const resp = await fetch(API + '/dashboard/summary');
+    const d = await resp.json();
+    showDashboardData(d);
+  } catch(e) {
+    // Fallback: show empty state if no dashboard endpoint
+    document.getElementById('dashLoading').style.display = 'none';
+    document.getElementById('dashEmpty').style.display = 'block';
+  }
+}
+
+function showDashboardData(d) {
+  document.getElementById('dashLoading').style.display = 'none';
+  document.getElementById('dashContent').style.display = 'block';
+
+  if (d.today) {
+    const t = d.today;
+    document.getElementById('dashDate').textContent = t.date;
+    document.getElementById('readinessScore').textContent = t.readiness_score || '--';
+    if (t.readiness_score) setRing('readinessRing', t.readiness_score);
+    document.getElementById('mHrv').textContent = t.hrv ? Math.round(t.hrv) : '--';
+    document.getElementById('mRhr').textContent = t.resting_heart_rate || '--';
+    document.getElementById('mSleep').textContent = t.sleep_score || '--';
+    document.getElementById('mSleepDur').textContent = t.sleep_duration ? (t.sleep_duration).toFixed(1) : '--';
+    document.getElementById('mSteps').textContent = t.steps ? t.steps.toLocaleString() : '--';
+    document.getElementById('mCals').textContent = t.calories_active || '--';
+    document.getElementById('mSpo2').textContent = t.spo2_avg ? t.spo2_avg.toFixed(1) : '--';
+    document.getElementById('mResp').textContent = t.respiratory_rate ? t.respiratory_rate.toFixed(1) : '--';
+  }
+
+  if (d.history && d.history.length > 0) {
+    const chart = document.getElementById('readinessChart');
+    const labels = document.getElementById('readinessLabels');
+    chart.innerHTML = '';
+    labels.innerHTML = '';
+    d.history.slice(-7).forEach(h => {
+      const score = h.readiness_score || 0;
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = score + '%';
+      bar.style.background = scoreColor(score);
+      bar.title = h.date + ': ' + score;
+      chart.appendChild(bar);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'bar-label';
+      lbl.style.flex = '1';
+      lbl.style.textAlign = 'center';
+      const day = new Date(h.date + 'T12:00:00').toLocaleDateString('en', {weekday:'short'});
+      lbl.textContent = day;
+      labels.appendChild(lbl);
+    });
+  }
+}
+
+// --- Check-in ---
+async function loadCheckin() {
+  try {
+    const data = await api('/checkin/today');
+    if (data) {
+      document.getElementById('checkinForm').style.display = 'none';
+      document.getElementById('checkinDone').style.display = 'block';
+      const s = document.getElementById('checkinSummary');
+      s.innerHTML = `
+        <div class="metric"><div class="label">Energy</div><div class="value">${data.energy}</div></div>
+        <div class="metric"><div class="label">Mood</div><div class="value">${data.mood}</div></div>
+        <div class="metric"><div class="label">Stress</div><div class="value">${data.stress}</div></div>
+        <div class="metric"><div class="label">Soreness</div><div class="value">${data.soreness}</div></div>
+      `;
+    } else {
+      document.getElementById('checkinForm').style.display = 'block';
+      document.getElementById('checkinDone').style.display = 'none';
+    }
+  } catch(e) {
+    document.getElementById('checkinForm').style.display = 'block';
+    document.getElementById('checkinDone').style.display = 'none';
+  }
+}
+
+async function submitCheckin() {
+  const btn = document.getElementById('checkinBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+  try {
+    await api('/checkin', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        energy: parseInt(document.getElementById('energy').value),
+        mood: parseInt(document.getElementById('mood').value),
+        stress: parseInt(document.getElementById('stress').value),
+        soreness: parseInt(document.getElementById('soreness').value),
+        notes: document.getElementById('checkinNotes').value || null
+      })
+    });
+    showToast('Check-in submitted!');
+    loadCheckin();
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Submit Check-In';
+  }
+}
+
+// --- Workout ---
+async function loadWorkout() {
+  const el = document.getElementById('workoutContent');
+  const loading = document.getElementById('workoutLoading');
+  try {
+    const w = await api('/fitness/today');
+    loading.style.display = 'none';
+    el.style.display = 'block';
+
+    let html = `<div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">${w.title || 'Today\'s Workout'}</div>
+          <div class="card-subtitle">${w.workout_type || ''} &middot; ${w.duration_minutes || '?'} min &middot; ${w.intensity || ''}</div>
+        </div>
+      </div>`;
+
+    if (w.coaching_note || w.ai_reasoning) {
+      html += `<div class="coaching-note">${w.coaching_note || w.ai_reasoning}</div>`;
+    }
+    html += `</div>`;
+
+    if (w.warmup && w.warmup.length) {
+      html += `<div class="card"><div class="section-title">Warmup</div>`;
+      w.warmup.forEach(e => {
+        html += `<div class="exercise">
+          <div class="name">${e.exercise}</div>
+          <div class="detail">${e.duration_or_sets || ''}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (w.exercises && w.exercises.length) {
+      html += `<div class="card"><div class="section-title">Exercises</div>`;
+      w.exercises.forEach(e => {
+        html += `<div class="exercise">
+          <div class="name">${e.name}</div>
+          <div class="detail">${e.sets || '?'} sets x ${e.reps || '?'} &middot; Rest ${e.rest_seconds || '?'}s</div>
+          ${e.weight_guidance ? `<div class="detail">${e.weight_guidance}</div>` : ''}
+          ${e.notes ? `<div class="notes">${e.notes}</div>` : ''}
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (w.cooldown && w.cooldown.length) {
+      html += `<div class="card"><div class="section-title">Cooldown</div>`;
+      w.cooldown.forEach(e => {
+        html += `<div class="exercise">
+          <div class="name">${e.exercise}</div>
+          <div class="detail">${e.duration_or_sets || ''}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+
+    if (w.id) {
+      html += `<button class="btn btn-primary" onclick="completeWorkout('${w.id}')">Mark Complete</button>`;
+    }
+
+    el.innerHTML = html;
+  } catch(e) {
+    loading.style.display = 'none';
+    el.style.display = 'block';
+    el.innerHTML = `<div class="empty"><div class="icon">&#127947;</div><p>Could not load workout.</p></div>`;
+  }
+}
+
+async function completeWorkout(id) {
+  try {
+    await api('/fitness/complete', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ workout_id: id })
+    });
+    showToast('Workout marked complete!');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+// --- Nutrition ---
+async function loadNutrition() {
+  const el = document.getElementById('nutritionContent');
+  const loading = document.getElementById('nutritionLoading');
+  try {
+    const n = await api('/nutrition/today');
+    loading.style.display = 'none';
+    el.style.display = 'block';
+
+    if (n.meals && n.meals.length) {
+      let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
+      let html = '';
+      n.meals.forEach(m => {
+        totalCal += m.calories || 0;
+        totalP += m.protein_g || 0;
+        totalC += m.carbs_g || 0;
+        totalF += m.fat_g || 0;
+        html += `<div class="card"><div class="meal-item">
+          <div class="meal-type">${m.meal_type || ''}</div>
+          <div class="meal-title">${m.title || 'Meal'}</div>
+          <div class="meal-desc">${m.description || ''}</div>
+          <div class="macros">
+            <div class="macro"><span>${m.calories || 0}</span> kcal</div>
+            <div class="macro"><span>${m.protein_g || 0}g</span> protein</div>
+            <div class="macro"><span>${m.carbs_g || 0}g</span> carbs</div>
+            <div class="macro"><span>${m.fat_g || 0}g</span> fat</div>
+          </div>
+        </div></div>`;
+      });
+
+      html = `<div class="card">
+        <div class="card-title">Daily Totals</div>
+        <div class="macros" style="margin-top:12px;">
+          <div class="macro"><span>${Math.round(totalCal)}</span> kcal</div>
+          <div class="macro"><span>${Math.round(totalP)}g</span> P</div>
+          <div class="macro"><span>${Math.round(totalC)}g</span> C</div>
+          <div class="macro"><span>${Math.round(totalF)}g</span> F</div>
+        </div>
+      </div>` + html;
+
+      if (n.ai_reasoning) {
+        html = `<div class="coaching-note" style="margin-bottom:16px;">${n.ai_reasoning}</div>` + html;
+      }
+
+      el.innerHTML = html;
+    } else if (n.meal_type) {
+      // Single meal response
+      el.innerHTML = `<div class="card"><div class="meal-item">
+        <div class="meal-type">${n.meal_type || ''}</div>
+        <div class="meal-title">${n.title || 'Meal Plan'}</div>
+        <div class="meal-desc">${n.description || ''}</div>
+      </div></div>`;
+    } else {
+      el.innerHTML = JSON.stringify(n, null, 2);
+    }
+  } catch(e) {
+    loading.style.display = 'none';
+    el.style.display = 'block';
+    el.innerHTML = `<div class="empty"><div class="icon">&#127858;</div><p>Could not load meal plan.</p></div>`;
+  }
+}
+
+// --- Daily Plan ---
+async function loadDailyPlan() {
+  const el = document.getElementById('planContent');
+  const loading = document.getElementById('planLoading');
+  try {
+    const p = await api('/daily/plan');
+    loading.style.display = 'none';
+    el.style.display = 'block';
+
+    let html = '';
+    if (p.plan) {
+      // The plan might be a string or structured
+      if (typeof p.plan === 'string') {
+        html = `<div class="card"><div class="plan-text">${p.plan}</div></div>`;
+      } else {
+        html = `<div class="card"><div class="plan-text">${JSON.stringify(p.plan, null, 2)}</div></div>`;
+      }
+    }
+    if (p.sections) {
+      p.sections.forEach(s => {
+        html += `<div class="card plan-section">
+          <h3>${s.title || s.name || ''}</h3>
+          <div class="plan-text">${s.content || s.text || JSON.stringify(s)}</div>
+        </div>`;
+      });
+    }
+    if (p.coaching_note) {
+      html += `<div class="coaching-note">${p.coaching_note}</div>`;
+    }
+    if (!html) {
+      html = `<div class="card"><div class="plan-text">${JSON.stringify(p, null, 2).replace(/\\n/g, '\n')}</div></div>`;
+    }
+    el.innerHTML = html;
+  } catch(e) {
+    loading.style.display = 'none';
+    el.style.display = 'block';
+    el.innerHTML = `<div class="empty"><div class="icon">&#128203;</div><p>Could not generate daily plan.</p></div>`;
+  }
+}
+
+// --- Supplements ---
+async function loadSupplements() {
+  const el = document.getElementById('suppContent');
+  const loading = document.getElementById('suppLoading');
+  const empty = document.getElementById('suppEmpty');
+  try {
+    const s = await api('/supplements/stack');
+    loading.style.display = 'none';
+    if (!s || !s.length) {
+      empty.style.display = 'block';
+      return;
+    }
+    el.style.display = 'block';
+    let html = '';
+    s.forEach(sup => {
+      html += `<div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${sup.name}</div>
+            <div class="card-subtitle">${sup.brand || ''} ${sup.dose_amount || sup.dose || ''}${sup.dose_unit || sup.unit || ''}</div>
+          </div>
+          <div class="card-subtitle">${sup.timing || ''}</div>
+        </div>
+        ${sup.purpose ? `<div style="font-size:13px;color:var(--text-dim)">${sup.purpose}</div>` : ''}
+      </div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+  }
+}
+
+// --- Blood Work ---
+async function loadBloodwork() {
+  const el = document.getElementById('bwContent');
+  const loading = document.getElementById('bwLoading');
+  const empty = document.getElementById('bwEmpty');
+  try {
+    const b = await api('/bloodwork/biomarkers');
+    loading.style.display = 'none';
+    if (!b || !b.length) {
+      empty.style.display = 'block';
+      return;
+    }
+    el.style.display = 'block';
+    let html = '';
+    b.forEach(m => {
+      const status = m.status || 'normal';
+      const color = status === 'optimal' ? 'var(--green)' : status === 'high' || status === 'low' ? 'var(--red)' : 'var(--yellow)';
+      html += `<div class="card" style="border-left: 3px solid ${color};">
+        <div class="card-header">
+          <div>
+            <div class="card-title">${m.marker_name}</div>
+            <div class="card-subtitle">${m.marker_category || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:20px;font-weight:700;color:${color}">${m.value}</div>
+            <div class="card-subtitle">${m.unit || ''}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted)">
+          Ref: ${m.reference_min || '?'} - ${m.reference_max || '?'} ${m.unit || ''}
+          ${m.optimal_min ? ` | Optimal: ${m.optimal_min} - ${m.optimal_max}` : ''}
+        </div>
+      </div>`;
+    });
+    el.innerHTML = html;
+  } catch(e) {
+    loading.style.display = 'none';
+    empty.style.display = 'block';
+  }
+}
+
+// --- Oura Sync ---
+async function syncOura() {
+  showToast('Syncing Oura data...');
+  try {
+    await api('/sync/oura?days=7', { method: 'POST' });
+    showToast('Oura data synced!');
+    loadDashboard();
+  } catch(e) {
+    showToast('Sync failed: ' + e.message);
+  }
+}
+
+// --- Page loader ---
+const loaded = {};
+function loadPage(page) {
+  if (loaded[page]) return;
+  loaded[page] = true;
+  switch(page) {
+    case 'dashboard': loadDashboard(); break;
+    case 'checkin': loadCheckin(); break;
+    case 'workout': loadWorkout(); break;
+    case 'nutrition': loadNutrition(); break;
+    case 'dailyplan': loadDailyPlan(); break;
+    case 'supplements': loadSupplements(); break;
+    case 'bloodwork': loadBloodwork(); break;
+  }
+}
+
+// Initial load
+loadPage('dashboard');
+</script>
+</body>
+</html>
