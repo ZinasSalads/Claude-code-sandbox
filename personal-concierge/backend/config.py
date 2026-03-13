@@ -27,6 +27,10 @@ AMBEE_API_KEY = os.getenv("AMBEE_API_KEY")
 # --- Session 2: Research ---
 PUBMED_EMAIL = os.getenv("PUBMED_EMAIL")
 
+# --- Session 4: Voice ---
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+
 # --- Init Supabase client ---
 supabase = None
 if SUPABASE_URL and SUPABASE_SERVICE_KEY:
@@ -54,4 +58,13 @@ def get_service_status() -> dict:
         "openweather": bool(OPENWEATHER_API_KEY),
         "ambee": bool(AMBEE_API_KEY),
         "pubmed": bool(PUBMED_EMAIL),
+        "openai": bool(OPENAI_API_KEY),
+        "voice": bool(OPENAI_API_KEY),
+        "travel": True,
+        "social": True,
+        "financial": True,
+        "growth": True,
+        "career": True,
+        "wardrobe": True,
+        "notifications": True,
     }
