@@ -567,3 +567,115 @@ New components: 3 (EmptyState, ErrorState, RatingBar)
 - Values drift detection runs weekly, comparing 3 data sources (check-ins, social, growth)
 - Privacy amnesia mode preserves profile/settings but clears behavioral data
 - Onboarding celebrations at 4, 7, and 14 steps completed
+
+---
+
+# Build Log — Session 6
+
+## Started: 2026-03-13
+
+## Task 1 — Skincare Module
+Status: Complete
+Notes:
+- `services/skincare.py`: SkincareService with routine builder, ingredient conflict detection (6 known conflicts pre-seeded), product management, skin check-in logging, health correlations (sleep→breakouts, stress→puffiness), Claude Vision photo analysis, weekly skin summary
+- `routers/skincare.py`: 13 endpoints (profile CRUD, products CRUD, routines, conflicts, check-in, photo analysis, correlations, weekly summary)
+- `mobile/screens/Skincare.tsx`: Skin profile, morning/evening routines, conflict warnings, daily check-in, weekly trends, product management
+
+## Task 2 — Relationship Coaching
+Status: Complete
+Notes:
+- `services/relationship_coaching.py`: Gottman-based relationship health scoring (0-100), 5-component breakdown (connection 30%, quality 25%, reciprocity 20%, growth 15%, energy 10%), drift detection (>15pt drop in 30 days), Claude coaching insights
+- `routers/relationships.py`: 7 endpoints (list, detail, update, check-in, coaching, overall health, briefing)
+- `mobile/screens/Relationships.tsx`: Health ring, relationship cards, interaction logging, coaching insights
+
+## Task 3 — Digital Identity & Reputation
+Status: Complete
+Notes:
+- `services/digital_identity.py`: LinkedIn audit via Claude (profile strength scoring), personal brand statement generation, content suggestions matched to personality/content_style, audit history tracking
+- `routers/digital_identity.py`: 6 endpoints (profile CRUD, LinkedIn audit, brand statement, content suggestions, audit history)
+- `mobile/screens/DigitalIdentity.tsx`: Brand statement, LinkedIn audit, platform list, content suggestions
+
+## Task 4 — Financial Planning & Wealth Awareness
+Status: Complete
+Notes:
+- `services/financial_planning.py`: Savings goals with life-goal linkage, progress tracking with projected completion dates, financial stress logging (>=7 triggers budget-conscious mode across all modules), annual financial health prompt, goal timeline
+- `routers/financial_planning.py`: 9 endpoints (goals CRUD, progress update, stress log, stress flag, timeline, annual prompt, alignment)
+- `mobile/screens/FinancialPlanning.tsx`: Goals with progress bars, stress logging, alignment view
+
+## Task 5 — Hobbies & Competing Priorities
+Status: Complete
+Notes:
+- `services/hobbies.py`: Hobby portfolio management, dormancy detection (2x typical gap), seasonal awareness, hobby health score (0-100), priority conflict detection (3+ competing demands → Claude frames using values), conflict resolution logging
+- `routers/hobbies.py`: 10 endpoints (CRUD, session log, dormant, seasonal, health score, conflicts, resolve, briefing)
+- `mobile/screens/Hobbies.tsx`: Health score, active hobbies, dormant alerts, seasonal upcoming, conflict view
+
+## Task 6 — Contextual Intelligence Engine
+Status: Complete
+Notes:
+- `services/contextual_intelligence.py`: Signal expansion via Claude (any input → full multi-module implications), calendar event processing (travel/formal/social auto-expanded), anomaly detection (mood <4 for 3+ days, sleep <65 for 5+ days, no workouts 7+ days, no social 14 days), context building from all available data
+- `routers/contextual.py`: 4 endpoints (manual signal, recent signals, anomalies, calendar event)
+- `mobile/screens/ContextualIntelligence.tsx`: Signal feed, manual input, anomaly alerts, expansion breakdowns
+
+## Task 7 — Conversation Mode
+Status: Complete
+Notes:
+- `services/conversation.py`: Full context-aware AI chat with system prompt built from all modules (health, goals, personality, signals, habits). Session management with UUID-based conversations. History persistence in conversations table.
+- `routers/conversation.py`: 5 endpoints (message, sessions list, session history, delete session, context debug)
+- `mobile/screens/Conversation.tsx`: Full chat interface with message bubbles, suggested starters, session persistence
+- Floating chat button added to App.tsx (renders on all screens)
+
+## Task 8 — Weekly & Monthly Reviews
+Status: Complete
+Notes:
+- `services/reviews.py`: Weekly review aggregates all module data (health, workouts, social, habits, learning, skin, career) and Claude synthesizes into narrative + wins + patterns + coaching insight + next week intention. Monthly review synthesizes 4 weekly reviews into arc + legacy connection. Reviews cached in DB.
+- `routers/reviews.py`: 8 endpoints (weekly, monthly, specific dates, force regenerate, history)
+- `mobile/screens/Reviews.tsx`: Toggle weekly/monthly, narrative display, wins/patterns badges, coach insight, history scroll
+
+## Task 9 — Multi-Agent Council Upgrade
+Status: Complete
+Notes:
+- `agents/council.py`: AgentCouncil with 10 specialist agents (Fitness, Nutrition, Sleep, Mental Health, Social, Career, GP, Life Balance, Environment, Longevity) running in parallel via asyncio.gather. Each produces position statement with domain, recommendation, urgency, non_negotiables, willing_to_yield, data_support. Arbitrator uses priority weights from legacy_profile. Full context gathering from all module tables.
+- Updated `routers/daily.py`: GET /daily/plan now uses council, GET /daily/council-debug returns all positions + conflicts
+- Decision: Used asyncio.gather instead of LangGraph graph wrapper — same parallel execution, simpler dependency (langgraph added to requirements.txt but council works without it)
+
+## Task 10 — Final Integration & Complete Polish
+Status: Complete
+Notes:
+- Registered 8 new routers in main.py (skincare, relationships, digital, financial-planning, hobbies, context, conversation, reviews)
+- Added skincare conflict seeding on startup
+- Updated config.py with 9 new service statuses
+- Updated requirements.txt with langgraph
+- Updated mobile api.ts with 30+ new API functions for Session 6
+- Updated App.tsx: 5-tab navigation (Home, Health, Life, Insights, Profile), 8 new screens wired, floating chat button
+- Updated standalone.html: 8 new tabs (Skincare, Relationships, Hobbies, Financial Goals, Digital Identity, Contextual Intel, Chat, Reviews) with full JS functions
+- Version bumped to 6.0.0
+- Migration 005 with 16 new tables
+
+---
+
+## Session 6 Summary — ROADMAP COMPLETE
+
+Total modules built: 35+
+Total endpoints: 210+
+Total screens: 30
+Total DB tables: 55+
+Total services: 34
+Total routers: 36
+
+What the app now covers:
+Health: Fitness / Nutrition / Sleep / Blood Work / Supplements /
+        Skincare / Longevity / GP / Environmental
+Life:   Social / Relationships / Growth / Career / Travel /
+        Wardrobe / Hobbies / Learning / Legacy / Home
+Intelligence: Voice / Conversation / Contextual Engine /
+              Personality / Feedback Learning / Reviews
+Admin:  Onboarding / Privacy / Financial / Digital Identity
+
+Architecture:
+- 10-agent council (parallel) → structured arbitration → unified daily plan
+- Contextual intelligence engine → any signal → full multi-module implications
+- Conversation mode → full context AI chat from anywhere
+- Weekly/monthly reviews → synthesized wisdom across all modules
+- Financial stress flag → budget-conscious mode across all suggestions
+
+Build complete.

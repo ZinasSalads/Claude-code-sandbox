@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("concierge")
 
-app = FastAPI(title="Personal Concierge", version="5.0.0")
+app = FastAPI(title="Personal Concierge", version="6.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,6 +32,9 @@ from routers import longevity, coaching, daily, reminders
 from routers import voice, travel, social, financial, growth, career, wardrobe, notifications
 from routers import personality, onboarding, feedback, legacy, home_environment, learning, privacy
 from routers import calendar as calendar_router
+# Session 6 routers
+from routers import skincare, relationships, digital_identity, financial_planning
+from routers import hobbies, contextual, conversation, reviews
 
 # Session 1 routers
 app.include_router(health.router, prefix="/checkin", tags=["Check-In"])
@@ -68,6 +71,16 @@ app.include_router(home_environment.router, prefix="/home", tags=["Home Environm
 app.include_router(learning.router, prefix="/learning", tags=["Learning"])
 app.include_router(privacy.router, prefix="/privacy", tags=["Privacy"])
 app.include_router(calendar_router.router, prefix="/calendar", tags=["Calendar"])
+
+# Session 6 routers
+app.include_router(skincare.router, prefix="/skincare", tags=["Skincare"])
+app.include_router(relationships.router, prefix="/relationships", tags=["Relationships"])
+app.include_router(digital_identity.router, prefix="/digital", tags=["Digital Identity"])
+app.include_router(financial_planning.router, prefix="/financial-planning", tags=["Financial Planning"])
+app.include_router(hobbies.router, prefix="/hobbies", tags=["Hobbies"])
+app.include_router(contextual.router, prefix="/context", tags=["Contextual Intelligence"])
+app.include_router(conversation.router, prefix="/conversation", tags=["Conversation"])
+app.include_router(reviews.router, prefix="/reviews", tags=["Reviews"])
 
 
 @app.get("/health")
@@ -137,8 +150,15 @@ app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__
 @app.on_event("startup")
 async def startup():
     status = get_service_status()
-    logger.info("=== Personal Concierge starting ===")
+    logger.info("=== Personal Concierge v6.0 starting ===")
     for service, configured in status.items():
         icon = "✓" if configured else "✗"
         logger.info(f"  {icon} {service}: {'configured' if configured else 'MISSING'}")
-    logger.info("===================================")
+    logger.info("=========================================")
+
+    # Seed skincare ingredient conflicts on startup
+    try:
+        from services.skincare import skincare_service
+        await skincare_service.seed_conflicts()
+    except Exception as e:
+        logger.warning(f"Skincare conflict seeding skipped: {e}")

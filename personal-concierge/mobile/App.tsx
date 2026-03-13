@@ -1,5 +1,5 @@
-import React from 'react';
-import { StatusBar } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { StatusBar, TouchableOpacity, View, StyleSheet as RNStyleSheet } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -33,6 +33,16 @@ import Legacy from './screens/Legacy';
 import HomeEnvironment from './screens/HomeEnvironment';
 import Learning from './screens/Learning';
 import Privacy from './screens/Privacy';
+
+// Session 6 screens
+import Skincare from './screens/Skincare';
+import Relationships from './screens/Relationships';
+import DigitalIdentity from './screens/DigitalIdentity';
+import FinancialPlanning from './screens/FinancialPlanning';
+import Hobbies from './screens/Hobbies';
+import ContextualIntelligence from './screens/ContextualIntelligence';
+import Conversation from './screens/Conversation';
+import Reviews from './screens/Reviews';
 
 // Dark theme
 const DarkTheme = {
@@ -92,6 +102,20 @@ function LifeIcon({ color, size }: { color: string; size: number }) {
   );
 }
 
+function InsightsIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 function MicIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -120,6 +144,20 @@ function UserIcon({ color, size }: { color: string; size: number }) {
   );
 }
 
+function ChatIcon() {
+  return (
+    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+        stroke="#fff"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
 const stackScreenOptions = {
   headerStyle: { backgroundColor: '#0D0D1A' },
   headerTintColor: '#fff',
@@ -136,6 +174,7 @@ function HomeStackScreen() {
       <HomeStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
       <HomeStack.Screen name="MealPlan" component={MealPlan} options={{ title: 'Meal Plan' }} />
       <HomeStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
+      <HomeStack.Screen name="Conversation" component={Conversation} options={{ title: 'AI Chat' }} />
     </HomeStack.Navigator>
   );
 }
@@ -150,21 +189,24 @@ function HealthStackScreen() {
       <HealthStack.Screen name="Longevity" component={Longevity} options={{ title: 'Longevity' }} />
       <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
       <HealthStack.Screen name="AppleHealth" component={AppleHealth} options={{ title: 'Apple Health' }} />
+      <HealthStack.Screen name="Skincare" component={Skincare} options={{ title: 'Skincare' }} />
     </HealthStack.Navigator>
   );
 }
 
-// Life stack (Social, Growth, Career, Travel, Wardrobe, Financial + Session 5)
+// Life stack
 const LifeStack = createNativeStackNavigator();
 function LifeStackScreen() {
   return (
     <LifeStack.Navigator screenOptions={stackScreenOptions}>
       <LifeStack.Screen name="Social" component={Social} options={{ title: 'Social Health' }} />
+      <LifeStack.Screen name="Relationships" component={Relationships} options={{ title: 'Relationships' }} />
       <LifeStack.Screen name="Growth" component={Growth} options={{ title: '1% Growth' }} />
       <LifeStack.Screen name="Career" component={Career} options={{ title: 'Career' }} />
       <LifeStack.Screen name="Travel" component={Travel} options={{ title: 'Travel' }} />
       <LifeStack.Screen name="Wardrobe" component={WardrobeScreen} options={{ title: 'Wardrobe' }} />
       <LifeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
+      <LifeStack.Screen name="Hobbies" component={Hobbies} options={{ title: 'Hobbies' }} />
       <LifeStack.Screen name="Legacy" component={Legacy} options={{ title: 'Legacy & Vision' }} />
       <LifeStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
       <LifeStack.Screen name="Learning" component={Learning} options={{ title: 'Learning' }} />
@@ -172,7 +214,20 @@ function LifeStackScreen() {
   );
 }
 
-// Profile stack (Check-in, Personality, Privacy)
+// Insights stack (new for Session 6)
+const InsightsStack = createNativeStackNavigator();
+function InsightsStackScreen() {
+  return (
+    <InsightsStack.Navigator screenOptions={stackScreenOptions}>
+      <InsightsStack.Screen name="Reviews" component={Reviews} options={{ title: 'Reviews' }} />
+      <InsightsStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
+      <InsightsStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
+      <InsightsStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
+    </InsightsStack.Navigator>
+  );
+}
+
+// Profile stack
 const ProfileStack = createNativeStackNavigator();
 function ProfileStackScreen() {
   return (
@@ -188,59 +243,85 @@ function ProfileStackScreen() {
 const Tab = createBottomTabNavigator();
 
 export default function App() {
+  const [showChat, setShowChat] = useState(false);
+
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#0D0D1A" />
       <NavigationContainer theme={DarkTheme}>
-        <Tab.Navigator
-          screenOptions={{
-            tabBarStyle: {
-              backgroundColor: '#0D0D1A',
-              borderTopColor: 'rgba(255,255,255,0.06)',
-              borderTopWidth: 1,
-              paddingBottom: 8,
-              paddingTop: 8,
-              height: 60,
-            },
-            tabBarActiveTintColor: '#6C63FF',
-            tabBarInactiveTintColor: 'rgba(255,255,255,0.3)',
-            tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
-            headerShown: false,
-          }}
-        >
-          <Tab.Screen
-            name="Home"
-            component={HomeStackScreen}
-            options={{ tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }}
-          />
-          <Tab.Screen
-            name="Health"
-            component={HealthStackScreen}
-            options={{ tabBarIcon: ({ color, size }) => <HeartIcon color={color} size={size} /> }}
-          />
-          <Tab.Screen
-            name="Life"
-            component={LifeStackScreen}
-            options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
-          />
-          <Tab.Screen
-            name="Voice"
-            component={Voice}
-            options={{
-              tabBarIcon: ({ color, size }) => <MicIcon color={color} size={size} />,
-              headerShown: true,
-              headerStyle: { backgroundColor: '#0D0D1A' },
-              headerTintColor: '#fff',
-              headerShadowVisible: false,
+        <View style={{ flex: 1 }}>
+          <Tab.Navigator
+            screenOptions={{
+              tabBarStyle: {
+                backgroundColor: '#0D0D1A',
+                borderTopColor: 'rgba(255,255,255,0.06)',
+                borderTopWidth: 1,
+                paddingBottom: 8,
+                paddingTop: 8,
+                height: 60,
+              },
+              tabBarActiveTintColor: '#6C63FF',
+              tabBarInactiveTintColor: 'rgba(255,255,255,0.3)',
+              tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+              headerShown: false,
             }}
-          />
-          <Tab.Screen
-            name="Profile"
-            component={ProfileStackScreen}
-            options={{ tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} /> }}
-          />
-        </Tab.Navigator>
+          >
+            <Tab.Screen
+              name="Home"
+              component={HomeStackScreen}
+              options={{ tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }}
+            />
+            <Tab.Screen
+              name="Health"
+              component={HealthStackScreen}
+              options={{ tabBarIcon: ({ color, size }) => <HeartIcon color={color} size={size} /> }}
+            />
+            <Tab.Screen
+              name="Life"
+              component={LifeStackScreen}
+              options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
+            />
+            <Tab.Screen
+              name="Insights"
+              component={InsightsStackScreen}
+              options={{ tabBarIcon: ({ color, size }) => <InsightsIcon color={color} size={size} /> }}
+            />
+            <Tab.Screen
+              name="Profile"
+              component={ProfileStackScreen}
+              options={{ tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} /> }}
+            />
+          </Tab.Navigator>
+
+          {/* Floating chat button */}
+          <TouchableOpacity
+            style={fabStyles.fab}
+            onPress={() => setShowChat(!showChat)}
+            activeOpacity={0.8}
+          >
+            <ChatIcon />
+          </TouchableOpacity>
+        </View>
       </NavigationContainer>
     </SafeAreaProvider>
   );
 }
+
+const fabStyles = RNStyleSheet.create({
+  fab: {
+    position: 'absolute',
+    bottom: 80,
+    right: 20,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#6C63FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#6C63FF',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+});

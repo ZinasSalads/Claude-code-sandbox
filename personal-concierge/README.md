@@ -1,436 +1,161 @@
 # Personal Concierge App
 
-A personal health & life concierge powered by AI. Combines Oura Ring biometric data, Apple Health integration, daily check-ins, blood work analysis, supplement management, environmental intelligence, voice interface, travel intelligence, social health tracking, financial context, habit coaching, career development, wardrobe planning, personality assessment, progressive onboarding, legacy vision, home environment optimization, learning tracking, feedback learning engine, Google Calendar integration, data privacy controls, and Claude AI to deliver a fully personalized daily life plan.
+A comprehensive personal health & life concierge powered by AI. Synthesizes data from every domain of a human life — health, fitness, nutrition, sleep, skin, supplements, blood work, longevity, environment, mental health, social connections, relationships, hobbies, career, learning, travel, wardrobe, finances, legacy, home, digital identity, and growth — into a single coherent daily plan delivered by a 10-agent council, accessible through voice and conversation, and tracked across weeks and months in reviews that connect daily actions to a 10-year vision.
 
 ## Architecture
 
+```
+personal-concierge/
+├── backend/
+│   ├── main.py              # FastAPI app, 36 routers, 210+ endpoints
+│   ├── config.py             # Environment variables, service status
+│   ├── requirements.txt      # Python dependencies
+│   ├── agents/
+│   │   └── council.py        # 10-agent parallel council + arbitrator
+│   ├── routers/              # 36 API routers
+│   ├── services/             # 34 business logic services
+│   ├── migrations/           # 5 SQL migration files (55+ tables)
+│   └── static/
+│       ├── index.html        # Backend-served dashboard
+│       └── standalone.html   # Self-contained dashboard (27 tabs)
+└── mobile/
+    ├── App.tsx               # 5-tab navigation + floating chat
+    ├── screens/              # 30 React Native screens
+    ├── components/           # Reusable components
+    └── lib/
+        ├── api.ts            # 80+ typed API functions
+        └── supabase.ts       # Supabase client
+```
+
+### Tech Stack
+
 - **Backend:** Python 3.11 + FastAPI + uvicorn
 - **Frontend:** Expo React Native with TypeScript
-- **Database:** Supabase (Postgres)
+- **Database:** Supabase (Postgres, 55+ tables)
 - **AI:** Anthropic Claude API (claude-sonnet-4-20250514)
-- **Memory:** mem0ai + Supabase life profile for persistent user context
+- **Memory:** mem0ai + Supabase life profile
 - **Wearable:** Oura Ring API v2
+- **Voice:** OpenAI Whisper (STT) + TTS
 - **Research:** PubMed E-utilities
 - **Environment:** OpenWeatherMap / Open-Meteo / Ambee
+- **Calendar:** Google Calendar OAuth2
 
 ## Modules
 
-| Module | Description |
+| Domain | Modules |
 |---|---|
-| **Core Loop** | Oura sync, check-in, AI fitness agent, AI nutrition agent |
-| **Memory & Life Profile** | Progressive user knowledge base, 50 profile questions |
-| **Blood Work** | PDF upload, Claude biomarker extraction, optimal ranges, delta reports |
-| **Supplement Stack** | Add/manage supplements, interaction checking, adherence tracking |
-| **Environmental Intelligence** | UV index, AQI, pollen, outdoor safety assessment |
-| **Science Engine** | PubMed research sweeps, relevance grading, evidence evaluation |
-| **Longevity Dashboard** | Biological age estimation, composite health scores |
-| **Coaching Engine** | Four coaching modes, compliance drift detection |
-| **Cross-Module Arbitrator** | Unified daily plan synthesizing all data sources |
-| **Reminders** | Time-aware contextual notifications |
-| **Voice Interface** | Whisper STT + OpenAI TTS, morning briefing, command processing |
-| **Travel Intelligence** | Pre-trip prep, real-time local concierge, post-trip recovery |
-| **Social & Life Balance** | Relationship tracking, connection cadence, social health score |
-| **Financial Context** | Budget-aware recommendations, subscription audit |
-| **1% Growth Engine** | Atomic habits, streak tracking, compound progress coaching |
-| **Career & Development** | Burnout monitoring, weekly reflection, health-performance correlation |
-| **Style & Wardrobe** | Closet inventory, weather-aware outfit suggestions, wardrobe audit |
-| **Push Notifications** | Expo push, morning briefing, habit nudges, supplement reminders |
-| **Personality & Values** | MBTI assessment, values orientation, coaching style adaptation |
-| **Progressive Onboarding** | 14-step guided setup, celebration milestones, habit seeding |
-| **Apple Health** | Gap-filling biometric sync when Oura isn't worn |
-| **Google Calendar** | OAuth2 integration, event classification, workout window detection |
-| **Feedback Learning** | Preference ratings, pattern extraction, surprise mode |
-| **Legacy & Vision** | 10-year goals, milestone timeline, values drift detection |
-| **Home Environment** | Air quality, lighting, ergonomics, budget-aware recommendations |
-| **Learning & Education** | Books, courses, language goals, streak tracking |
-| **Data Privacy** | Full data export, per-category deletion, amnesia mode |
+| **Health** | Fitness, Nutrition, Sleep, Blood Work, Supplements, Skincare, Longevity, GP, Environmental |
+| **Life** | Social, Relationships, Growth, Career, Travel, Wardrobe, Hobbies, Learning, Legacy, Home |
+| **Intelligence** | Voice, Conversation, Contextual Engine, Personality, Feedback Learning, Reviews |
+| **Admin** | Onboarding, Privacy, Financial, Digital Identity, Notifications |
+
+## API Endpoints (210+)
+
+### Core
+- `GET /health` — Service status
+- `GET /dashboard/summary` — Today's data + 7-day history
+- `GET /daily/plan` — 10-agent council daily plan
+- `GET /daily/council-debug` — Agent positions + conflicts
+
+### Health
+- `POST /checkin` — Daily check-in
+- `GET /fitness/today` — AI workout
+- `GET /nutrition/today` — AI meal plan
+- `GET/POST /sync/oura` — Oura data sync
+- `POST /sync/apple-health` — Apple Health merge
+- `POST /bloodwork/upload` — Blood work PDF upload
+- `GET /supplements/stack` — Supplement management
+- `GET /skincare/routine/morning|evening` — Skincare routines
+- `POST /skincare/analyze-photo` — Claude Vision skin analysis
+- `GET /skincare/correlations` — Health-skin correlations
+- `POST /longevity/calculate` — Biological age estimation
+
+### Life
+- `GET /social/circle` — Social contacts
+- `GET /relationships/health` — Relationship health scoring
+- `GET /growth/today` — Habit tracking
+- `GET /career/burnout` — Burnout risk detection
+- `GET /travel/trips` — Trip management
+- `GET /wardrobe/suggest` — Outfit suggestions
+- `GET /hobbies/health-score` — Hobby portfolio health
+- `GET /hobbies/conflicts` — Priority conflict detection
+- `GET /learning/today` — Learning recommendations
+- `GET /legacy/drift` — Values drift detection
+
+### Intelligence
+- `POST /voice/command` — Voice commands
+- `GET /voice/morning-briefing` — Morning briefing
+- `POST /conversation/message` — AI chat
+- `POST /context/signal` — Contextual signal expansion
+- `GET /context/anomalies` — Data anomaly detection
+- `GET /reviews/weekly` — Weekly review synthesis
+- `GET /reviews/monthly` — Monthly review synthesis
+
+### Profile & Admin
+- `GET /personality/profile` — MBTI + values
+- `GET /onboarding/status` — Setup progress
+- `GET /digital/profile` — Digital identity
+- `POST /digital/linkedin-audit` — LinkedIn audit
+- `GET /financial-planning/goals` — Savings goals
+- `GET /financial-planning/stress-flag` — Financial stress flag
+- `POST /privacy/export` — Full data export
+- `GET /calendar/events` — Google Calendar sync
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `SUPABASE_URL` | Yes | Supabase project URL |
+| `SUPABASE_SERVICE_KEY` | Yes | Supabase service role key |
+| `SUPABASE_ANON_KEY` | No | Supabase anon key (for mobile) |
+| `ANTHROPIC_API_KEY` | Yes | Claude API for AI features |
+| `OURA_PERSONAL_ACCESS_TOKEN` | No | Oura Ring data sync |
+| `OPENAI_API_KEY` | No | Voice (Whisper STT + TTS) |
+| `ELEVENLABS_API_KEY` | No | Alternative TTS |
+| `OPENWEATHER_API_KEY` | No | Weather data |
+| `AMBEE_API_KEY` | No | Pollen/air quality |
+| `PUBMED_EMAIL` | No | PubMed research |
+| `MEM0_API_KEY` | No | Memory service (optional) |
+| `GOOGLE_CALENDAR_CLIENT_ID` | No | Calendar integration |
+| `GOOGLE_CALENDAR_CLIENT_SECRET` | No | Calendar integration |
+| `GOOGLE_CALENDAR_REDIRECT_URI` | No | Calendar OAuth callback |
+
+## Database Schema (55+ tables)
+
+**Migration 001 (Session 1):** health_data, check_ins, workouts, meals, user_profile, memories, profile_questions
+**Migration 002 (Session 2):** biomarkers, bloodwork_uploads, supplements, supplement_log, environmental_data, research_articles, longevity_scores, coaching_settings, compliance_events
+**Migration 003 (Session 4):** social_contacts, social_log, subscriptions, growth_habits, growth_habit_log, career_profiles, career_reflections, wardrobe_items, outfit_log, trips, trip_checkins, voice_sessions, push_tokens, financial_context
+**Migration 004 (Session 5):** personality_profiles, onboarding_progress, preference_ratings, preference_patterns, legacy_profile, legacy_milestones, home_profile, home_recommendations, learning_profile, books, courses, learning_sessions, calendar_tokens, calendar_events, sensitivity_settings
+**Migration 005 (Session 6):** skincare_products, skincare_conflicts, skin_log, skin_profile, relationships, relationship_checkins, digital_identity, digital_audit_log, financial_goals, financial_stress_log, hobbies, hobby_log, priority_conflicts, context_signals, conversations, weekly_reviews, monthly_reviews
 
 ## Setup
-
-### 1. Clone and install
 
 ```bash
 # Backend
 cd personal-concierge/backend
 pip install -r requirements.txt
+cp .env.example .env  # Fill in credentials
+uvicorn main:app --reload
 
 # Mobile
 cd personal-concierge/mobile
 npm install
-```
-
-### 2. Environment variables
-
-Copy `.env.example` to `.env` in the project root and fill in:
-
-| Variable | Where to get it | Required |
-|---|---|---|
-| `SUPABASE_URL` | supabase.com → project settings → API | Yes |
-| `SUPABASE_ANON_KEY` | supabase.com → project settings → API (anon/public) | Yes |
-| `SUPABASE_SERVICE_KEY` | supabase.com → project settings → API (service_role) | Yes |
-| `ANTHROPIC_API_KEY` | console.anthropic.com → API Keys | Yes |
-| `OURA_PERSONAL_ACCESS_TOKEN` | cloud.ouraring.com/personal-access-tokens | Yes |
-| `MEM0_API_KEY` | app.mem0.ai → Settings → API Keys | Optional |
-| `OPENWEATHER_API_KEY` | openweathermap.org → API Keys | Optional |
-| `AMBEE_API_KEY` | api-dashboard.getambee.com | Optional |
-| `PUBMED_EMAIL` | Your email (PubMed E-utilities courtesy) | Optional |
-| `OPENAI_API_KEY` | platform.openai.com → API Keys (Whisper STT + TTS) | Optional |
-| `ELEVENLABS_API_KEY` | elevenlabs.io (premium TTS voice) | Optional |
-| `GOOGLE_CALENDAR_CLIENT_ID` | Google Cloud Console → OAuth 2.0 credentials | Optional |
-| `GOOGLE_CALENDAR_CLIENT_SECRET` | Google Cloud Console → OAuth 2.0 credentials | Optional |
-| `GOOGLE_CALENDAR_REDIRECT_URI` | Your callback URL (e.g. `http://localhost:8000/calendar/callback`) | Optional |
-
-Copy `mobile/.env.example` to `mobile/.env` and fill in:
-
-| Variable | Notes |
-|---|---|
-| `EXPO_PUBLIC_SUPABASE_URL` | Same as SUPABASE_URL |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | The anon key (different from service key) |
-| `EXPO_PUBLIC_API_URL` | `http://localhost:8000` for local dev |
-
-### 3. Set up database
-
-```bash
-cd backend
-python scripts/run_migrations.py
-python scripts/seed_profile_questions.py  # Optional: seed profile questions
-```
-
-If the script can't execute DDL via API, copy the contents of `backend/migrations/001_initial_schema.sql`, `002_session2_schema.sql`, `003_session4_schema.sql`, and `004_session5_schema.sql` and paste into the Supabase SQL Editor.
-
-### 4. Sync your Oura data
-
-```bash
-cd backend
-python scripts/oura_sync.py           # last 30 days
-python scripts/oura_sync.py --days 7  # or specify days
-```
-
-### 5. Run backend
-
-```bash
-cd backend
-uvicorn main:app --reload
-```
-
-Backend runs at http://localhost:8000. Check http://localhost:8000/health for status.
-
-### 6. Run mobile app
-
-```bash
-cd mobile
 npx expo start
+
+# Database
+# Run migrations 001-005 in Supabase SQL Editor
 ```
 
-Scan the QR code with Expo Go on your phone.
+## Deployed
 
-## API Endpoints
+- **Backend:** https://claude-code-sandbox-production.up.railway.app
+- **Dashboard:** https://claude-code-sandbox-production.up.railway.app/ (served by FastAPI)
 
-### Core
-| Method | Path | Description |
-|---|---|---|
-| GET | `/health` | Health check + service status |
-| POST | `/checkin` | Submit morning check-in |
-| GET | `/checkin/today` | Get today's check-in |
-| GET | `/checkin/history?days=30` | Check-in history |
-| GET | `/fitness/today` | Today's workout recommendation |
-| POST | `/fitness/complete` | Mark workout complete |
-| GET | `/fitness/history?days=14` | Workout history |
-| GET | `/nutrition/today` | Today's meal plan |
-| POST | `/nutrition/log` | Log a meal as eaten |
-| POST | `/sync/oura?days=7` | Trigger Oura data sync |
+## Build History
 
-### Blood Work
-| Method | Path | Description |
-|---|---|---|
-| POST | `/bloodwork/upload` | Upload lab PDF for AI extraction |
-| GET | `/bloodwork/biomarkers` | Latest biomarkers with optimal ranges |
-| GET | `/bloodwork/biomarkers/{name}/trend` | Historical trend for a biomarker |
-| GET | `/bloodwork/delta` | Compare two lab dates |
-| GET | `/bloodwork/uploads` | Upload history |
-| GET | `/bloodwork/flagged` | Biomarkers outside optimal range |
-
-### Supplements
-| Method | Path | Description |
-|---|---|---|
-| GET | `/supplements/stack` | Current supplement stack |
-| POST | `/supplements/add` | Add supplement (with interaction check) |
-| PUT | `/supplements/{id}` | Update a supplement |
-| DELETE | `/supplements/{id}` | Deactivate a supplement |
-| POST | `/supplements/log` | Log adherence |
-| GET | `/supplements/today` | Today's supplement log |
-| GET | `/supplements/stats` | Adherence statistics |
-| GET | `/supplements/schedule` | Supplements by timing |
-
-### Environment
-| Method | Path | Description |
-|---|---|---|
-| GET | `/environment/today` | Today's UV, AQI, pollen, weather |
-
-### Research
-| Method | Path | Description |
-|---|---|---|
-| POST | `/research/sweep` | Run PubMed research sweep |
-| GET | `/research/articles` | Saved/relevant articles |
-| POST | `/research/articles/{id}/save` | Bookmark article |
-| POST | `/research/articles/{id}/dismiss` | Dismiss article |
-
-### Longevity
-| Method | Path | Description |
-|---|---|---|
-| POST | `/longevity/calculate` | Calculate longevity metrics |
-| GET | `/longevity/latest` | Most recent calculation |
-| GET | `/longevity/history` | Metric history |
-
-### Coaching
-| Method | Path | Description |
-|---|---|---|
-| GET | `/coaching/settings` | Current coaching settings |
-| POST | `/coaching/mode` | Set coaching mode |
-| GET | `/coaching/modes` | Available coaching modes |
-| POST | `/coaching/compliance` | Log compliance event |
-| GET | `/coaching/drift` | Drift analysis report |
-
-### Daily Plan & Reminders
-| Method | Path | Description |
-|---|---|---|
-| GET | `/daily/plan` | AI-generated daily plan from all modules |
-| GET | `/reminders/pending` | Time-aware pending reminders |
-
-### Voice (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| POST | `/voice/transcribe` | Upload audio → Whisper STT |
-| POST | `/voice/synthesize` | Text → TTS (OpenAI, mp3) |
-| POST | `/voice/command` | Process voice command via Claude |
-| GET | `/voice/morning-briefing` | Generate morning briefing text |
-| GET | `/voice/evening-wind-down` | Generate evening wind-down text |
-| POST | `/voice/workout-coaching` | Real-time workout coaching cue |
-| POST | `/voice/log-session` | Save voice session log |
-
-### Travel (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/travel/trips` | List all trips |
-| POST | `/travel/trips` | Create a trip |
-| GET | `/travel/trips/{id}` | Trip detail |
-| PUT | `/travel/trips/{id}` | Update trip |
-| GET | `/travel/trips/{id}/prep` | Generate pre-trip plan |
-| POST | `/travel/trips/{id}/checkin` | Daily travel check-in |
-| GET | `/travel/trips/{id}/post-trip` | Post-trip recovery protocol |
-| GET | `/travel/active` | Currently active trip |
-| GET | `/travel/suggestions` | Local restaurant/workout suggestions |
-
-### Social (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/social/circle` | Get social contacts |
-| POST | `/social/circle` | Add contact |
-| PUT | `/social/circle/{id}` | Update contact |
-| GET | `/social/overdue` | Overdue connections |
-| POST | `/social/log` | Log social interaction |
-| GET | `/social/score` | Weekly social health score |
-| GET | `/social/briefing` | Command Center widget data |
-| POST | `/social/suggest/{id}` | Suggest activity for contact |
-
-### Financial (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/financial/context` | Financial profile |
-| PUT | `/financial/context` | Update financial profile |
-| GET | `/financial/subscriptions` | List subscriptions |
-| POST | `/financial/subscriptions` | Add subscription |
-| PUT | `/financial/subscriptions/{id}` | Update subscription |
-| GET | `/financial/audit` | Subscription audit report |
-
-### Growth (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/growth/habits` | List habits with status |
-| POST | `/growth/habits` | Add habit |
-| PUT | `/growth/habits/{id}` | Update habit |
-| DELETE | `/growth/habits/{id}` | Deactivate habit |
-| GET | `/growth/today` | Today's habits widget |
-| POST | `/growth/log` | Log habit completion |
-| GET | `/growth/weekly` | Weekly compound report |
-| GET | `/growth/suggest` | Claude habit suggestion |
-| GET | `/growth/score` | Compound growth score |
-
-### Career (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/career/profile` | Career profile |
-| PUT | `/career/profile` | Update career profile |
-| POST | `/career/reflection` | Log weekly reflection |
-| GET | `/career/reflections` | Reflection history |
-| GET | `/career/burnout` | Burnout risk assessment |
-| GET | `/career/coaching` | Weekly coaching insight |
-| GET | `/career/correlations` | Health-performance correlations |
-
-### Wardrobe (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/wardrobe/items` | List wardrobe items |
-| POST | `/wardrobe/items` | Add item |
-| PUT | `/wardrobe/items/{id}` | Update item |
-| DELETE | `/wardrobe/items/{id}` | Deactivate item |
-| GET | `/wardrobe/suggest` | Today's outfit suggestion |
-| GET | `/wardrobe/tomorrow` | Tomorrow's outfit suggestion |
-| POST | `/wardrobe/log` | Log outfit worn |
-| GET | `/wardrobe/audit` | Wardrobe audit report |
-
-### Notifications (Session 4)
-| Method | Path | Description |
-|---|---|---|
-| POST | `/notifications/register` | Register Expo push token |
-| POST | `/notifications/send-morning` | Trigger morning briefing notification |
-| POST | `/notifications/send-habits` | Trigger habit nudge |
-| POST | `/notifications/schedule` | Run full notification check |
-
-### Apple Health (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| POST | `/sync/apple-health` | Sync Apple Health data (gap-fill) |
-| GET | `/sync/gaps` | Get dates with missing biometric data |
-
-### Personality (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/personality/questions` | Get MBTI + values assessment questions |
-| POST | `/personality/score` | Score completed assessment |
-| GET | `/personality/profile` | Get personality profile |
-| GET | `/personality/insight` | AI personality insight |
-| GET | `/personality/coaching-style` | Coaching style from personality |
-| PUT | `/personality/profile` | Update personality profile |
-
-### Onboarding (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/onboarding/status` | Onboarding progress status |
-| GET | `/onboarding/steps` | All onboarding steps |
-| GET | `/onboarding/step/{name}` | Get step content |
-| POST | `/onboarding/step/{name}` | Complete a step |
-| POST | `/onboarding/step/{name}/skip` | Skip a step |
-| GET | `/onboarding/habits-suggest` | Suggest habits from profile |
-
-### Calendar (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/calendar/auth` | Get Google OAuth2 authorization URL |
-| GET | `/calendar/callback` | OAuth2 callback handler |
-| GET | `/calendar/status` | Calendar connection status |
-| POST | `/calendar/sync` | Sync calendar events |
-| GET | `/calendar/today` | Today's events |
-| GET | `/calendar/tomorrow` | Tomorrow's events |
-| GET | `/calendar/workout-windows` | Available workout time slots |
-| GET | `/calendar/detect-trips` | Detect trips from calendar |
-| DELETE | `/calendar/disconnect` | Disconnect Google Calendar |
-
-### Feedback (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| POST | `/feedback/rate` | Submit preference rating |
-| GET | `/feedback/patterns` | Get all preference patterns |
-| GET | `/feedback/patterns/{category}` | Patterns for one category |
-| GET | `/feedback/summary` | Learning summary |
-
-### Legacy (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/legacy/profile` | Legacy vision profile |
-| PUT | `/legacy/profile` | Update legacy profile |
-| GET | `/legacy/milestones` | Life milestones |
-| POST | `/legacy/milestones` | Add milestone |
-| GET | `/legacy/drift` | Values drift analysis |
-| GET | `/legacy/bridge` | Daily bridge moment |
-| GET | `/legacy/annual-review` | Annual review |
-
-### Home Environment (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/home/profile` | Home environment profile |
-| PUT | `/home/profile` | Update home profile |
-| GET | `/home/recommendations` | Get recommendations |
-| POST | `/home/recommendations/generate` | Generate AI recommendations |
-| PUT | `/home/recommendations/{id}/complete` | Mark recommendation complete |
-| GET | `/home/correlations` | Health-environment correlations |
-
-### Learning (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/learning/profile` | Learning profile |
-| PUT | `/learning/profile` | Update learning profile |
-| POST | `/learning/log` | Log study session |
-| GET | `/learning/today` | Today's recommendation |
-| GET | `/learning/books` | Book list |
-| POST | `/learning/books` | Add book |
-| PUT | `/learning/books/{id}` | Update book |
-| GET | `/learning/courses` | Course list |
-| POST | `/learning/courses` | Add course |
-| PUT | `/learning/courses/{id}` | Update course |
-| GET | `/learning/language/{lang}` | Language plan |
-| GET | `/learning/weekly` | Weekly learning insight |
-
-### Privacy (Session 5)
-| Method | Path | Description |
-|---|---|---|
-| GET | `/privacy/summary` | Data summary by category |
-| POST | `/privacy/export` | Export full profile |
-| DELETE | `/privacy/category/{cat}` | Delete category data |
-| PUT | `/privacy/sensitivity` | Set sensitivity tier |
-| POST | `/privacy/amnesia` | Activate amnesia mode |
-
-## How It Works
-
-1. **Morning:** Open the app, see your Oura readiness score and biometrics
-2. **Check-in:** Rate energy, mood, stress, soreness (30 seconds)
-3. **Daily Plan:** AI synthesizes all data into one coherent daily plan
-4. **Workout:** AI generates a personalized workout based on readiness, recovery, environment
-5. **Nutrition:** AI creates a meal plan adjusted for training, biomarkers, and macro targets
-6. **Supplements:** Track daily supplement adherence with interaction checking
-7. **Blood Work:** Upload lab PDFs for AI extraction and biomarker trend analysis
-8. **Research:** PubMed sweeps find relevant studies for your health profile
-9. **Longevity:** Track biological age estimation and composite health scores
-10. **Coaching:** Adaptive coaching style shifts based on your compliance patterns
-
-## Project Structure
-
-```
-personal-concierge/
-├── backend/
-│   ├── main.py              # FastAPI entry point (155+ routes)
-│   ├── config.py            # Environment + Supabase init
-│   ├── agents/              # AI agents (fitness, nutrition)
-│   ├── routers/             # API endpoints (28 routers)
-│   ├── services/            # Business logic (26 services)
-│   ├── scripts/             # Migration + sync + seed scripts
-│   ├── static/              # Web dashboard (standalone.html)
-│   └── migrations/          # SQL schema (4 migration files)
-└── mobile/
-    ├── App.tsx              # 5-tab navigation root
-    ├── screens/             # 22 screens
-    │   ├── CommandCenter    # Main dashboard
-    │   ├── CheckIn          # Morning check-in
-    │   ├── WorkoutDetail    # Exercise breakdown
-    │   ├── MealPlan         # Nutrition with macro bars
-    │   ├── BloodWork        # Biomarker screen
-    │   ├── Supplements      # Supplement manager
-    │   ├── Longevity        # Biological age + scores
-    │   ├── Research         # PubMed articles
-    │   ├── Voice            # Voice commands + briefings
-    │   ├── Travel           # Trip management
-    │   ├── Social           # Social health tracking
-    │   ├── Growth           # 1% habit engine
-    │   ├── Career           # Career + burnout monitoring
-    │   ├── Wardrobe         # Closet + outfit planning
-    │   ├── Financial        # Subscriptions + audit
-    │   ├── Personality      # MBTI + values assessment
-    │   ├── Onboarding       # Progressive setup flow
-    │   ├── AppleHealth      # Health data gap-filling
-    │   ├── Legacy           # 10-year vision + milestones
-    │   ├── HomeEnvironment  # Air, light, ergonomics
-    │   ├── Learning         # Books, courses, languages
-    │   └── Privacy          # Data export + deletion
-    ├── components/          # ReadinessCircle, MetricCard, etc.
-    └── lib/                 # Supabase client, API client
-```
+- **Session 1:** Core loop (Oura, check-in, fitness agent, nutrition agent, mobile foundation)
+- **Session 2:** Health intelligence (blood work, supplements, environment, longevity, coaching, arbitrator)
+- **Session 3:** Deployment (Railway, web dashboard, Supabase)
+- **Session 4:** Life intelligence (voice, travel, social, financial, growth, career, wardrobe, notifications)
+- **Session 5:** Personality layer (MBTI, onboarding, Apple Health, calendar, feedback, legacy, home, learning, privacy)
+- **Session 6:** Final session (skincare, relationships, digital identity, financial planning, hobbies, contextual intelligence, conversation, reviews, 10-agent council)

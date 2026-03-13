@@ -731,6 +731,214 @@ export async function registerPushToken(token: string, platform: string = 'ios')
   return fetchApi('/notifications/register', { method: 'POST', body: JSON.stringify({ token, platform }) });
 }
 
+// --- Session 6: Skincare ---
+
+export async function getSkinProfile(): Promise<any | null> {
+  return fetchApi('/skincare/profile');
+}
+
+export async function getSkincareProducts(): Promise<any[]> {
+  return (await fetchApi<any[]>('/skincare/products')) || [];
+}
+
+export async function addSkincareProduct(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/skincare/products', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getMorningRoutine(): Promise<any[]> {
+  return (await fetchApi<any[]>('/skincare/routine/morning')) || [];
+}
+
+export async function getEveningRoutine(): Promise<any[]> {
+  return (await fetchApi<any[]>('/skincare/routine/evening')) || [];
+}
+
+export async function logSkinCheckin(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/skincare/checkin', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getSkinCorrelations(): Promise<any[]> {
+  return (await fetchApi<any[]>('/skincare/correlations')) || [];
+}
+
+export async function getWeeklySkinSummary(): Promise<any | null> {
+  return fetchApi('/skincare/weekly');
+}
+
+// --- Session 6: Relationships ---
+
+export async function getRelationships(): Promise<any[]> {
+  return (await fetchApi<any[]>('/relationships')) || [];
+}
+
+export async function getRelationshipHealth(): Promise<any | null> {
+  return fetchApi('/relationships/health');
+}
+
+export async function getRelationshipBriefing(): Promise<any | null> {
+  return fetchApi('/relationships/briefing');
+}
+
+export async function logRelationshipCheckin(contactId: string, data: Record<string, any>): Promise<any | null> {
+  return fetchApi(`/relationships/${contactId}/checkin`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getRelationshipCoaching(contactId: string): Promise<any | null> {
+  return fetchApi(`/relationships/${contactId}/coaching`);
+}
+
+// --- Session 6: Digital Identity ---
+
+export async function getDigitalProfile(): Promise<any | null> {
+  return fetchApi('/digital/profile');
+}
+
+export async function generateLinkedInAudit(): Promise<any | null> {
+  return fetchApi('/digital/linkedin-audit', { method: 'POST' });
+}
+
+export async function getBrandStatement(): Promise<any | null> {
+  return fetchApi('/digital/brand-statement');
+}
+
+export async function getContentSuggestions(): Promise<any[]> {
+  return (await fetchApi<any[]>('/digital/content-suggestions')) || [];
+}
+
+// --- Session 6: Financial Planning ---
+
+export async function getFinancialGoals(): Promise<any[]> {
+  return (await fetchApi<any[]>('/financial-planning/goals')) || [];
+}
+
+export async function addFinancialGoal(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/financial-planning/goals', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateGoalProgress(goalId: string, currentAmount: number): Promise<any | null> {
+  return fetchApi(`/financial-planning/goals/${goalId}/progress`, {
+    method: 'PUT', body: JSON.stringify({ current_amount: currentAmount }),
+  });
+}
+
+export async function logFinancialStress(stressLevel: number, stressor?: string): Promise<any | null> {
+  return fetchApi('/financial-planning/stress', {
+    method: 'POST', body: JSON.stringify({ stress_level: stressLevel, primary_stressor: stressor }),
+  });
+}
+
+export async function getFinancialStressFlag(): Promise<any | null> {
+  return fetchApi('/financial-planning/stress-flag');
+}
+
+export async function getGoalTimeline(): Promise<any | null> {
+  return fetchApi('/financial-planning/timeline');
+}
+
+export async function getGoalAlignment(): Promise<any[]> {
+  return (await fetchApi<any[]>('/financial-planning/alignment')) || [];
+}
+
+// --- Session 6: Hobbies ---
+
+export async function getHobbies(status?: string): Promise<any[]> {
+  const q = status ? `?status=${status}` : '';
+  return (await fetchApi<any[]>(`/hobbies${q}`)) || [];
+}
+
+export async function addHobby(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/hobbies', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function logHobbySession(hobbyId: string, data: Record<string, any>): Promise<any | null> {
+  return fetchApi(`/hobbies/${hobbyId}/log`, { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getDormantHobbies(): Promise<any[]> {
+  return (await fetchApi<any[]>('/hobbies/dormant')) || [];
+}
+
+export async function getHobbyHealthScore(): Promise<any | null> {
+  return fetchApi('/hobbies/health-score');
+}
+
+export async function getHobbyBriefing(): Promise<any | null> {
+  return fetchApi('/hobbies/briefing');
+}
+
+// --- Session 6: Contextual Intelligence ---
+
+export async function submitContextSignal(signalText: string): Promise<any | null> {
+  return fetchApi('/context/signal', {
+    method: 'POST', body: JSON.stringify({ signal_text: signalText }),
+  });
+}
+
+export async function getRecentSignals(days: number = 7): Promise<any[]> {
+  return (await fetchApi<any[]>(`/context/signals?days=${days}`)) || [];
+}
+
+export async function getAnomalies(): Promise<any[]> {
+  return (await fetchApi<any[]>('/context/anomalies')) || [];
+}
+
+// --- Session 6: Conversation ---
+
+export async function sendConversationMessage(
+  message: string,
+  sessionId?: string,
+  history?: { role: string; content: string }[]
+): Promise<any | null> {
+  return fetchApi('/conversation/message', {
+    method: 'POST',
+    body: JSON.stringify({ message, session_id: sessionId, history }),
+  });
+}
+
+export async function getConversationSessions(limit: number = 5): Promise<any[]> {
+  return (await fetchApi<any[]>(`/conversation/sessions?limit=${limit}`)) || [];
+}
+
+export async function getConversationHistory(sessionId: string): Promise<any[]> {
+  return (await fetchApi<any[]>(`/conversation/sessions/${sessionId}`)) || [];
+}
+
+// --- Session 6: Reviews ---
+
+export async function getWeeklyReview(): Promise<any | null> {
+  return fetchApi('/reviews/weekly');
+}
+
+export async function getMonthlyReview(): Promise<any | null> {
+  return fetchApi('/reviews/monthly');
+}
+
+export async function generateWeeklyReview(): Promise<any | null> {
+  return fetchApi('/reviews/weekly/generate', { method: 'POST' });
+}
+
+export async function generateMonthlyReview(): Promise<any | null> {
+  return fetchApi('/reviews/monthly/generate', { method: 'POST' });
+}
+
+export async function getWeeklyReviewHistory(): Promise<any[]> {
+  return (await fetchApi<any[]>('/reviews/history/weekly')) || [];
+}
+
+export async function getMonthlyReviewHistory(): Promise<any[]> {
+  return (await fetchApi<any[]>('/reviews/history/monthly')) || [];
+}
+
+// --- Session 6: Daily Plan (Council) ---
+
+export async function getDailyPlan(): Promise<any | null> {
+  return fetchApi('/daily/plan');
+}
+
+export async function getCouncilDebug(): Promise<any | null> {
+  return fetchApi('/daily/council-debug');
+}
+
 export type {
   HealthData,
   CheckIn,

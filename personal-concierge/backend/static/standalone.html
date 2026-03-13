@@ -156,6 +156,14 @@ textarea {
   <div class="tab" data-page="learning">Learning</div>
   <div class="tab" data-page="home">Home Env</div>
   <div class="tab" data-page="onboarding">Onboarding</div>
+  <div class="tab" data-page="skincare">Skincare</div>
+  <div class="tab" data-page="relationships">Relationships</div>
+  <div class="tab" data-page="hobbies">Hobbies</div>
+  <div class="tab" data-page="finplanning">Financial Goals</div>
+  <div class="tab" data-page="digital">Digital Identity</div>
+  <div class="tab" data-page="contextual">Contextual Intel</div>
+  <div class="tab" data-page="conversation">Chat</div>
+  <div class="tab" data-page="reviews">Reviews</div>
 </div>
 
 <div class="content">
@@ -355,6 +363,60 @@ textarea {
   <div class="page" id="page-onboarding">
     <div id="onboardingContent"></div>
     <button class="btn btn-primary" onclick="loadOnboardingData()">Load Onboarding Status</button>
+  </div>
+
+  <div class="page" id="page-skincare">
+    <div id="skincareContent"></div>
+    <button class="btn btn-primary" onclick="loadSkincareData()">Load Skincare</button>
+  </div>
+
+  <div class="page" id="page-relationships">
+    <div id="relationshipsContent"></div>
+    <button class="btn btn-primary" onclick="loadRelationshipsData()">Load Relationships</button>
+  </div>
+
+  <div class="page" id="page-hobbies">
+    <div id="hobbiesContent"></div>
+    <button class="btn btn-primary" onclick="loadHobbiesData()">Load Hobbies</button>
+  </div>
+
+  <div class="page" id="page-finplanning">
+    <div id="finPlanningContent"></div>
+    <button class="btn btn-primary" onclick="loadFinPlanningData()">Load Financial Goals</button>
+  </div>
+
+  <div class="page" id="page-digital">
+    <div id="digitalContent"></div>
+    <button class="btn btn-primary" onclick="loadDigitalData()">Load Digital Identity</button>
+  </div>
+
+  <div class="page" id="page-contextual">
+    <div id="contextualContent"></div>
+    <button class="btn btn-primary" onclick="loadContextualData()">Load Contextual Intel</button>
+  </div>
+
+  <div class="page" id="page-conversation">
+    <div id="conversationContent">
+      <div class="card">
+        <div class="card-title">AI Concierge Chat</div>
+        <div id="chatMessages" style="max-height:400px;overflow-y:auto;margin:12px 0"></div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="chatInput" placeholder="Ask me anything..." style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:var(--bg);color:var(--text)">
+          <button class="btn btn-primary" onclick="sendChatMessage()" style="padding:10px 16px">Send</button>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn" onclick="sendQuickChat('What should I focus on today?')" style="font-size:11px;padding:4px 8px">Focus today?</button>
+          <button class="btn" onclick="sendQuickChat('How am I doing this week?')" style="font-size:11px;padding:4px 8px">This week?</button>
+          <button class="btn" onclick="sendQuickChat('I need motivation')" style="font-size:11px;padding:4px 8px">Motivate me</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-reviews">
+    <div id="reviewsContent"></div>
+    <button class="btn btn-primary" onclick="loadWeeklyReview()">Load Weekly Review</button>
+    <button class="btn" onclick="loadMonthlyReview()" style="margin-top:8px">Load Monthly Review</button>
   </div>
 </div>
 
@@ -1058,6 +1120,270 @@ async function loadOnboardingData() {
         ${status.next_step ? '<div style="margin-top:8px;color:var(--text-dim)">Next: '+status.next_step+'</div>' : '<div style="margin-top:8px;color:var(--green)">Setup complete!</div>'}
         ${status.skipped_steps.length ? '<div style="margin-top:8px;color:var(--yellow)">Skipped: '+status.skipped_steps.join(', ')+'</div>' : ''}
       </div>`;
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Skincare ---
+async function loadSkincareData() {
+  try {
+    const [weekly, products, profile] = await Promise.all([
+      api('/skincare/weekly'), api('/skincare/products'), api('/skincare/profile')
+    ]);
+    const el = document.getElementById('skincareContent');
+    let html = '';
+    if (weekly) {
+      const c = weekly.avg_condition != null ? weekly.avg_condition.toFixed(1) : '--';
+      const tc = weekly.avg_condition >= 7 ? 'var(--green)' : weekly.avg_condition >= 4 ? 'var(--yellow)' : 'var(--red)';
+      html += `<div class="card"><div class="card-title">Weekly Skin Summary</div>
+        <div style="font-size:36px;font-weight:700;color:${tc}">${c}<span style="font-size:16px;color:var(--text-dim)">/10</span></div>
+        <div style="color:var(--text-dim);margin:4px 0">Trend: ${weekly.trend||'--'} | Breakout days: ${weekly.breakout_days||0}</div></div>`;
+    }
+    if (profile && profile.skin_type) {
+      html += `<div class="card"><div class="card-title">Skin Profile</div>
+        <div>Type: ${profile.skin_type}</div>
+        ${profile.primary_concerns ? '<div style="color:var(--text-dim)">Concerns: '+profile.primary_concerns.join(', ')+'</div>' : ''}
+      </div>`;
+    }
+    if (products && products.length) {
+      html += `<div class="card"><div class="card-title">Products (${products.length})</div>`;
+      products.forEach(p => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">
+          <div style="font-weight:600">${p.product_name} ${p.brand?'('+p.brand+')':''}</div>
+          <div style="color:var(--text-dim);font-size:12px">${p.routine_slot||''} | ${(p.active_ingredients||[]).join(', ')}</div></div>`;
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html || '<div class="card">No skincare data yet. Add products and log check-ins to get started.</div>';
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Relationships ---
+async function loadRelationshipsData() {
+  try {
+    const [health, briefing] = await Promise.all([
+      api('/relationships/health'), api('/relationships/briefing')
+    ]);
+    const el = document.getElementById('relationshipsContent');
+    let html = '';
+    if (health) {
+      const sc = health.score >= 70 ? 'var(--green)' : health.score >= 40 ? 'var(--yellow)' : 'var(--red)';
+      html += `<div class="card"><div class="card-title">Relationship Health</div>
+        <div style="font-size:36px;font-weight:700;color:${sc}">${health.score||0}<span style="font-size:16px;color:var(--text-dim)">/100</span></div>
+        ${health.needs_attention && health.needs_attention.length ? '<div style="color:var(--yellow);margin-top:8px">Needs attention: '+health.needs_attention.map(n=>n.name||n).join(', ')+'</div>' : ''}
+        ${health.coach_insight ? '<div style="margin-top:8px;color:var(--text-dim);font-style:italic">'+health.coach_insight+'</div>' : ''}
+      </div>`;
+    }
+    if (briefing && briefing.coach_insight) {
+      html += `<div class="card"><div class="card-title">Weekly Briefing</div>
+        <div>${briefing.coach_insight}</div></div>`;
+    }
+    el.innerHTML = html || '<div class="card">No relationship data yet. Add relationships to contacts to get started.</div>';
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Hobbies ---
+async function loadHobbiesData() {
+  try {
+    const [score, hobbies, dormant] = await Promise.all([
+      api('/hobbies/health-score'), api('/hobbies'), api('/hobbies/dormant')
+    ]);
+    const el = document.getElementById('hobbiesContent');
+    let html = '';
+    if (score) {
+      const sc = score.score >= 70 ? 'var(--green)' : score.score >= 40 ? 'var(--yellow)' : 'var(--red)';
+      html += `<div class="card"><div class="card-title">Hobby Health Score</div>
+        <div style="font-size:36px;font-weight:700;color:${sc}">${score.score||0}<span style="font-size:16px;color:var(--text-dim)">/100</span></div>
+        <div style="color:var(--text-dim)">Active: ${score.active_count||0} | Dormant: ${score.dormant_count||0}</div>
+        ${score.top_insight ? '<div style="margin-top:8px">'+score.top_insight+'</div>' : ''}
+      </div>`;
+    }
+    if (hobbies && hobbies.length) {
+      html += `<div class="card"><div class="card-title">Active Hobbies</div>`;
+      hobbies.filter(h=>h.status==='active').forEach(h => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">
+          <div style="font-weight:600">${h.name} <span style="color:var(--text-dim);font-size:12px">${h.category||''}</span></div>
+          <div style="color:var(--text-dim);font-size:12px">Satisfaction: ${h.satisfaction_rating||'--'}/10 | Streak: ${h.streak_weeks||0} weeks</div></div>`;
+      });
+      html += '</div>';
+    }
+    if (dormant && dormant.length) {
+      html += `<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Dormant Hobbies</div>`;
+      dormant.forEach(h => { html += `<div style="padding:4px 0;color:var(--text-dim)">${h.name} — last session: ${h.last_session_date||'never'}</div>`; });
+      html += '</div>';
+    }
+    el.innerHTML = html || '<div class="card">No hobbies tracked yet.</div>';
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Financial Planning ---
+async function loadFinPlanningData() {
+  try {
+    const [goals, stressFlag, timeline] = await Promise.all([
+      api('/financial-planning/goals'), api('/financial-planning/stress-flag'), api('/financial-planning/timeline')
+    ]);
+    const el = document.getElementById('finPlanningContent');
+    let html = '';
+    if (stressFlag && stressFlag.stress_active) {
+      html += `<div class="card" style="border-color:var(--red)"><div style="color:var(--red);font-weight:600">Financial stress active — budget-conscious mode enabled</div></div>`;
+    }
+    if (goals && goals.length) {
+      html += `<div class="card"><div class="card-title">Financial Goals (${goals.length})</div>`;
+      goals.forEach(g => {
+        const pct = g.target_amount ? Math.round((g.current_amount||0)/g.target_amount*100) : 0;
+        const pc = pct >= 75 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">
+          <div style="display:flex;justify-content:space-between"><span style="font-weight:600">${g.goal_name}</span><span style="color:${pc}">${pct}%</span></div>
+          <div style="background:var(--card-border);border-radius:4px;height:6px;margin:6px 0">
+            <div style="background:${pc};height:6px;border-radius:4px;width:${Math.min(pct,100)}%"></div></div>
+          <div style="color:var(--text-dim);font-size:12px">$${(g.current_amount||0).toLocaleString()} / $${(g.target_amount||0).toLocaleString()} ${g.linked_life_goal ? '→ '+g.linked_life_goal : ''}</div></div>`;
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html || '<div class="card">No financial goals set yet.</div>';
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Digital Identity ---
+async function loadDigitalData() {
+  try {
+    const profile = await api('/digital/profile');
+    const el = document.getElementById('digitalContent');
+    let html = '';
+    if (profile && profile.personal_brand_statement) {
+      html += `<div class="card"><div class="card-title">Personal Brand</div><div style="font-style:italic">"${profile.personal_brand_statement}"</div></div>`;
+    }
+    if (profile && profile.platforms_active) {
+      html += `<div class="card"><div class="card-title">Active Platforms</div><div>${profile.platforms_active.join(', ')}</div></div>`;
+    }
+    html += `<div class="card"><button class="btn btn-primary" onclick="runLinkedInAudit()">Run LinkedIn Audit</button><div id="linkedinAuditResult"></div></div>`;
+    el.innerHTML = html || '<div class="card">No digital identity profile yet.</div>';
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+async function runLinkedInAudit() {
+  document.getElementById('linkedinAuditResult').innerHTML = '<div class="loading"><div class="spinner"></div>Generating audit...</div>';
+  try {
+    const result = await apiPost('/digital/linkedin-audit');
+    if (result) {
+      let h = `<div style="margin-top:12px"><div style="font-weight:600">Score: ${result.overall_score||'--'}/100</div>`;
+      if (result.priority_actions) result.priority_actions.forEach(a => { h += `<div style="padding:4px 0;color:var(--text-dim)">• ${a}</div>`; });
+      h += '</div>';
+      document.getElementById('linkedinAuditResult').innerHTML = h;
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Contextual Intelligence ---
+async function loadContextualData() {
+  try {
+    const [signals, anomalies] = await Promise.all([
+      api('/context/signals?days=7'), api('/context/anomalies')
+    ]);
+    const el = document.getElementById('contextualContent');
+    let html = '';
+    if (anomalies && anomalies.length) {
+      html += `<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Anomalies Detected</div>`;
+      anomalies.forEach(a => { html += `<div style="padding:6px 0;color:var(--text-dim)">${a.insight||a.description||JSON.stringify(a)}</div>`; });
+      html += '</div>';
+    }
+    if (signals && signals.length) {
+      html += `<div class="card"><div class="card-title">Recent Signals</div>`;
+      signals.forEach(s => {
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">
+          <div style="font-weight:600">${s.signal_text||''}</div>
+          <div style="color:var(--text-dim);font-size:12px">${s.signal_type||''} — ${s.signal_date||''}</div></div>`;
+      });
+      html += '</div>';
+    }
+    html += `<div class="card"><div class="card-title">Manual Signal</div>
+      <input type="text" id="signalInput" placeholder="Tell me something happening..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:var(--bg);color:var(--text);margin:8px 0">
+      <button class="btn btn-primary" onclick="submitSignal()">Process Signal</button>
+      <div id="signalResult"></div></div>`;
+    el.innerHTML = html || '<div class="card">No signals yet.</div>';
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+async function submitSignal() {
+  const text = document.getElementById('signalInput').value;
+  if (!text) return;
+  document.getElementById('signalResult').innerHTML = '<div class="loading"><div class="spinner"></div>Expanding signal...</div>';
+  try {
+    const result = await apiPost('/context/signal', {signal_text: text});
+    if (result && result.expanded_implications) {
+      const imp = result.expanded_implications;
+      let h = '<div style="margin-top:8px">';
+      if (imp.proactive_suggestions) imp.proactive_suggestions.forEach(s => { h += `<div style="padding:4px 0;color:var(--accent-light)">• ${s}</div>`; });
+      if (imp.implications) imp.implications.forEach(i => { h += `<div style="padding:4px 0;color:var(--text-dim)">[${i.module}] ${i.insight}</div>`; });
+      h += '</div>';
+      document.getElementById('signalResult').innerHTML = h;
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
+// --- Session 6: Conversation ---
+let chatSessionId = null;
+let chatHistory = [];
+async function sendChatMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  const msgs = document.getElementById('chatMessages');
+  msgs.innerHTML += `<div style="text-align:right;margin:8px 0"><span style="background:var(--accent);padding:8px 12px;border-radius:12px;display:inline-block;max-width:80%">${text}</span></div>`;
+  msgs.innerHTML += `<div id="chatLoading" style="margin:8px 0"><span style="color:var(--text-dim)">Thinking...</span></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const result = await apiPost('/conversation/message', {message: text, session_id: chatSessionId, history: chatHistory});
+    document.getElementById('chatLoading').remove();
+    if (result) {
+      chatSessionId = result.session_id;
+      chatHistory.push({role:'user',content:text},{role:'assistant',content:result.response});
+      msgs.innerHTML += `<div style="margin:8px 0"><span style="background:var(--card);padding:8px 12px;border-radius:12px;display:inline-block;max-width:80%;border:1px solid var(--card-border)">${result.response}</span></div>`;
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+  } catch(e) { document.getElementById('chatLoading').remove(); showToast('Error: ' + e.message); }
+}
+function sendQuickChat(text) { document.getElementById('chatInput').value = text; sendChatMessage(); }
+
+// --- Session 6: Reviews ---
+async function loadWeeklyReview() {
+  try {
+    const el = document.getElementById('reviewsContent');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div>Generating weekly review...</div>';
+    const review = await api('/reviews/weekly');
+    if (review) {
+      let html = '<div class="card"><div class="card-title">Weekly Review</div>';
+      if (review.week_summary) html += `<div style="margin-bottom:12px">${review.week_summary}</div>`;
+      if (review.wins && review.wins.length) {
+        html += '<div style="margin:8px 0"><div style="font-weight:600;color:var(--green)">Wins</div>';
+        review.wins.forEach(w => { html += `<div style="padding:2px 0">• ${w}</div>`; });
+        html += '</div>';
+      }
+      if (review.patterns && review.patterns.length) {
+        html += '<div style="margin:8px 0"><div style="font-weight:600;color:var(--yellow)">Patterns</div>';
+        review.patterns.forEach(p => { html += `<div style="padding:2px 0">• ${p}</div>`; });
+        html += '</div>';
+      }
+      if (review.coach_insight) html += `<div style="margin-top:12px;padding:12px;background:rgba(108,92,231,0.1);border-radius:8px;border-left:3px solid var(--accent)">${review.coach_insight}</div>`;
+      if (review.next_week_intention) html += `<div style="margin-top:8px;color:var(--accent-light)">Next week focus: ${review.next_week_intention}</div>`;
+      html += '</div>';
+      el.innerHTML = html;
+    }
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+async function loadMonthlyReview() {
+  try {
+    const el = document.getElementById('reviewsContent');
+    el.innerHTML = '<div class="loading"><div class="spinner"></div>Generating monthly review...</div>';
+    const review = await api('/reviews/monthly');
+    if (review) {
+      let html = '<div class="card"><div class="card-title">Monthly Review</div>';
+      if (review.month_narrative) html += `<div style="margin-bottom:12px">${review.month_narrative}</div>`;
+      if (review.biggest_win) html += `<div style="color:var(--green);margin:4px 0">Biggest win: ${review.biggest_win}</div>`;
+      if (review.biggest_challenge) html += `<div style="color:var(--yellow);margin:4px 0">Biggest challenge: ${review.biggest_challenge}</div>`;
+      if (review.coach_insight) html += `<div style="margin-top:12px;padding:12px;background:rgba(108,92,231,0.1);border-radius:8px;border-left:3px solid var(--accent)">${review.coach_insight}</div>`;
+      if (review.next_month_intention) html += `<div style="margin-top:8px;color:var(--accent-light)">Next month: ${review.next_month_intention}</div>`;
+      html += '</div>';
+      el.innerHTML = html;
     }
   } catch(e) { showToast('Error: ' + e.message); }
 }

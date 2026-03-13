@@ -80,4 +80,13 @@ def get_service_status() -> dict:
         "learning": True,
         "privacy": True,
         "google_calendar": bool(GOOGLE_CALENDAR_CLIENT_ID),
+        "skincare": True,
+        "relationship_coaching": True,
+        "digital_identity": True,
+        "financial_planning": True,
+        "hobbies": True,
+        "contextual_intelligence": True,
+        "conversation": bool(ANTHROPIC_API_KEY),
+        "reviews": True,
+        "agent_council": True,
     }
