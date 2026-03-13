@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Health Concierge</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --card: #141420;
+  --card-border: #1e1e30;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --green: #00b894;
+  --yellow: #fdcb6e;
+  --red: #e17055;
+  --text: #f0f0f5;
+  --text-dim: #8888aa;
+  --text-muted: #555577;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg); color: var(--text); min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--card-border);
+  position: sticky; top: 0; background: var(--bg); z-index: 100;
+}
+.nav h1 { font-size: 18px; font-weight: 700; }
+.nav .status { width: 8px; height: 8px; border-radius: 50%; }
+.tabs {
+  display: flex; overflow-x: auto; gap: 4px; padding: 12px 20px;
+  border-bottom: 1px solid var(--card-border);
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 500;
+  white-space: nowrap; cursor: pointer; background: var(--card);
+  border: 1px solid var(--card-border); color: var(--text-dim); transition: all 0.2s;
+}
+.tab.active { background: var(--accent); border-color: var(--accent); color: white; }
+.content { padding: 20px; max-width: 600px; margin: 0 auto; }
+.card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 16px; padding: 20px; margin-bottom: 16px;
+}
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.card-title { font-size: 15px; font-weight: 600; }
+.card-subtitle { font-size: 12px; color: var(--text-dim); }
+.score-ring { width: 120px; height: 120px; margin: 0 auto 16px; position: relative; }
+.score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-ring circle { fill: none; stroke-width: 8; cx: 60; cy: 60; r: 52; }
+.score-ring .bg { stroke: var(--card-border); }
+.score-ring .fg { stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.score-value {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;
+}
+.score-value .num { font-size: 32px; font-weight: 700; }
+.score-value .label { font-size: 11px; color: var(--text-dim); }
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.metric { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 14px; }
+.metric .label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+.metric .value { font-size: 20px; font-weight: 600; margin-top: 4px; }
+.metric .unit { font-size: 12px; color: var(--text-dim); }
+.slider-group { margin-bottom: 20px; }
+.slider-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
+.slider-label .val { color: var(--accent-light); font-weight: 600; }
+input[type="range"] {
+  width: 100%; -webkit-appearance: none; height: 6px; border-radius: 3px;
+  background: var(--card-border); outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--accent); cursor: pointer;
+}
+textarea {
+  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 12px; color: var(--text); font-family: inherit;
+  font-size: 14px; resize: vertical; min-height: 60px;
+}
+.btn {
+  width: 100%; padding: 14px; border-radius: 12px; border: none;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-light); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.exercise { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.exercise:last-child { border-bottom: none; }
+.exercise .name { font-weight: 600; font-size: 14px; }
+.exercise .detail { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+.exercise .notes { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+.section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; margin-top: 8px; }
+.coaching-note {
+  background: rgba(108, 92, 231, 0.1); border-left: 3px solid var(--accent);
+  border-radius: 0 12px 12px 0; padding: 14px; font-size: 13px;
+  color: var(--accent-light); line-height: 1.5;
+}
+.loading { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--text-dim); }
+.spinner {
+  width: 24px; height: 24px; border: 3px solid var(--card-border);
+  border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty { text-align: center; padding: 40px 20px; color: var(--text-dim); }
+.empty .icon { font-size: 40px; margin-bottom: 12px; }
+.toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
+  background: var(--green); color: white; padding: 12px 24px; border-radius: 12px;
+  font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s ease; z-index: 200;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin-top: 12px; }
+.bar { flex: 1; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.5s ease; }
+.macros { display: flex; gap: 12px; margin-top: 8px; }
+.macro { font-size: 12px; color: var(--text-dim); }
+.macro span { color: var(--text); font-weight: 600; }
+.page { display: none; }
+.page.active { display: block; }
+.trend-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.trend-row:last-child { border-bottom: none; }
+.trend-date { font-size: 13px; color: var(--text-dim); }
+.trend-vals { display: flex; gap: 16px; }
+.trend-val { font-size: 13px; text-align: right; }
+.trend-label { font-size: 10px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>Health Concierge</h1>
+  <div class="status" id="serverStatus" style="background:var(--green)"></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-page="dashboard">Dashboard</div>
+  <div class="tab" data-page="trends">Trends</div>
+  <div class="tab" data-page="checkin">Check-In</div>
+  <div class="tab" data-page="supplements">Supplements</div>
+  <div class="tab" data-page="bloodwork">Blood Work</div>
+</div>
+
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div id="dashLoading" class="loading"><div class="spinner"></div>Loading biometrics...</div>
+    <div id="dashContent" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Readiness Score</div><div class="card-subtitle" id="dashDate"></div></div>
+        </div>
+        <div class="score-ring">
+          <svg viewBox="0 0 120 120"><circle class="bg"/><circle class="fg" id="readinessRing"/></svg>
+          <div class="score-value"><div class="num" id="readinessScore">--</div><div class="label">READINESS</div></div>
+        </div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><div class="label">HRV</div><div class="value" id="mHrv">--</div><div class="unit">ms</div></div>
+        <div class="metric"><div class="label">Resting HR</div><div class="value" id="mRhr">--</div><div class="unit">bpm</div></div>
+        <div class="metric"><div class="label">Sleep Score</div><div class="value" id="mSleep">--</div><div class="unit">/ 100</div></div>
+        <div class="metric"><div class="label">Sleep Efficiency</div><div class="value" id="mSleepEff">--</div><div class="unit">%</div></div>
+        <div class="metric"><div class="label">Steps</div><div class="value" id="mSteps">--</div><div class="unit">today</div></div>
+        <div class="metric"><div class="label">Active Cal</div><div class="value" id="mCals">--</div><div class="unit">kcal</div></div>
+        <div class="metric"><div class="label">Activity</div><div class="value" id="mActivity">--</div><div class="unit">/ 100</div></div>
+        <div class="metric"><div class="label">Body Temp</div><div class="value" id="mTemp">--</div><div class="unit">deviation</div></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">Readiness - Last 7 Days</div>
+        <div class="bar-chart" id="readinessChart"></div>
+        <div style="display:flex;gap:4px;margin-top:4px" id="readinessLabels"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRENDS -->
+  <div class="page" id="page-trends">
+    <div id="trendsLoading" class="loading"><div class="spinner"></div>Loading trends...</div>
+    <div id="trendsContent" style="display:none"></div>
+  </div>
+
+  <!-- CHECK-IN -->
+  <div class="page" id="page-checkin">
+    <div id="checkinForm">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:4px">Morning Check-In</div>
+        <div class="card-subtitle">How are you feeling today?</div>
+      </div>
+      <div class="card">
+        <div class="slider-group">
+          <div class="slider-label"><span>Energy</span><span class="val" id="energyVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="energy" oninput="document.getElementById('energyVal').textContent=this.value">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label"><span>Mood</span><span class="val" id="moodVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="mood" oninput="document.getElementById('moodVal').textContent=this.value">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label"><span>Stress</span><span class="val" id="stressVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="stress" oninput="document.getElementById('stressVal').textContent=this.value">
+        </div>
+        <div class="slider-group">
+          <div class="slider-label"><span>Soreness</span><span class="val" id="sorenessVal">5</span></div>
+          <input type="range" min="1" max="10" value="5" id="soreness" oninput="document.getElementById('sorenessVal').textContent=this.value">
+        </div>
+        <textarea id="checkinNotes" placeholder="Any notes? (optional)"></textarea>
+      </div>
+      <button class="btn btn-primary" id="checkinBtn" onclick="submitCheckin()">Submit Check-In</button>
+    </div>
+    <div id="checkinDone" style="display:none">
+      <div class="card">
+        <div class="empty">
+          <div class="icon">&#10003;</div>
+          <p>Check-in submitted for today!</p>
+          <div class="metrics" style="margin-top:16px" id="checkinSummary"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPLEMENTS -->
+  <div class="page" id="page-supplements">
+    <div id="suppLoading" class="loading"><div class="spinner"></div>Loading supplements...</div>
+    <div id="suppContent" style="display:none"></div>
+    <div id="suppEmpty" class="empty" style="display:none"><div class="icon">&#128138;</div><p>No supplements added yet.</p></div>
+  </div>
+
+  <!-- BLOOD WORK -->
+  <div class="page" id="page-bloodwork">
+    <div id="bwLoading" class="loading"><div class="spinner"></div>Loading biomarkers...</div>
+    <div id="bwContent" style="display:none"></div>
+    <div id="bwEmpty" class="empty" style="display:none"><div class="icon">&#129656;</div><p>No blood work uploaded yet.</p></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// --- Supabase Config (direct connection, no backend needed) ---
+const SUPABASE_URL = 'https://iuoezfwsqmzpkdeihagp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1b2V6ZndzcW16cGtkZWloYWdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNjU3NTQsImV4cCI6MjA4ODk0MTc1NH0.SWB7XrROf17O73sUv_iflJnf5TNA8IAnSuWjphECBQk';
+
+async function sb(table, query = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  });
+  return res.json();
+}
+
+async function sbInsert(table, data) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+// --- Navigation ---
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    loadPage(tab.dataset.page);
+  });
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function scoreColor(s) {
+  if (s >= 75) return 'var(--green)';
+  if (s >= 50) return 'var(--yellow)';
+  return 'var(--red)';
+}
+
+function setRing(id, score) {
+  const el = document.getElementById(id);
+  const circ = 2 * Math.PI * 52;
+  el.style.strokeDasharray = circ;
+  el.style.strokeDashoffset = circ - (score / 100) * circ;
+  el.style.stroke = scoreColor(score);
+}
+
+function today() { return new Date().toISOString().slice(0, 10); }
+function daysAgo(n) { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+
+// --- Dashboard ---
+async function loadDashboard() {
+  try {
+    // Get most recent health data
+    const data = await sb('health_data', 'select=*&order=date.desc&limit=1');
+    const history = await sb('health_data', `select=date,readiness_score,sleep_score,hrv,resting_heart_rate,steps&date=gte.${daysAgo(7)}&order=date`);
+
+    document.getElementById('dashLoading').style.display = 'none';
+    document.getElementById('dashContent').style.display = 'block';
+
+    if (data && data.length > 0) {
+      const t = data[0];
+      document.getElementById('dashDate').textContent = t.date;
+      document.getElementById('readinessScore').textContent = t.readiness_score || '--';
+      if (t.readiness_score) setRing('readinessRing', t.readiness_score);
+      document.getElementById('mHrv').textContent = t.hrv ? Math.round(t.hrv) : '--';
+      document.getElementById('mRhr').textContent = t.resting_heart_rate || '--';
+      document.getElementById('mSleep').textContent = t.sleep_score || '--';
+      document.getElementById('mSleepEff').textContent = t.sleep_efficiency || '--';
+      document.getElementById('mSteps').textContent = t.steps ? t.steps.toLocaleString() : '--';
+      document.getElementById('mCals').textContent = t.calories_active || '--';
+      document.getElementById('mActivity').textContent = t.activity_score || '--';
+      document.getElementById('mTemp').textContent = t.readiness_temperature || '--';
+    }
+
+    if (history && history.length > 0) {
+      const chart = document.getElementById('readinessChart');
+      const labels = document.getElementById('readinessLabels');
+      chart.innerHTML = ''; labels.innerHTML = '';
+      history.forEach(h => {
+        const score = h.readiness_score || 0;
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.height = score + '%';
+        bar.style.background = scoreColor(score);
+        bar.title = h.date + ': ' + score;
+        chart.appendChild(bar);
+        const lbl = document.createElement('div');
+        lbl.style.flex = '1'; lbl.style.textAlign = 'center';
+        lbl.style.fontSize = '9px'; lbl.style.color = 'var(--text-muted)';
+        lbl.textContent = new Date(h.date + 'T12:00:00').toLocaleDateString('en', {weekday:'short'});
+        labels.appendChild(lbl);
+      });
+    }
+  } catch(e) {
+    document.getElementById('dashLoading').style.display = 'none';
+    document.getElementById('dashContent').innerHTML = '<div class="empty"><p>Error loading data</p></div>';
+  }
+}
+
+// --- Trends ---
+async function loadTrends() {
+  try {
+    const data = await sb('health_data', `select=date,readiness_score,sleep_score,hrv,resting_heart_rate,steps,calories_active,activity_score,sleep_efficiency&date=gte.${daysAgo(30)}&order=date.desc`);
+    document.getElementById('trendsLoading').style.display = 'none';
+    const el = document.getElementById('trendsContent');
+    el.style.display = 'block';
+
+    if (!data || !data.length) {
+      el.innerHTML = '<div class="empty"><p>No data yet</p></div>';
+      return;
+    }
+
+    // Averages
+    const avg = (arr) => arr.length ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length) : '--';
+    const scores = data.filter(d => d.readiness_score).map(d => d.readiness_score);
+    const sleeps = data.filter(d => d.sleep_score).map(d => d.sleep_score);
+    const hrvs = data.filter(d => d.hrv).map(d => d.hrv);
+    const rhrs = data.filter(d => d.resting_heart_rate).map(d => d.resting_heart_rate);
+
+    let html = `<div class="card">
+      <div class="card-title">30-Day Averages</div>
+      <div class="metrics" style="margin-top:12px">
+        <div class="metric"><div class="label">Readiness</div><div class="value">${avg(scores)}</div></div>
+        <div class="metric"><div class="label">Sleep</div><div class="value">${avg(sleeps)}</div></div>
+        <div class="metric"><div class="label">HRV</div><div class="value">${avg(hrvs)}</div><div class="unit">ms</div></div>
+        <div class="metric"><div class="label">RHR</div><div class="value">${avg(rhrs)}</div><div class="unit">bpm</div></div>
+      </div>
+    </div>`;
+
+    html += `<div class="card"><div class="card-title">Daily History</div>`;
+    data.forEach(d => {
+      html += `<div class="trend-row">
+        <div class="trend-date">${d.date}</div>
+        <div class="trend-vals">
+          <div class="trend-val" style="color:${scoreColor(d.readiness_score||0)}">${d.readiness_score||'-'}<div class="trend-label">Ready</div></div>
+          <div class="trend-val">${d.sleep_score||'-'}<div class="trend-label">Sleep</div></div>
+          <div class="trend-val">${d.hrv ? Math.round(d.hrv) : '-'}<div class="trend-label">HRV</div></div>
+          <div class="trend-val">${d.steps ? d.steps.toLocaleString() : '-'}<div class="trend-label">Steps</div></div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+
+    el.innerHTML = html;
+  } catch(e) {
+    document.getElementById('trendsLoading').style.display = 'none';
+    document.getElementById('trendsContent').innerHTML = '<div class="empty"><p>Error loading trends</p></div>';
+  }
+}
+
+// --- Check-in ---
+async function loadCheckin() {
+  try {
+    const data = await sb('check_ins', `date=eq.${today()}&limit=1`);
+    if (data && data.length > 0) {
+      document.getElementById('checkinForm').style.display = 'none';
+      document.getElementById('checkinDone').style.display = 'block';
+      const d = data[0];
+      document.getElementById('checkinSummary').innerHTML = `
+        <div class="metric"><div class="label">Energy</div><div class="value">${d.energy}</div></div>
+        <div class="metric"><div class="label">Mood</div><div class="value">${d.mood}</div></div>
+        <div class="metric"><div class="label">Stress</div><div class="value">${d.stress}</div></div>
+        <div class="metric"><div class="label">Soreness</div><div class="value">${d.soreness}</div></div>`;
+    }
+  } catch(e) {}
+}
+
+async function submitCheckin() {
+  const btn = document.getElementById('checkinBtn');
+  btn.disabled = true; btn.textContent = 'Submitting...';
+  try {
+    await sbInsert('check_ins', {
+      date: today(),
+      energy: parseInt(document.getElementById('energy').value),
+      mood: parseInt(document.getElementById('mood').value),
+      stress: parseInt(document.getElementById('stress').value),
+      soreness: parseInt(document.getElementById('soreness').value),
+      notes: document.getElementById('checkinNotes').value || null
+    });
+    showToast('Check-in submitted!');
+    loadCheckin();
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Submit Check-In';
+  }
+}
+
+// --- Supplements ---
+async function loadSupplements() {
+  try {
+    const data = await sb('supplements', 'active=eq.true&order=timing');
+    document.getElementById('suppLoading').style.display = 'none';
+    if (!data || !data.length) { document.getElementById('suppEmpty').style.display = 'block'; return; }
+    const el = document.getElementById('suppContent');
+    el.style.display = 'block';
+    el.innerHTML = data.map(s => `<div class="card">
+      <div class="card-header">
+        <div><div class="card-title">${s.name}</div>
+        <div class="card-subtitle">${s.brand||''} ${s.dose_amount||s.dose||''}${s.dose_unit||s.unit||''}</div></div>
+        <div class="card-subtitle">${s.timing||''}</div>
+      </div>
+      ${s.purpose ? `<div style="font-size:13px;color:var(--text-dim)">${s.purpose}</div>` : ''}
+    </div>`).join('');
+  } catch(e) {
+    document.getElementById('suppLoading').style.display = 'none';
+    document.getElementById('suppEmpty').style.display = 'block';
+  }
+}
+
+// --- Blood Work ---
+async function loadBloodwork() {
+  try {
+    const data = await sb('biomarkers', 'order=test_date.desc,marker_category,marker_name');
+    document.getElementById('bwLoading').style.display = 'none';
+    if (!data || !data.length) { document.getElementById('bwEmpty').style.display = 'block'; return; }
+    const el = document.getElementById('bwContent');
+    el.style.display = 'block';
+    el.innerHTML = data.map(m => {
+      const st = m.status || 'normal';
+      const c = st === 'optimal' ? 'var(--green)' : (st === 'high' || st === 'low') ? 'var(--red)' : 'var(--yellow)';
+      return `<div class="card" style="border-left:3px solid ${c}">
+        <div class="card-header">
+          <div><div class="card-title">${m.marker_name}</div><div class="card-subtitle">${m.marker_category||''}</div></div>
+          <div style="text-align:right"><div style="font-size:20px;font-weight:700;color:${c}">${m.value}</div>
+          <div class="card-subtitle">${m.unit||''}</div></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted)">Ref: ${m.reference_min||'?'} - ${m.reference_max||'?'} ${m.unit||''}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('bwLoading').style.display = 'none';
+    document.getElementById('bwEmpty').style.display = 'block';
+  }
+}
+
+// --- Page loader ---
+const loaded = {};
+function loadPage(page) {
+  if (loaded[page]) return;
+  loaded[page] = true;
+  switch(page) {
+    case 'dashboard': loadDashboard(); break;
+    case 'trends': loadTrends(); break;
+    case 'checkin': loadCheckin(); break;
+    case 'supplements': loadSupplements(); break;
+    case 'bloodwork': loadBloodwork(); break;
+  }
+}
+loadPage('dashboard');
+</script>
+</body>
+</html>
