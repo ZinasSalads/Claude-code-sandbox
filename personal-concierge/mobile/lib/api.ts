@@ -671,6 +671,42 @@ export async function getHomeCorrelations(): Promise<any[]> {
   return (await fetchApi<any[]>('/home/correlations')) || [];
 }
 
+// --- Session 5: Learning ---
+
+export async function getLearningProfile(): Promise<any | null> {
+  return fetchApi('/learning/profile');
+}
+
+export async function getLearningToday(): Promise<any | null> {
+  return fetchApi('/learning/today');
+}
+
+export async function getLearningBooks(status?: string): Promise<any[]> {
+  const q = status ? `?status=${status}` : '';
+  return (await fetchApi<any[]>(`/learning/books${q}`)) || [];
+}
+
+export async function addLearningBook(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/learning/books', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getLearningCourses(status?: string): Promise<any[]> {
+  const q = status ? `?status=${status}` : '';
+  return (await fetchApi<any[]>(`/learning/courses${q}`)) || [];
+}
+
+export async function addLearningCourse(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/learning/courses', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function logLearningSession(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/learning/log', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getLearningWeekly(): Promise<any | null> {
+  return fetchApi('/learning/weekly');
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
