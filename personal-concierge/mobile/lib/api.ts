@@ -707,6 +707,24 @@ export async function getLearningWeekly(): Promise<any | null> {
   return fetchApi('/learning/weekly');
 }
 
+// --- Session 5: Privacy ---
+
+export async function getDataSummary(): Promise<any | null> {
+  return fetchApi('/privacy/summary');
+}
+
+export async function exportData(): Promise<any | null> {
+  return fetchApi('/privacy/export', { method: 'POST' });
+}
+
+export async function deleteCategory(category: string, confirm: boolean = false): Promise<any | null> {
+  return fetchApi(`/privacy/category/${category}?confirm=${confirm}`, { method: 'DELETE' });
+}
+
+export async function amnesia(category: string, confirm: boolean = false): Promise<any | null> {
+  return fetchApi('/privacy/amnesia', { method: 'POST', body: JSON.stringify({ category, confirm }) });
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
