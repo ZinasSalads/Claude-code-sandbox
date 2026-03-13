@@ -619,6 +619,32 @@ export async function getLearningSummary(): Promise<any | null> {
   return fetchApi('/feedback/summary');
 }
 
+// --- Session 5: Legacy ---
+
+export async function getLegacyProfile(): Promise<any | null> {
+  return fetchApi('/legacy/profile');
+}
+
+export async function saveLegacyProfile(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/legacy/profile', { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export async function getLegacyMilestones(limit: number = 20): Promise<any[]> {
+  return (await fetchApi<any[]>(`/legacy/milestones?limit=${limit}`)) || [];
+}
+
+export async function logLegacyMilestone(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/legacy/milestones', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function getLegacyDrift(): Promise<any | null> {
+  return fetchApi('/legacy/drift');
+}
+
+export async function getLegacyBridge(): Promise<any | null> {
+  return fetchApi('/legacy/bridge');
+}
+
 // --- Notifications ---
 
 export async function registerPushToken(token: string, platform: string = 'ios'): Promise<unknown> {
