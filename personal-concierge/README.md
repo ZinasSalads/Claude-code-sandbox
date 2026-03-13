@@ -1,6 +1,6 @@
 # Personal Concierge App
 
-A personal health concierge powered by AI. Combines Oura Ring biometric data, daily check-ins, blood work analysis, supplement management, environmental intelligence, and Claude AI to deliver a comprehensive daily health plan.
+A personal health & life concierge powered by AI. Combines Oura Ring biometric data, daily check-ins, blood work analysis, supplement management, environmental intelligence, voice interface, travel intelligence, social health tracking, financial context, habit coaching, career development, wardrobe planning, and Claude AI to deliver a comprehensive daily life plan.
 
 ## Architecture
 
@@ -27,6 +27,14 @@ A personal health concierge powered by AI. Combines Oura Ring biometric data, da
 | **Coaching Engine** | Four coaching modes, compliance drift detection |
 | **Cross-Module Arbitrator** | Unified daily plan synthesizing all data sources |
 | **Reminders** | Time-aware contextual notifications |
+| **Voice Interface** | Whisper STT + OpenAI TTS, morning briefing, command processing |
+| **Travel Intelligence** | Pre-trip prep, real-time local concierge, post-trip recovery |
+| **Social & Life Balance** | Relationship tracking, connection cadence, social health score |
+| **Financial Context** | Budget-aware recommendations, subscription audit |
+| **1% Growth Engine** | Atomic habits, streak tracking, compound progress coaching |
+| **Career & Development** | Burnout monitoring, weekly reflection, health-performance correlation |
+| **Style & Wardrobe** | Closet inventory, weather-aware outfit suggestions, wardrobe audit |
+| **Push Notifications** | Expo push, morning briefing, habit nudges, supplement reminders |
 
 ## Setup
 
@@ -57,6 +65,8 @@ Copy `.env.example` to `.env` in the project root and fill in:
 | `OPENWEATHER_API_KEY` | openweathermap.org → API Keys | Optional |
 | `AMBEE_API_KEY` | api-dashboard.getambee.com | Optional |
 | `PUBMED_EMAIL` | Your email (PubMed E-utilities courtesy) | Optional |
+| `OPENAI_API_KEY` | platform.openai.com → API Keys (Whisper STT + TTS) | Optional |
+| `ELEVENLABS_API_KEY` | elevenlabs.io (premium TTS voice) | Optional |
 
 Copy `mobile/.env.example` to `mobile/.env` and fill in:
 
@@ -175,6 +185,96 @@ Scan the QR code with Expo Go on your phone.
 | GET | `/daily/plan` | AI-generated daily plan from all modules |
 | GET | `/reminders/pending` | Time-aware pending reminders |
 
+### Voice (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/voice/transcribe` | Upload audio → Whisper STT |
+| POST | `/voice/synthesize` | Text → TTS (OpenAI, mp3) |
+| POST | `/voice/command` | Process voice command via Claude |
+| GET | `/voice/morning-briefing` | Generate morning briefing text |
+| GET | `/voice/evening-wind-down` | Generate evening wind-down text |
+| POST | `/voice/workout-coaching` | Real-time workout coaching cue |
+| POST | `/voice/log-session` | Save voice session log |
+
+### Travel (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/travel/trips` | List all trips |
+| POST | `/travel/trips` | Create a trip |
+| GET | `/travel/trips/{id}` | Trip detail |
+| PUT | `/travel/trips/{id}` | Update trip |
+| GET | `/travel/trips/{id}/prep` | Generate pre-trip plan |
+| POST | `/travel/trips/{id}/checkin` | Daily travel check-in |
+| GET | `/travel/trips/{id}/post-trip` | Post-trip recovery protocol |
+| GET | `/travel/active` | Currently active trip |
+| GET | `/travel/suggestions` | Local restaurant/workout suggestions |
+
+### Social (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/social/circle` | Get social contacts |
+| POST | `/social/circle` | Add contact |
+| PUT | `/social/circle/{id}` | Update contact |
+| GET | `/social/overdue` | Overdue connections |
+| POST | `/social/log` | Log social interaction |
+| GET | `/social/score` | Weekly social health score |
+| GET | `/social/briefing` | Command Center widget data |
+| POST | `/social/suggest/{id}` | Suggest activity for contact |
+
+### Financial (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/financial/context` | Financial profile |
+| PUT | `/financial/context` | Update financial profile |
+| GET | `/financial/subscriptions` | List subscriptions |
+| POST | `/financial/subscriptions` | Add subscription |
+| PUT | `/financial/subscriptions/{id}` | Update subscription |
+| GET | `/financial/audit` | Subscription audit report |
+
+### Growth (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/growth/habits` | List habits with status |
+| POST | `/growth/habits` | Add habit |
+| PUT | `/growth/habits/{id}` | Update habit |
+| DELETE | `/growth/habits/{id}` | Deactivate habit |
+| GET | `/growth/today` | Today's habits widget |
+| POST | `/growth/log` | Log habit completion |
+| GET | `/growth/weekly` | Weekly compound report |
+| GET | `/growth/suggest` | Claude habit suggestion |
+| GET | `/growth/score` | Compound growth score |
+
+### Career (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/career/profile` | Career profile |
+| PUT | `/career/profile` | Update career profile |
+| POST | `/career/reflection` | Log weekly reflection |
+| GET | `/career/reflections` | Reflection history |
+| GET | `/career/burnout` | Burnout risk assessment |
+| GET | `/career/coaching` | Weekly coaching insight |
+| GET | `/career/correlations` | Health-performance correlations |
+
+### Wardrobe (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| GET | `/wardrobe/items` | List wardrobe items |
+| POST | `/wardrobe/items` | Add item |
+| PUT | `/wardrobe/items/{id}` | Update item |
+| DELETE | `/wardrobe/items/{id}` | Deactivate item |
+| GET | `/wardrobe/suggest` | Today's outfit suggestion |
+| GET | `/wardrobe/tomorrow` | Tomorrow's outfit suggestion |
+| POST | `/wardrobe/log` | Log outfit worn |
+| GET | `/wardrobe/audit` | Wardrobe audit report |
+
+### Notifications (Session 4)
+| Method | Path | Description |
+|---|---|---|
+| POST | `/notifications/register` | Register Expo push token |
+| POST | `/notifications/send-morning` | Trigger morning briefing notification |
+| POST | `/notifications/send-habits` | Trigger habit nudge |
+| POST | `/notifications/schedule` | Run full notification check |
+
 ## How It Works
 
 1. **Morning:** Open the app, see your Oura readiness score and biometrics
@@ -193,24 +293,32 @@ Scan the QR code with Expo Go on your phone.
 ```
 personal-concierge/
 ├── backend/
-│   ├── main.py              # FastAPI entry point (44 routes)
+│   ├── main.py              # FastAPI entry point (100+ routes)
 │   ├── config.py            # Environment + Supabase init
 │   ├── agents/              # AI agents (fitness, nutrition)
-│   ├── routers/             # API endpoints (12 routers)
-│   ├── services/            # Business logic (10 services)
+│   ├── routers/             # API endpoints (20 routers)
+│   ├── services/            # Business logic (18 services)
 │   ├── scripts/             # Migration + sync + seed scripts
-│   └── migrations/          # SQL schema (2 migration files)
+│   ├── static/              # Web dashboard (standalone.html)
+│   └── migrations/          # SQL schema (3 migration files)
 └── mobile/
-    ├── App.tsx              # Navigation root
-    ├── screens/             # 8 screens
-    │   ├── CommandCenter    # Main dashboard with module grid
+    ├── App.tsx              # 5-tab navigation root
+    ├── screens/             # 15 screens
+    │   ├── CommandCenter    # Main dashboard
     │   ├── CheckIn          # Morning check-in
     │   ├── WorkoutDetail    # Exercise breakdown
     │   ├── MealPlan         # Nutrition with macro bars
-    │   ├── BloodWork        # 4-tab biomarker screen
-    │   ├── Supplements      # 4-tab supplement manager
+    │   ├── BloodWork        # Biomarker screen
+    │   ├── Supplements      # Supplement manager
     │   ├── Longevity        # Biological age + scores
-    │   └── Research         # PubMed articles
+    │   ├── Research         # PubMed articles
+    │   ├── Voice            # Voice commands + briefings
+    │   ├── Travel           # Trip management
+    │   ├── Social           # Social health tracking
+    │   ├── Growth           # 1% habit engine
+    │   ├── Career           # Career + burnout monitoring
+    │   ├── Wardrobe         # Closet + outfit planning
+    │   └── Financial        # Subscriptions + audit
     ├── components/          # ReadinessCircle, MetricCard, etc.
     └── lib/                 # Supabase client, API client
 ```

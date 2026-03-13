@@ -331,27 +331,144 @@ Notes:
 - All new tabs use button-triggered loading (not auto-load) since AI generation can take several seconds
 - Flexible response rendering: handles known field names with structured UI, falls back to formatted JSON for unknown response shapes
 
+## S4 Task 3 — Voice Interface
+Status: Complete
+Notes:
+- `services/voice.py`: VoiceService with Whisper STT (whisper-1), OpenAI TTS (tts-1, voices: onyx/nova)
+- Command processing via Claude: parses natural language into actions (skip_workout, log_meal, query_health, etc.)
+- `morning_briefing()`: gathers biometrics + habits + overdue contacts, generates 90-second spoken briefing
+- `evening_wind_down()`: reflection + tomorrow preview, 60-second spoken summary
+- `workout_coaching()`: real-time 1-2 sentence coaching cues during exercise
+- `routers/voice.py`: 7 endpoints (transcribe, synthesize, command, morning-briefing, evening-wind-down, workout-coaching, log-session)
+- Graceful degradation when OPENAI_API_KEY not set
+
+## S4 Task 4 — Travel Intelligence
+Status: Complete
+Notes:
+- `services/travel.py`: Full trip lifecycle — create, track, pre-trip prep, daily check-in, post-trip recovery
+- `generate_pre_trip_plan()`: Claude generates supplement travel stack, jet lag plan, workout continuity, packing checklist
+- `get_active_trip()`: auto-detects if currently traveling, updates trip status
+- `daily_travel_check_in()`: workout/nutrition/sleep/mood tracking while traveling
+- `generate_post_trip_protocol()`: 7-day return-to-baseline recovery plan
+- `get_local_suggestions()`: Claude generates restaurant/workout/activity suggestions for destination
+- `routers/travel.py`: 9 endpoints covering full trip CRUD + intelligence features
+
+## S4 Task 5 — Social & Life Balance
+Status: Complete
+Notes:
+- `services/social.py`: Social circle management, connection cadence tracking, social health scoring
+- Social Health Score (0-100): Connection (40%), Quality (30%), Leisure (20%), Balance (10%)
+- `get_overdue_connections()`: flags contacts past their target_contact_days, sorted by importance
+- `log_connection()`: logs interaction and auto-updates last_contact_date
+- `suggest_social_activity()`: Claude suggests activity based on relationship type + weather + energy
+- `routers/social.py`: 8 endpoints (circle CRUD, overdue, log, score, briefing, suggest)
+
+## S4 Task 6 — Financial Context
+Status: Complete
+Notes:
+- `services/financial.py`: Budget tier system (budget/moderate/comfortable/premium), subscription management
+- `get_subscription_audit()`: identifies dormant subs (60+ days unused), cancel candidates, savings potential
+- Claude-powered deep audit: consolidation suggestions + hidden value features
+- `routers/financial.py`: 6 endpoints (context CRUD, subscriptions CRUD, audit)
+
+## S4 Task 7 — 1% Growth Engine
+Status: Complete
+Notes:
+- `services/growth.py`: Atomic habit tracking with streak management and compound scoring
+- Max 5 active habits displayed at once (prevent overwhelm)
+- `log_habit()`: updates streak, detects milestones (7/14/21/30/60/90/365 days)
+- `suggest_next_habit()`: Claude analyzes gaps and suggests one micro-habit
+- `calculate_compound_score()`: domain-based scoring across health/skill/relationship/mindset/financial/creative
+- `routers/growth.py`: 9 endpoints (habits CRUD, today widget, log, weekly report, suggest, score)
+
+## S4 Task 8 — Career & Professional Development
+Status: Complete
+Notes:
+- `services/career.py`: Health-aware career coaching with burnout risk detection
+- `get_burnout_risk()`: calculates 0-100 risk from HRV trend, sleep scores, stress levels, satisfaction
+- Contributing factors: declining HRV, low sleep, high stress, low satisfaction, isolation
+- `log_weekly_reflection()`: wins/challenges/learning + Claude coaching insight
+- `correlate_performance_with_health()`: finds productivity-sleep-HRV correlations
+- `routers/career.py`: 7 endpoints (profile CRUD, reflection, burnout, coaching, correlations)
+
+## S4 Task 9 — Style & Wardrobe
+Status: Complete
+Notes:
+- `services/wardrobe.py`: Closet inventory with outfit planning and wardrobe audit
+- `get_outfit_suggestion()`: Claude suggests outfit from wardrobe based on occasion + weather + rotation
+- `log_outfit()`: tracks outfit worn, auto-increments times_worn on items
+- `get_wardrobe_audit()`: never-worn, rarely-worn, retire candidates + Claude gap analysis
+- `routers/wardrobe.py`: 8 endpoints (items CRUD, suggest, tomorrow, log, audit)
+
+## S4 Task 10 — Push Notifications
+Status: Complete
+Notes:
+- `services/notifications.py`: Expo Push API integration for mobile push notifications
+- `send_morning_briefing()`: personalized notification with readiness + sleep scores
+- `send_habit_nudges()`: targets highest streak-at-risk habit not yet completed today
+- `send_supplement_reminders()`: time-of-day aware (morning/afternoon/evening)
+- `check_and_send_scheduled()`: cron-compatible scheduler that checks time and sends appropriate notifications
+- `routers/notifications.py`: 4 endpoints (register token, send-morning, send-habits, schedule)
+
+## S4 Task 11 — Integration & Command Center Upgrade
+Status: Complete
+Notes:
+- **Mobile:** 7 new screens (Voice, Travel, Social, Growth, Career, Wardrobe, Financial)
+- **Mobile:** 5-tab bottom navigation: Home, Health, Life, Voice, Profile
+- **Mobile:** Health stack: Blood Work → Supplements → Longevity → Research
+- **Mobile:** Life stack: Social → Growth → Career → Travel → Wardrobe → Financial
+- **Mobile api.ts:** 30+ new TypeScript interfaces and API functions
+- **Dashboard:** 6 new tabs added to standalone.html (Social, Growth, Career, Travel, Wardrobe, Financial)
+- **Backend:** All 8 new routers registered in main.py, version bumped to 4.0.0
+- **Config:** OPENAI_API_KEY and ELEVENLABS_API_KEY added to config.py + .env.example
+- **Health endpoint:** now reports status for all new services
+- **README:** updated with all new modules, endpoints, and project structure
+- **Migration 003:** 14 new tables for all Session 4 modules
+
 ---
 
 ## Session 4 Summary
-Completed: 2 tasks
-Focus: Backend deployment + dashboard integration with live AI endpoints
+Completed: 11 tasks (2 pre-existing + 9 new)
+Focus: Life intelligence layer on top of health intelligence
+
+### New modules:
+Voice, Travel, Social, Financial, Growth, Career, Wardrobe, Notifications
+
+### Numbers:
+- New endpoints: 58 (total now ~100+)
+- New screens: 7 (total now 15)
+- New DB tables: 14 (total now 24+)
+- New services: 8 (total now 18)
+- New routers: 8 (total now 20)
 
 ### What's working:
-- Backend API live at `https://claude-code-sandbox-production.up.railway.app`
-- Web dashboard (GitHub Pages) now has 8 tabs: Dashboard, Trends, Check-In, Daily Plan, Workout, Nutrition, Supplements, Blood Work
-- AI-powered workout generation accessible from phone via web dashboard
-- AI-powered meal plan generation accessible from phone via web dashboard
-- AI-powered daily intelligence brief (arbitrator) accessible from phone via web dashboard
-- Health status indicator shows backend availability in real-time
+- Backend API with 100+ routes (deployed on Railway)
+- Web dashboard (GitHub Pages) with 14 tabs covering all modules
+- AI-powered voice commands, briefings, and coaching
+- Social health scoring with connection cadence tracking
+- 1% Growth Engine with atomic habits, streaks, and compound progress
+- Burnout risk monitoring from integrated health + career data
+- Weather-aware outfit suggestions from wardrobe inventory
+- Travel lifecycle: pre-trip prep → daily concierge → post-trip recovery
+- Budget-aware subscription auditing with Claude analysis
+- Push notifications for morning briefing, habits, and supplements
 
 ### Architecture:
-- **Static data** (biometrics, check-ins, supplements, blood work) → Direct Supabase REST API calls from browser
-- **AI-generated content** (workouts, meals, daily plans) → Railway-hosted FastAPI backend → Claude API + Supabase
+- **Static data** (biometrics, check-ins, supplements, blood work) → Direct Supabase REST API calls
+- **AI-generated content** (workouts, meals, daily plans, coaching) → Railway backend → Claude API + Supabase
+- **Life modules** (social, growth, career, travel, wardrobe, financial) → Railway backend → Supabase
+- **Voice** → Railway backend → OpenAI Whisper + TTS → Claude for intent parsing
+
+### Blocked on:
+- `OPENAI_API_KEY` needed for voice features (Whisper STT + TTS)
+- Migration 003 needs to be run in Supabase SQL Editor
+- Push notifications need Expo push token registration from mobile device
 
 ### Next session should:
-1. Add Apple Health integration (react-native-health) for weight, workouts, heart rate
-2. Add optional API keys (OpenWeatherMap, Ambee, PubMed) for environmental/research features
-3. Add supplement and blood work management forms directly in the web dashboard
-4. Add workout history and nutrition logging to the web dashboard
-5. Add profile/settings page to the dashboard for coaching mode selection
+1. Run migration 003 in Supabase SQL Editor
+2. Set OPENAI_API_KEY on Railway for voice features
+3. Add Apple Health integration (react-native-health)
+4. Seed initial data for social contacts, habits, wardrobe, subscriptions
+5. Add calendar integration for occasion-aware outfit suggestions
+6. Build progressive onboarding flow for life profile setup
+7. Add data export and privacy controls
