@@ -555,6 +555,16 @@ export async function updatePersonalityProfile(data: Partial<PersonalityProfile>
   return fetchApi('/personality/profile', { method: 'PUT', body: JSON.stringify(data) });
 }
 
+// --- Session 5: Apple Health ---
+
+export async function getHealthGaps(): Promise<string[]> {
+  return (await fetchApi<string[]>('/sync/gaps')) || [];
+}
+
+export async function syncAppleHealth(days: any[]): Promise<{ synced: number } | null> {
+  return fetchApi('/sync/apple-health', { method: 'POST', body: JSON.stringify({ days }) });
+}
+
 // --- Session 5: Onboarding ---
 
 interface OnboardingStatus {
