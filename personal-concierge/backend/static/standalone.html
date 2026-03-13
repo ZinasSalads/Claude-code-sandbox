@@ -77,11 +77,13 @@ input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
   background: var(--accent); cursor: pointer;
 }
-textarea {
+textarea, .form-input {
   width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
   border-radius: 12px; padding: 12px; color: var(--text); font-family: inherit;
-  font-size: 14px; resize: vertical; min-height: 60px;
+  font-size: 14px;
 }
+textarea { resize: vertical; min-height: 60px; }
+.form-input::placeholder, textarea::placeholder { color: var(--text-muted); }
 .btn {
   width: 100%; padding: 14px; border-radius: 12px; border: none;
   font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;
@@ -89,6 +91,10 @@ textarea {
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: var(--accent-light); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: transparent; color: var(--accent-light); border: 1px solid var(--card-border); }
+.btn-secondary:hover { border-color: var(--accent); }
+.btn-danger { background: var(--red); color: white; }
+.btn-sm { padding: 8px 16px; font-size: 13px; width: auto; display: inline-block; }
 .exercise { padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .exercise:last-child { border-bottom: none; }
 .exercise .name { font-weight: 600; font-size: 14px; }
@@ -111,9 +117,10 @@ textarea {
 .toast {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
   background: var(--green); color: white; padding: 12px 24px; border-radius: 12px;
-  font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s ease; z-index: 200;
+  font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s ease; z-index: 500;
 }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.toast.error { background: var(--red); }
 .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; margin-top: 12px; }
 .bar { flex: 1; border-radius: 4px 4px 0 0; min-height: 4px; transition: height 0.5s ease; }
 .macros { display: flex; gap: 12px; margin-top: 8px; }
@@ -127,6 +134,84 @@ textarea {
 .trend-vals { display: flex; gap: 16px; }
 .trend-val { font-size: 13px; text-align: right; }
 .trend-label { font-size: 10px; color: var(--text-muted); }
+
+/* --- Modal / Slide Panel --- */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7); z-index: 300; display: none;
+  align-items: flex-end; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal-panel {
+  background: var(--bg); border-radius: 20px 20px 0 0;
+  width: 100%; max-width: 600px; max-height: 85vh;
+  overflow-y: auto; padding: 24px 20px 40px;
+  transform: translateY(100%); transition: transform 0.3s ease;
+  border-top: 1px solid var(--card-border);
+}
+.modal-overlay.open .modal-panel { transform: translateY(0); }
+.modal-handle {
+  width: 36px; height: 4px; background: var(--card-border);
+  border-radius: 2px; margin: 0 auto 20px;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; display: block; font-weight: 500; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-select {
+  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 12px; color: var(--text); font-family: inherit;
+  font-size: 14px; -webkit-appearance: none; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+}
+.form-select option { background: var(--card); color: var(--text); }
+.form-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.form-toggle label { font-size: 14px; color: var(--text); cursor: pointer; }
+.toggle-switch {
+  width: 44px; height: 24px; background: var(--card-border); border-radius: 12px;
+  position: relative; cursor: pointer; transition: background 0.2s;
+  -webkit-appearance: none; appearance: none; border: none;
+}
+.toggle-switch:checked { background: var(--green); }
+.toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; background: white; border-radius: 50%;
+  transition: transform 0.2s;
+}
+.toggle-switch:checked::after { transform: translateX(20px); }
+.add-btn {
+  position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
+  border-radius: 28px; background: var(--accent); color: white;
+  font-size: 28px; border: none; cursor: pointer; z-index: 200;
+  box-shadow: 0 4px 20px rgba(108,92,231,0.4); display: none;
+  align-items: center; justify-content: center; line-height: 1;
+}
+.add-btn.visible { display: flex; }
+.item-actions { display: flex; gap: 8px; margin-top: 8px; }
+.chip {
+  display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 11px;
+  background: rgba(108,92,231,0.15); color: var(--accent-light); margin: 2px;
+}
+
+/* Personality quiz */
+.quiz-option {
+  display: block; width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px;
+  background: var(--card); border: 2px solid var(--card-border); color: var(--text);
+  font-size: 14px; text-align: left; cursor: pointer; transition: all 0.2s;
+}
+.quiz-option:hover { border-color: var(--accent); }
+.quiz-option.selected { border-color: var(--accent); background: rgba(108,92,231,0.15); }
+.quiz-progress {
+  height: 4px; background: var(--card-border); border-radius: 2px; margin-bottom: 20px;
+}
+.quiz-progress-bar {
+  height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s;
+}
 </style>
 </head>
 <body>
@@ -145,22 +230,22 @@ textarea {
   <div class="tab" data-page="nutrition">Nutrition</div>
   <div class="tab" data-page="supplements">Supplements</div>
   <div class="tab" data-page="bloodwork">Blood Work</div>
+  <div class="tab" data-page="skincare">Skincare</div>
   <div class="tab" data-page="social">Social</div>
+  <div class="tab" data-page="relationships">Relationships</div>
   <div class="tab" data-page="growth">Growth</div>
   <div class="tab" data-page="career">Career</div>
-  <div class="tab" data-page="travel">Travel</div>
+  <div class="tab" data-page="hobbies">Hobbies</div>
+  <div class="tab" data-page="learning">Learning</div>
   <div class="tab" data-page="wardrobe">Wardrobe</div>
+  <div class="tab" data-page="travel">Travel</div>
   <div class="tab" data-page="financial">Financial</div>
+  <div class="tab" data-page="finplanning">Financial Goals</div>
   <div class="tab" data-page="personality">Personality</div>
   <div class="tab" data-page="legacy">Legacy</div>
-  <div class="tab" data-page="learning">Learning</div>
   <div class="tab" data-page="home">Home Env</div>
-  <div class="tab" data-page="onboarding">Onboarding</div>
-  <div class="tab" data-page="skincare">Skincare</div>
-  <div class="tab" data-page="relationships">Relationships</div>
-  <div class="tab" data-page="hobbies">Hobbies</div>
-  <div class="tab" data-page="finplanning">Financial Goals</div>
   <div class="tab" data-page="digital">Digital Identity</div>
+  <div class="tab" data-page="onboarding">Onboarding</div>
   <div class="tab" data-page="contextual">Contextual Intel</div>
   <div class="tab" data-page="conversation">Chat</div>
   <div class="tab" data-page="reviews">Reviews</div>
@@ -244,13 +329,6 @@ textarea {
     </div>
   </div>
 
-  <!-- SUPPLEMENTS -->
-  <div class="page" id="page-supplements">
-    <div id="suppLoading" class="loading"><div class="spinner"></div>Loading supplements...</div>
-    <div id="suppContent" style="display:none"></div>
-    <div id="suppEmpty" class="empty" style="display:none"><div class="icon">&#128138;</div><p>No supplements added yet.</p></div>
-  </div>
-
   <!-- DAILY PLAN -->
   <div class="page" id="page-dailyplan">
     <div id="planLoading" class="loading" style="display:none"><div class="spinner"></div>Generating your daily plan...</div>
@@ -290,6 +368,13 @@ textarea {
     </div>
   </div>
 
+  <!-- SUPPLEMENTS -->
+  <div class="page" id="page-supplements">
+    <div id="suppLoading" class="loading"><div class="spinner"></div>Loading supplements...</div>
+    <div id="suppContent" style="display:none"></div>
+    <div id="suppEmpty" class="empty" style="display:none"><div class="icon">&#128138;</div><p>No supplements added yet.</p><button class="btn btn-primary" style="margin-top:12px" onclick="openModal('supplementModal')">Add Supplement</button></div>
+  </div>
+
   <!-- BLOOD WORK -->
   <div class="page" id="page-bloodwork">
     <div id="bwLoading" class="loading"><div class="spinner"></div>Loading biomarkers...</div>
@@ -297,11 +382,23 @@ textarea {
     <div id="bwEmpty" class="empty" style="display:none"><div class="icon">&#129656;</div><p>No blood work uploaded yet.</p></div>
   </div>
 
+  <!-- SKINCARE -->
+  <div class="page" id="page-skincare">
+    <div id="skincareContent"></div>
+    <button class="btn btn-primary" onclick="loadSkincareData()">Load Skincare</button>
+  </div>
+
   <!-- SOCIAL -->
   <div class="page" id="page-social">
     <div id="socialLoading" class="loading" style="display:none"><div class="spinner"></div>Loading social data...</div>
     <div id="socialContent"></div>
     <button class="btn btn-primary" onclick="loadSocialData()">Load Social Health</button>
+  </div>
+
+  <!-- RELATIONSHIPS -->
+  <div class="page" id="page-relationships">
+    <div id="relationshipsContent"></div>
+    <button class="btn btn-primary" onclick="loadRelationshipsData()">Load Relationships</button>
   </div>
 
   <!-- GROWTH -->
@@ -318,11 +415,16 @@ textarea {
     <button class="btn btn-primary" onclick="loadCareerData()">Load Career Data</button>
   </div>
 
-  <!-- TRAVEL -->
-  <div class="page" id="page-travel">
-    <div id="travelLoading" class="loading" style="display:none"><div class="spinner"></div>Loading trips...</div>
-    <div id="travelContent"></div>
-    <button class="btn btn-primary" onclick="loadTravelData()">Load Travel Data</button>
+  <!-- HOBBIES -->
+  <div class="page" id="page-hobbies">
+    <div id="hobbiesContent"></div>
+    <button class="btn btn-primary" onclick="loadHobbiesData()">Load Hobbies</button>
+  </div>
+
+  <!-- LEARNING -->
+  <div class="page" id="page-learning">
+    <div id="learningContent"></div>
+    <button class="btn btn-primary" onclick="loadLearningData()">Load Learning Data</button>
   </div>
 
   <!-- WARDROBE -->
@@ -332,175 +434,580 @@ textarea {
     <button class="btn btn-primary" onclick="loadWardrobeData()">Load Wardrobe</button>
   </div>
 
-  <!-- FINANCIAL -->
+  <!-- TRAVEL -->
+  <div class="page" id="page-travel">
+    <div id="travelLoading" class="loading" style="display:none"><div class="spinner"></div>Loading trips...</div>
+    <div id="travelContent"></div>
+    <button class="btn btn-primary" onclick="loadTravelData()">Load Travel Data</button>
+  </div>
+
+  <!-- FINANCIAL (Subscriptions) -->
   <div class="page" id="page-financial">
     <div id="financialLoading" class="loading" style="display:none"><div class="spinner"></div>Loading financial data...</div>
     <div id="financialContent"></div>
     <button class="btn btn-primary" onclick="loadFinancialData()">Load Financial Data</button>
   </div>
 
-  <!-- SESSION 5 PAGES -->
-  <div class="page" id="page-personality">
-    <div id="personalityContent"></div>
-    <button class="btn btn-primary" onclick="loadPersonalityData()">Load Personality Profile</button>
-  </div>
-
-  <div class="page" id="page-legacy">
-    <div id="legacyContent"></div>
-    <button class="btn btn-primary" onclick="loadLegacyData()">Load Legacy & Vision</button>
-  </div>
-
-  <div class="page" id="page-learning">
-    <div id="learningContent"></div>
-    <button class="btn btn-primary" onclick="loadLearningData()">Load Learning Data</button>
-  </div>
-
-  <div class="page" id="page-home">
-    <div id="homeEnvContent"></div>
-    <button class="btn btn-primary" onclick="loadHomeEnvData()">Load Home Environment</button>
-  </div>
-
-  <div class="page" id="page-onboarding">
-    <div id="onboardingContent"></div>
-    <button class="btn btn-primary" onclick="loadOnboardingData()">Load Onboarding Status</button>
-  </div>
-
-  <div class="page" id="page-skincare">
-    <div id="skincareContent"></div>
-    <button class="btn btn-primary" onclick="loadSkincareData()">Load Skincare</button>
-  </div>
-
-  <div class="page" id="page-relationships">
-    <div id="relationshipsContent"></div>
-    <button class="btn btn-primary" onclick="loadRelationshipsData()">Load Relationships</button>
-  </div>
-
-  <div class="page" id="page-hobbies">
-    <div id="hobbiesContent"></div>
-    <button class="btn btn-primary" onclick="loadHobbiesData()">Load Hobbies</button>
-  </div>
-
+  <!-- FINANCIAL GOALS -->
   <div class="page" id="page-finplanning">
     <div id="finPlanningContent"></div>
     <button class="btn btn-primary" onclick="loadFinPlanningData()">Load Financial Goals</button>
   </div>
 
+  <!-- PERSONALITY -->
+  <div class="page" id="page-personality">
+    <div id="personalityContent"></div>
+    <button class="btn btn-primary" onclick="loadPersonalityData()">Load Personality Profile</button>
+  </div>
+
+  <!-- LEGACY -->
+  <div class="page" id="page-legacy">
+    <div id="legacyContent"></div>
+    <button class="btn btn-primary" onclick="loadLegacyData()">Load Legacy & Vision</button>
+  </div>
+
+  <!-- HOME ENV -->
+  <div class="page" id="page-home">
+    <div id="homeEnvContent"></div>
+    <button class="btn btn-primary" onclick="loadHomeEnvData()">Load Home Environment</button>
+  </div>
+
+  <!-- DIGITAL IDENTITY -->
   <div class="page" id="page-digital">
     <div id="digitalContent"></div>
     <button class="btn btn-primary" onclick="loadDigitalData()">Load Digital Identity</button>
   </div>
 
+  <!-- ONBOARDING -->
+  <div class="page" id="page-onboarding">
+    <div id="onboardingContent"></div>
+    <button class="btn btn-primary" onclick="loadOnboardingData()">Load Onboarding Status</button>
+  </div>
+
+  <!-- CONTEXTUAL INTEL -->
   <div class="page" id="page-contextual">
     <div id="contextualContent"></div>
     <button class="btn btn-primary" onclick="loadContextualData()">Load Contextual Intel</button>
   </div>
 
+  <!-- CHAT -->
   <div class="page" id="page-conversation">
     <div id="conversationContent">
       <div class="card">
         <div class="card-title">AI Concierge Chat</div>
         <div id="chatMessages" style="max-height:400px;overflow-y:auto;margin:12px 0"></div>
         <div style="display:flex;gap:8px">
-          <input type="text" id="chatInput" placeholder="Ask me anything..." style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:var(--bg);color:var(--text)">
-          <button class="btn btn-primary" onclick="sendChatMessage()" style="padding:10px 16px">Send</button>
+          <input type="text" id="chatInput" class="form-input" placeholder="Ask me anything..." style="border-radius:8px" onkeydown="if(event.key==='Enter')sendChatMessage()">
+          <button class="btn btn-primary btn-sm" onclick="sendChatMessage()">Send</button>
         </div>
         <div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">
-          <button class="btn" onclick="sendQuickChat('What should I focus on today?')" style="font-size:11px;padding:4px 8px">Focus today?</button>
-          <button class="btn" onclick="sendQuickChat('How am I doing this week?')" style="font-size:11px;padding:4px 8px">This week?</button>
-          <button class="btn" onclick="sendQuickChat('I need motivation')" style="font-size:11px;padding:4px 8px">Motivate me</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendQuickChat('What should I focus on today?')">Focus today?</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendQuickChat('How am I doing this week?')">This week?</button>
+          <button class="btn btn-secondary btn-sm" onclick="sendQuickChat('I need motivation')">Motivate me</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- REVIEWS -->
   <div class="page" id="page-reviews">
     <div id="reviewsContent"></div>
     <button class="btn btn-primary" onclick="loadWeeklyReview()">Load Weekly Review</button>
-    <button class="btn" onclick="loadMonthlyReview()" style="margin-top:8px">Load Monthly Review</button>
+    <button class="btn btn-secondary" onclick="loadMonthlyReview()" style="margin-top:8px">Load Monthly Review</button>
+  </div>
+
+</div>
+
+<!-- FLOATING ADD BUTTON -->
+<button class="add-btn" id="fabBtn" onclick="handleFab()">+</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Supplement Modal -->
+<div class="modal-overlay" id="supplementModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Supplement</div>
+    <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="suppName" placeholder="e.g. Vitamin D3"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="suppBrand" placeholder="Brand"></div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="suppCategory"><option value="">Select</option><option>vitamin</option><option>mineral</option><option>amino_acid</option><option>herbal</option><option>probiotic</option><option>omega</option><option>other</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Dose</label><input class="form-input" id="suppDose" placeholder="e.g. 5000" type="number"></div>
+      <div class="form-group"><label class="form-label">Unit</label>
+        <select class="form-select" id="suppUnit"><option>IU</option><option>mg</option><option>mcg</option><option>g</option><option>ml</option><option>capsule</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Timing</label>
+      <select class="form-select" id="suppTiming"><option>morning</option><option>afternoon</option><option>evening</option><option>with_meal</option><option>before_bed</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Purpose</label><textarea id="suppPurpose" placeholder="Why are you taking this?"></textarea></div>
+    <button class="btn btn-primary" onclick="submitSupplement()">Add Supplement</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('supplementModal')">Cancel</button>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- Social Contact Modal -->
+<div class="modal-overlay" id="socialModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Contact</div>
+    <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="contactName" placeholder="Full name"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Relationship Type</label>
+        <select class="form-select" id="contactType"><option>friend</option><option>family</option><option>partner</option><option>colleague</option><option>mentor</option><option>mentee</option><option>acquaintance</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Importance (1-10)</label><input class="form-input" id="contactImportance" type="number" min="1" max="10" value="5"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Target Contact (days)</label><input class="form-input" id="contactDays" type="number" placeholder="e.g. 14" value="14"></div>
+    <div class="form-group"><label class="form-label">Preferred Activities</label><input class="form-input" id="contactActivities" placeholder="e.g. coffee, hiking, dinner"></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="contactNotes" placeholder="Any notes about this person"></textarea></div>
+    <button class="btn btn-primary" onclick="submitContact()">Add Contact</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('socialModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Wardrobe Modal -->
+<div class="modal-overlay" id="wardrobeModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Wardrobe Item</div>
+    <div class="form-group"><label class="form-label">Item Name *</label><input class="form-input" id="wardName" placeholder="e.g. Navy blazer"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="wardCategory"><option>tops</option><option>bottoms</option><option>outerwear</option><option>shoes</option><option>accessories</option><option>formal</option><option>activewear</option><option>loungewear</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Color</label><input class="form-input" id="wardColor" placeholder="e.g. Navy"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Occasion</label>
+        <select class="form-select" id="wardOccasion"><option>casual</option><option>work</option><option>formal</option><option>sport</option><option>lounge</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Season</label>
+        <select class="form-select" id="wardSeason"><option>all</option><option>spring</option><option>summer</option><option>fall</option><option>winter</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="wardBrand" placeholder="Brand"></div>
+      <div class="form-group"><label class="form-label">Condition</label>
+        <select class="form-select" id="wardCondition"><option>new</option><option>good</option><option>worn</option><option>retiring</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="wardNotes" placeholder="Any notes"></textarea></div>
+    <button class="btn btn-primary" onclick="submitWardrobe()">Add Item</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('wardrobeModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Growth Habit Modal -->
+<div class="modal-overlay" id="growthModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Habit</div>
+    <div class="form-group"><label class="form-label">Habit Name *</label><input class="form-input" id="habitName" placeholder="e.g. Read for 15 minutes"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="habitCategory"><option>health</option><option>skill</option><option>relationship</option><option>mindset</option><option>financial</option><option>creative</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Difficulty</label>
+        <select class="form-select" id="habitDifficulty"><option>tiny</option><option>easy</option><option>medium</option><option>hard</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Target Frequency</label>
+      <select class="form-select" id="habitFreq"><option>daily</option><option>weekdays</option><option>3x_week</option><option>weekly</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Description</label><textarea id="habitDesc" placeholder="What does this habit look like?"></textarea></div>
+    <div class="form-group"><label class="form-label">Micro-Win Message</label><input class="form-input" id="habitMicroWin" placeholder="e.g. Another chapter in the books!"></div>
+    <button class="btn btn-primary" onclick="submitHabit()">Add Habit</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('growthModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Career Profile Modal -->
+<div class="modal-overlay" id="careerModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Career Profile</div>
+    <div class="form-group"><label class="form-label">Role Title</label><input class="form-input" id="careerRole" placeholder="e.g. Senior Engineer"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Industry</label><input class="form-input" id="careerIndustry" placeholder="e.g. Tech"></div>
+      <div class="form-group"><label class="form-label">Years Experience</label><input class="form-input" id="careerYears" type="number" placeholder="e.g. 8"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Career Goals</label><textarea id="careerGoals" placeholder="What are you working toward?"></textarea></div>
+    <div class="form-group"><label class="form-label">Skills to Develop</label><input class="form-input" id="careerSkillsDev" placeholder="e.g. leadership, public speaking"></div>
+    <div class="form-group"><label class="form-label">Strong Skills</label><input class="form-input" id="careerSkillsStrong" placeholder="e.g. coding, problem solving"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Work Style</label>
+        <select class="form-select" id="careerWorkStyle"><option>remote</option><option>hybrid</option><option>office</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Satisfaction (1-10)</label><input class="form-input" id="careerSatisfaction" type="number" min="1" max="10" value="7"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Next Milestone</label><input class="form-input" id="careerMilestone" placeholder="e.g. Get promoted to Staff"></div>
+    <button class="btn btn-primary" onclick="submitCareer()">Save Career Profile</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('careerModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Legacy Vision Modal -->
+<div class="modal-overlay" id="legacyModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Legacy & Vision</div>
+    <div class="form-group"><label class="form-label">10-Year Vision *</label><textarea id="legacyVision" placeholder="Where do you want to be in 10 years?" style="min-height:100px"></textarea></div>
+    <div class="form-group"><label class="form-label">Career Legacy</label><textarea id="legacyCareer" placeholder="What impact do you want to have professionally?"></textarea></div>
+    <div class="form-group"><label class="form-label">Relationship Legacy</label><textarea id="legacyRelationship" placeholder="How do you want to be remembered by loved ones?"></textarea></div>
+    <div class="form-group"><label class="form-label">Health Legacy</label><textarea id="legacyHealth" placeholder="What does your healthiest self look like?"></textarea></div>
+    <div class="form-group"><label class="form-label">Contribution Legacy</label><textarea id="legacyContribution" placeholder="What will you give back to the world?"></textarea></div>
+    <button class="btn btn-primary" onclick="submitLegacy()">Save Vision</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('legacyModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Home Environment Modal -->
+<div class="modal-overlay" id="homeModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Home Environment Setup</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Home Type</label>
+        <select class="form-select" id="homeType"><option>apartment</option><option>house</option><option>condo</option><option>studio</option><option>other</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Noise Level</label>
+        <select class="form-select" id="homeNoise"><option>quiet</option><option>moderate</option><option>loud</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Natural Light Quality</label>
+      <select class="form-select" id="homeLight"><option>excellent</option><option>good</option><option>moderate</option><option>poor</option></select>
+    </div>
+    <div class="form-toggle"><label>Air Purifier</label><input type="checkbox" class="toggle-switch" id="homeAirPurifier"></div>
+    <div class="form-toggle"><label>Indoor Plants</label><input type="checkbox" class="toggle-switch" id="homePlants"></div>
+    <div class="form-toggle"><label>Smart Lights</label><input type="checkbox" class="toggle-switch" id="homeSmartLights"></div>
+    <div class="form-toggle"><label>Bedroom Blackout</label><input type="checkbox" class="toggle-switch" id="homeBlackout"></div>
+    <div class="form-toggle"><label>Standing Desk</label><input type="checkbox" class="toggle-switch" id="homeStandingDesk"></div>
+    <div class="form-toggle"><label>Ergonomic Chair</label><input type="checkbox" class="toggle-switch" id="homeErgoChair"></div>
+    <div class="form-toggle"><label>White Noise Device</label><input type="checkbox" class="toggle-switch" id="homeWhiteNoise"></div>
+    <div class="form-group" style="margin-top:16px"><label class="form-label">Notes</label><textarea id="homeNotes" placeholder="Any other details about your living space"></textarea></div>
+    <button class="btn btn-primary" onclick="submitHome()">Save Home Profile</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('homeModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Financial Goal Modal -->
+<div class="modal-overlay" id="finGoalModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Financial Goal</div>
+    <div class="form-group"><label class="form-label">Goal Name *</label><input class="form-input" id="finGoalName" placeholder="e.g. Emergency Fund"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Type</label>
+        <select class="form-select" id="finGoalType"><option>savings</option><option>debt_payoff</option><option>investment</option><option>purchase</option><option>retirement</option><option>education</option><option>other</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Target Date</label><input class="form-input" id="finGoalDate" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Target Amount ($)</label><input class="form-input" id="finGoalTarget" type="number" placeholder="e.g. 10000"></div>
+      <div class="form-group"><label class="form-label">Current Amount ($)</label><input class="form-input" id="finGoalCurrent" type="number" placeholder="e.g. 2500" value="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Monthly Contribution ($)</label><input class="form-input" id="finGoalMonthly" type="number" placeholder="e.g. 500"></div>
+    <div class="form-group"><label class="form-label">Linked Life Goal</label><input class="form-input" id="finGoalLinked" placeholder="e.g. Buy a house, retire early"></div>
+    <button class="btn btn-primary" onclick="submitFinGoal()">Add Goal</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('finGoalModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Hobby Modal -->
+<div class="modal-overlay" id="hobbyModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Hobby</div>
+    <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="hobbyName" placeholder="e.g. Guitar, Photography"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="hobbyCategory"><option>creative</option><option>physical</option><option>intellectual</option><option>social</option><option>outdoor</option><option>craft</option><option>music</option><option>other</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-select" id="hobbyStatus"><option>active</option><option>exploring</option><option>paused</option><option>retired</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Weekly Hours Target</label><input class="form-input" id="hobbyHours" type="number" placeholder="e.g. 3" step="0.5"></div>
+      <div class="form-group"><label class="form-label">Satisfaction (1-10)</label><input class="form-input" id="hobbySatisfaction" type="number" min="1" max="10" value="7"></div>
+    </div>
+    <div class="form-toggle"><label>Seasonal</label><input type="checkbox" class="toggle-switch" id="hobbySeasonal"></div>
+    <div class="form-group"><label class="form-label">Health Benefit</label><input class="form-input" id="hobbyHealth" placeholder="e.g. stress relief, cardio"></div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="hobbyNotes" placeholder="Any notes"></textarea></div>
+    <button class="btn btn-primary" onclick="submitHobby()">Add Hobby</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('hobbyModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Book Modal -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Book</div>
+    <div class="form-group"><label class="form-label">Title *</label><input class="form-input" id="bookTitle" placeholder="Book title"></div>
+    <div class="form-group"><label class="form-label">Author</label><input class="form-input" id="bookAuthor" placeholder="Author name"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="bookCategory"><option>non_fiction</option><option>fiction</option><option>self_help</option><option>business</option><option>science</option><option>biography</option><option>philosophy</option><option>technical</option><option>other</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Total Pages</label><input class="form-input" id="bookPages" type="number" placeholder="e.g. 320"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Linked Goal</label><input class="form-input" id="bookGoal" placeholder="e.g. Learn leadership"></div>
+    <button class="btn btn-primary" onclick="submitBook()">Add Book</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('bookModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Skincare Product Modal -->
+<div class="modal-overlay" id="skincareProductModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Skincare Product</div>
+    <div class="form-group"><label class="form-label">Product Name *</label><input class="form-input" id="skinProductName" placeholder="e.g. CeraVe Moisturizer"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="skinProductBrand" placeholder="Brand"></div>
+      <div class="form-group"><label class="form-label">Product Type</label>
+        <select class="form-select" id="skinProductType"><option>cleanser</option><option>toner</option><option>serum</option><option>moisturizer</option><option>sunscreen</option><option>exfoliant</option><option>mask</option><option>eye_cream</option><option>treatment</option><option>other</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Active Ingredients (comma-separated)</label><input class="form-input" id="skinProductIngredients" placeholder="e.g. niacinamide, hyaluronic acid"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Routine Slot</label>
+        <select class="form-select" id="skinProductSlot"><option>morning</option><option>evening</option><option>both</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Frequency</label>
+        <select class="form-select" id="skinProductFreq"><option>daily</option><option>every_other_day</option><option>weekly</option><option>as_needed</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Application Order</label><input class="form-input" id="skinProductOrder" type="number" placeholder="e.g. 1, 2, 3" min="1"></div>
+    <button class="btn btn-primary" onclick="submitSkincareProduct()">Add Product</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('skincareProductModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Skin Profile Modal -->
+<div class="modal-overlay" id="skinProfileModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Skin Profile</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Skin Type</label>
+        <select class="form-select" id="skinType"><option>normal</option><option>dry</option><option>oily</option><option>combination</option><option>sensitive</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Sensitivity</label>
+        <select class="form-select" id="skinSensitivity"><option>low</option><option>medium</option><option>high</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Primary Concerns (comma-separated)</label><input class="form-input" id="skinConcerns" placeholder="e.g. acne, dark spots, wrinkles"></div>
+    <div class="form-group"><label class="form-label">Allergies</label><input class="form-input" id="skinAllergies" placeholder="e.g. fragrance, parabens"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Climate</label>
+        <select class="form-select" id="skinClimate"><option>temperate</option><option>tropical</option><option>dry</option><option>cold</option><option>humid</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Age Range</label>
+        <select class="form-select" id="skinAge"><option>18-25</option><option>26-35</option><option>36-45</option><option>46-55</option><option>56+</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Skin Goals</label><input class="form-input" id="skinGoals" placeholder="e.g. clear skin, anti-aging"></div>
+    <button class="btn btn-primary" onclick="submitSkinProfile()">Save Profile</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('skinProfileModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Digital Identity Modal -->
+<div class="modal-overlay" id="digitalModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Digital Identity</div>
+    <div class="form-group"><label class="form-label">LinkedIn URL</label><input class="form-input" id="diLinkedin" placeholder="https://linkedin.com/in/you"></div>
+    <div class="form-group"><label class="form-label">LinkedIn Headline</label><input class="form-input" id="diHeadline" placeholder="Your professional headline"></div>
+    <div class="form-group"><label class="form-label">LinkedIn Summary</label><textarea id="diSummary" placeholder="Your LinkedIn about section"></textarea></div>
+    <div class="form-group"><label class="form-label">Personal Website</label><input class="form-input" id="diWebsite" placeholder="https://yoursite.com"></div>
+    <div class="form-group"><label class="form-label">GitHub URL</label><input class="form-input" id="diGithub" placeholder="https://github.com/you"></div>
+    <div class="form-group"><label class="form-label">Twitter Handle</label><input class="form-input" id="diTwitter" placeholder="@handle"></div>
+    <div class="form-group"><label class="form-label">Content Style</label>
+      <select class="form-select" id="diContentStyle"><option>thought_leader</option><option>educator</option><option>storyteller</option><option>curator</option><option>conversationalist</option></select>
+    </div>
+    <div class="form-group"><label class="form-label">Target Audience</label><input class="form-input" id="diAudience" placeholder="e.g. developers, entrepreneurs"></div>
+    <div class="form-group"><label class="form-label">Brand Keywords (comma-separated)</label><input class="form-input" id="diBrandKeywords" placeholder="e.g. innovation, leadership"></div>
+    <div class="form-group"><label class="form-label">Visibility Comfort</label>
+      <select class="form-select" id="diVisibility"><option>low</option><option>medium</option><option>high</option></select>
+    </div>
+    <button class="btn btn-primary" onclick="submitDigital()">Save Digital Profile</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('digitalModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Travel Modal -->
+<div class="modal-overlay" id="travelModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Trip</div>
+    <div class="form-group"><label class="form-label">Destination *</label><input class="form-input" id="tripDestination" placeholder="e.g. Tokyo, Japan"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Departure</label><input class="form-input" id="tripDepart" type="date"></div>
+      <div class="form-group"><label class="form-label">Return</label><input class="form-input" id="tripReturn" type="date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Trip Type</label>
+        <select class="form-select" id="tripType"><option>leisure</option><option>business</option><option>family</option><option>adventure</option><option>retreat</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Companions</label><input class="form-input" id="tripCompanions" placeholder="e.g. solo, partner"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea id="tripNotes" placeholder="Any notes"></textarea></div>
+    <button class="btn btn-primary" onclick="submitTrip()">Add Trip</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('travelModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Subscription Modal -->
+<div class="modal-overlay" id="subscriptionModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Subscription</div>
+    <div class="form-group"><label class="form-label">Service Name *</label><input class="form-input" id="subName" placeholder="e.g. Netflix, Spotify"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Category</label>
+        <select class="form-select" id="subCategory"><option>entertainment</option><option>fitness</option><option>productivity</option><option>food</option><option>education</option><option>cloud</option><option>other</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Monthly Cost ($)</label><input class="form-input" id="subCost" type="number" step="0.01" placeholder="e.g. 15.99"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Billing Cycle</label>
+        <select class="form-select" id="subBilling"><option>monthly</option><option>annual</option><option>quarterly</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Usage Frequency</label>
+        <select class="form-select" id="subUsage"><option>daily</option><option>weekly</option><option>monthly</option><option>rarely</option></select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="submitSubscription()">Add Subscription</button>
+    <button class="btn btn-secondary" style="margin-top:8px" onclick="closeModal('subscriptionModal')">Cancel</button>
+  </div>
+</div>
+
+<!-- Personality Assessment Modal -->
+<div class="modal-overlay" id="personalityModal">
+  <div class="modal-panel">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Personality Assessment</div>
+    <div id="quizContainer"></div>
+  </div>
+</div>
+
 
 <script>
-// --- Backend API (Railway) ---
+// --- Config ---
 const API_URL = 'https://claude-code-sandbox-production.up.railway.app';
-
-// --- Supabase Config (direct connection for health data & check-ins) ---
 const SUPABASE_URL = 'https://iuoezfwsqmzpkdeihagp.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml1b2V6ZndzcW16cGtkZWloYWdwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNjU3NTQsImV4cCI6MjA4ODk0MTc1NH0.SWB7XrROf17O73sUv_iflJnf5TNA8IAnSuWjphECBQk';
 
+// --- Supabase helpers ---
 async function sb(table, query = '') {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    }
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
   });
   return res.json();
 }
-
 async function sbInsert(table, data) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-    method: 'POST',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    },
+    method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
     body: JSON.stringify(data)
   });
   return res.json();
 }
 
+// --- Backend API helpers ---
+async function api(path) {
+  const res = await fetch(`${API_URL}${path}`);
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+async function apiPost(path, data = {}) {
+  const res = await fetch(`${API_URL}${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+async function apiPut(path, data = {}) {
+  const res = await fetch(`${API_URL}${path}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+  return res.json();
+}
+
+// --- Modal System ---
+function openModal(id) {
+  const m = document.getElementById(id);
+  m.classList.add('open');
+  setTimeout(() => m.querySelector('.modal-panel').style.transform = 'translateY(0)', 10);
+}
+function closeModal(id) {
+  const m = document.getElementById(id);
+  m.querySelector('.modal-panel').style.transform = 'translateY(100%)';
+  setTimeout(() => m.classList.remove('open'), 300);
+}
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); });
+});
+
 // --- Navigation ---
+let currentPage = 'dashboard';
+const fabPages = {
+  supplements: 'supplementModal', social: 'socialModal', wardrobe: 'wardrobeModal',
+  growth: 'growthModal', travel: 'travelModal', financial: 'subscriptionModal',
+  finplanning: 'finGoalModal', hobbies: 'hobbyModal', learning: 'bookModal',
+  skincare: 'skincareProductModal'
+};
+
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById('page-' + tab.dataset.page).classList.add('active');
-    loadPage(tab.dataset.page);
+    currentPage = tab.dataset.page;
+    document.getElementById('page-' + currentPage).classList.add('active');
+    const fab = document.getElementById('fabBtn');
+    if (fabPages[currentPage]) { fab.classList.add('visible'); } else { fab.classList.remove('visible'); }
+    loadPage(currentPage);
   });
 });
 
-function showToast(msg) {
+function handleFab() { if (fabPages[currentPage]) openModal(fabPages[currentPage]); }
+
+// --- Utilities ---
+function showToast(msg, isError) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  t.className = isError ? 'toast error show' : 'toast show';
+  setTimeout(() => t.className = 'toast', 2500);
 }
-
-function scoreColor(s) {
-  if (s >= 75) return 'var(--green)';
-  if (s >= 50) return 'var(--yellow)';
-  return 'var(--red)';
-}
-
+function scoreColor(s) { return s >= 75 ? 'var(--green)' : s >= 50 ? 'var(--yellow)' : 'var(--red)'; }
 function setRing(id, score) {
-  const el = document.getElementById(id);
-  const circ = 2 * Math.PI * 52;
-  el.style.strokeDasharray = circ;
-  el.style.strokeDashoffset = circ - (score / 100) * circ;
-  el.style.stroke = scoreColor(score);
+  const el = document.getElementById(id); const circ = 2 * Math.PI * 52;
+  el.style.strokeDasharray = circ; el.style.strokeDashoffset = circ - (score / 100) * circ; el.style.stroke = scoreColor(score);
 }
-
 function today() { return new Date().toISOString().slice(0, 10); }
 function daysAgo(n) { const d = new Date(); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10); }
+function csvToArray(str) { return str ? str.split(',').map(s => s.trim()).filter(Boolean) : []; }
+function val(id) { return document.getElementById(id).value; }
+function numVal(id) { const v = document.getElementById(id).value; return v ? Number(v) : null; }
+
+// ======================== PAGE LOADERS ========================
 
 // --- Dashboard ---
 async function loadDashboard() {
   try {
-    // Get most recent health data
     const data = await sb('health_data', 'select=*&order=date.desc&limit=1');
     const history = await sb('health_data', `select=date,readiness_score,sleep_score,hrv,resting_heart_rate,steps&date=gte.${daysAgo(7)}&order=date`);
-
     document.getElementById('dashLoading').style.display = 'none';
     document.getElementById('dashContent').style.display = 'block';
-
     if (data && data.length > 0) {
       const t = data[0];
       document.getElementById('dashDate').textContent = t.date;
@@ -515,21 +1022,15 @@ async function loadDashboard() {
       document.getElementById('mActivity').textContent = t.activity_score || '--';
       document.getElementById('mTemp').textContent = t.readiness_temperature || '--';
     }
-
     if (history && history.length > 0) {
-      const chart = document.getElementById('readinessChart');
-      const labels = document.getElementById('readinessLabels');
+      const chart = document.getElementById('readinessChart'), labels = document.getElementById('readinessLabels');
       chart.innerHTML = ''; labels.innerHTML = '';
       history.forEach(h => {
         const score = h.readiness_score || 0;
-        const bar = document.createElement('div');
-        bar.className = 'bar';
-        bar.style.height = score + '%';
-        bar.style.background = scoreColor(score);
-        bar.title = h.date + ': ' + score;
+        const bar = document.createElement('div'); bar.className = 'bar';
+        bar.style.height = score + '%'; bar.style.background = scoreColor(score); bar.title = h.date + ': ' + score;
         chart.appendChild(bar);
-        const lbl = document.createElement('div');
-        lbl.style.flex = '1'; lbl.style.textAlign = 'center';
+        const lbl = document.createElement('div'); lbl.style.flex = '1'; lbl.style.textAlign = 'center';
         lbl.style.fontSize = '9px'; lbl.style.color = 'var(--text-muted)';
         lbl.textContent = new Date(h.date + 'T12:00:00').toLocaleDateString('en', {weekday:'short'});
         labels.appendChild(lbl);
@@ -546,45 +1047,29 @@ async function loadTrends() {
   try {
     const data = await sb('health_data', `select=date,readiness_score,sleep_score,hrv,resting_heart_rate,steps,calories_active,activity_score,sleep_efficiency&date=gte.${daysAgo(30)}&order=date.desc`);
     document.getElementById('trendsLoading').style.display = 'none';
-    const el = document.getElementById('trendsContent');
-    el.style.display = 'block';
-
-    if (!data || !data.length) {
-      el.innerHTML = '<div class="empty"><p>No data yet</p></div>';
-      return;
-    }
-
-    // Averages
+    const el = document.getElementById('trendsContent'); el.style.display = 'block';
+    if (!data || !data.length) { el.innerHTML = '<div class="empty"><p>No data yet</p></div>'; return; }
     const avg = (arr) => arr.length ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length) : '--';
     const scores = data.filter(d => d.readiness_score).map(d => d.readiness_score);
     const sleeps = data.filter(d => d.sleep_score).map(d => d.sleep_score);
     const hrvs = data.filter(d => d.hrv).map(d => d.hrv);
     const rhrs = data.filter(d => d.resting_heart_rate).map(d => d.resting_heart_rate);
-
-    let html = `<div class="card">
-      <div class="card-title">30-Day Averages</div>
-      <div class="metrics" style="margin-top:12px">
-        <div class="metric"><div class="label">Readiness</div><div class="value">${avg(scores)}</div></div>
-        <div class="metric"><div class="label">Sleep</div><div class="value">${avg(sleeps)}</div></div>
-        <div class="metric"><div class="label">HRV</div><div class="value">${avg(hrvs)}</div><div class="unit">ms</div></div>
-        <div class="metric"><div class="label">RHR</div><div class="value">${avg(rhrs)}</div><div class="unit">bpm</div></div>
-      </div>
-    </div>`;
-
-    html += `<div class="card"><div class="card-title">Daily History</div>`;
+    let html = `<div class="card"><div class="card-title">30-Day Averages</div><div class="metrics" style="margin-top:12px">
+      <div class="metric"><div class="label">Readiness</div><div class="value">${avg(scores)}</div></div>
+      <div class="metric"><div class="label">Sleep</div><div class="value">${avg(sleeps)}</div></div>
+      <div class="metric"><div class="label">HRV</div><div class="value">${avg(hrvs)}</div><div class="unit">ms</div></div>
+      <div class="metric"><div class="label">RHR</div><div class="value">${avg(rhrs)}</div><div class="unit">bpm</div></div>
+    </div></div>`;
+    html += '<div class="card"><div class="card-title">Daily History</div>';
     data.forEach(d => {
-      html += `<div class="trend-row">
-        <div class="trend-date">${d.date}</div>
-        <div class="trend-vals">
-          <div class="trend-val" style="color:${scoreColor(d.readiness_score||0)}">${d.readiness_score||'-'}<div class="trend-label">Ready</div></div>
-          <div class="trend-val">${d.sleep_score||'-'}<div class="trend-label">Sleep</div></div>
-          <div class="trend-val">${d.hrv ? Math.round(d.hrv) : '-'}<div class="trend-label">HRV</div></div>
-          <div class="trend-val">${d.steps ? d.steps.toLocaleString() : '-'}<div class="trend-label">Steps</div></div>
-        </div>
-      </div>`;
+      html += `<div class="trend-row"><div class="trend-date">${d.date}</div><div class="trend-vals">
+        <div class="trend-val" style="color:${scoreColor(d.readiness_score||0)}">${d.readiness_score||'-'}<div class="trend-label">Ready</div></div>
+        <div class="trend-val">${d.sleep_score||'-'}<div class="trend-label">Sleep</div></div>
+        <div class="trend-val">${d.hrv ? Math.round(d.hrv) : '-'}<div class="trend-label">HRV</div></div>
+        <div class="trend-val">${d.steps ? d.steps.toLocaleString() : '-'}<div class="trend-label">Steps</div></div>
+      </div></div>`;
     });
     html += '</div>';
-
     el.innerHTML = html;
   } catch(e) {
     document.getElementById('trendsLoading').style.display = 'none';
@@ -608,25 +1093,18 @@ async function loadCheckin() {
     }
   } catch(e) {}
 }
-
 async function submitCheckin() {
   const btn = document.getElementById('checkinBtn');
   btn.disabled = true; btn.textContent = 'Submitting...';
   try {
     await sbInsert('check_ins', {
-      date: today(),
-      energy: parseInt(document.getElementById('energy').value),
-      mood: parseInt(document.getElementById('mood').value),
-      stress: parseInt(document.getElementById('stress').value),
-      soreness: parseInt(document.getElementById('soreness').value),
-      notes: document.getElementById('checkinNotes').value || null
+      date: today(), energy: parseInt(val('energy')), mood: parseInt(val('mood')),
+      stress: parseInt(val('stress')), soreness: parseInt(val('soreness')),
+      notes: val('checkinNotes') || null
     });
     showToast('Check-in submitted!');
     loadCheckin();
-  } catch(e) {
-    showToast('Error: ' + e.message);
-    btn.disabled = false; btn.textContent = 'Submit Check-In';
-  }
+  } catch(e) { showToast('Error: ' + e.message, true); btn.disabled = false; btn.textContent = 'Submit Check-In'; }
 }
 
 // --- Supplements ---
@@ -635,20 +1113,31 @@ async function loadSupplements() {
     const data = await sb('supplements', 'active=eq.true&order=timing');
     document.getElementById('suppLoading').style.display = 'none';
     if (!data || !data.length) { document.getElementById('suppEmpty').style.display = 'block'; return; }
-    const el = document.getElementById('suppContent');
-    el.style.display = 'block';
-    el.innerHTML = data.map(s => `<div class="card">
-      <div class="card-header">
-        <div><div class="card-title">${s.name}</div>
-        <div class="card-subtitle">${s.brand||''} ${s.dose_amount||s.dose||''}${s.dose_unit||s.unit||''}</div></div>
-        <div class="card-subtitle">${s.timing||''}</div>
-      </div>
+    const el = document.getElementById('suppContent'); el.style.display = 'block';
+    let html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Your Stack</div><button class="btn btn-primary btn-sm" onclick="openModal(\'supplementModal\')">+ Add</button></div>';
+    html += data.map(s => `<div class="card">
+      <div class="card-header"><div><div class="card-title">${s.name}</div>
+      <div class="card-subtitle">${s.brand||''} ${s.dose_amount||s.dose||''}${s.dose_unit||s.unit||''}</div></div>
+      <div class="card-subtitle">${s.timing||''}</div></div>
       ${s.purpose ? `<div style="font-size:13px;color:var(--text-dim)">${s.purpose}</div>` : ''}
     </div>`).join('');
+    el.innerHTML = html;
   } catch(e) {
     document.getElementById('suppLoading').style.display = 'none';
     document.getElementById('suppEmpty').style.display = 'block';
   }
+}
+async function submitSupplement() {
+  try {
+    await apiPost('/supplements/add', {
+      name: val('suppName'), brand: val('suppBrand') || null, category: val('suppCategory') || null,
+      dose_amount: numVal('suppDose'), dose_unit: val('suppUnit'), timing: val('suppTiming'),
+      purpose: val('suppPurpose') || null
+    });
+    closeModal('supplementModal');
+    showToast('Supplement added!');
+    loaded.supplements = false; loadSupplements();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
 // --- Blood Work ---
@@ -657,41 +1146,18 @@ async function loadBloodwork() {
     const data = await sb('biomarkers', 'order=test_date.desc,marker_category,marker_name');
     document.getElementById('bwLoading').style.display = 'none';
     if (!data || !data.length) { document.getElementById('bwEmpty').style.display = 'block'; return; }
-    const el = document.getElementById('bwContent');
-    el.style.display = 'block';
+    const el = document.getElementById('bwContent'); el.style.display = 'block';
     el.innerHTML = data.map(m => {
       const st = m.status || 'normal';
       const c = st === 'optimal' ? 'var(--green)' : (st === 'high' || st === 'low') ? 'var(--red)' : 'var(--yellow)';
       return `<div class="card" style="border-left:3px solid ${c}">
-        <div class="card-header">
-          <div><div class="card-title">${m.marker_name}</div><div class="card-subtitle">${m.marker_category||''}</div></div>
-          <div style="text-align:right"><div style="font-size:20px;font-weight:700;color:${c}">${m.value}</div>
-          <div class="card-subtitle">${m.unit||''}</div></div>
-        </div>
+        <div class="card-header"><div><div class="card-title">${m.marker_name}</div><div class="card-subtitle">${m.marker_category||''}</div></div>
+        <div style="text-align:right"><div style="font-size:20px;font-weight:700;color:${c}">${m.value}</div>
+        <div class="card-subtitle">${m.unit||''}</div></div></div>
         <div style="font-size:12px;color:var(--text-muted)">Ref: ${m.reference_min||'?'} - ${m.reference_max||'?'} ${m.unit||''}</div>
       </div>`;
     }).join('');
-  } catch(e) {
-    document.getElementById('bwLoading').style.display = 'none';
-    document.getElementById('bwEmpty').style.display = 'block';
-  }
-}
-
-// --- Backend API helper ---
-async function api(path) {
-  const res = await fetch(`${API_URL}${path}`);
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
-  return res.json();
-}
-
-async function apiPost(path, data = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
-  return res.json();
+  } catch(e) { document.getElementById('bwLoading').style.display = 'none'; document.getElementById('bwEmpty').style.display = 'block'; }
 }
 
 // --- Daily Plan ---
@@ -701,45 +1167,16 @@ async function generateDailyPlan() {
   try {
     const plan = await api('/daily/plan');
     document.getElementById('planLoading').style.display = 'none';
-    const el = document.getElementById('planContent');
-    el.style.display = 'block';
-
+    const el = document.getElementById('planContent'); el.style.display = 'block';
     let html = '';
     if (plan.greeting) html += `<div class="card coaching-note">${plan.greeting}</div>`;
-
-    if (plan.workout_summary || plan.workout) {
-      const w = plan.workout_summary || plan.workout;
-      html += `<div class="card"><div class="card-title">Workout</div>
-        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof w === 'string' ? w : JSON.stringify(w, null, 2)}</div></div>`;
-    }
-    if (plan.nutrition_summary || plan.nutrition) {
-      const n = plan.nutrition_summary || plan.nutrition;
-      html += `<div class="card"><div class="card-title">Nutrition</div>
-        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof n === 'string' ? n : JSON.stringify(n, null, 2)}</div></div>`;
-    }
-    if (plan.supplement_reminders || plan.supplements) {
-      const s = plan.supplement_reminders || plan.supplements;
-      html += `<div class="card"><div class="card-title">Supplements</div>
-        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof s === 'string' ? s : JSON.stringify(s, null, 2)}</div></div>`;
-    }
-    if (plan.coaching_notes || plan.insights) {
-      const c = plan.coaching_notes || plan.insights;
-      html += `<div class="card"><div class="card-title">Coaching Notes</div>
-        <div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`;
-    }
-
-    // Fallback: render entire response if no specific fields matched
-    if (!html) {
-      html = `<div class="card"><div class="card-title">Today's Plan</div>
-        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(plan, null, 2)}</div></div>`;
-    }
-
+    if (plan.workout_summary || plan.workout) { const w = plan.workout_summary || plan.workout; html += `<div class="card"><div class="card-title">Workout</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof w === 'string' ? w : JSON.stringify(w, null, 2)}</div></div>`; }
+    if (plan.nutrition_summary || plan.nutrition) { const n = plan.nutrition_summary || plan.nutrition; html += `<div class="card"><div class="card-title">Nutrition</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof n === 'string' ? n : JSON.stringify(n, null, 2)}</div></div>`; }
+    if (plan.supplement_reminders || plan.supplements) { const s = plan.supplement_reminders || plan.supplements; html += `<div class="card"><div class="card-title">Supplements</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof s === 'string' ? s : JSON.stringify(s, null, 2)}</div></div>`; }
+    if (plan.coaching_notes || plan.insights) { const c = plan.coaching_notes || plan.insights; html += `<div class="card"><div class="card-title">Coaching Notes</div><div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`; }
+    if (!html) html = `<div class="card"><div class="card-title">Today's Plan</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(plan, null, 2)}</div></div>`;
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('planLoading').style.display = 'none';
-    document.getElementById('planStart').style.display = 'block';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('planLoading').style.display = 'none'; document.getElementById('planStart').style.display = 'block'; showToast('Error: ' + e.message, true); }
 }
 
 // --- Workout ---
@@ -749,53 +1186,24 @@ async function loadWorkout() {
   try {
     const data = await api('/fitness/today');
     document.getElementById('workoutLoading').style.display = 'none';
-    const el = document.getElementById('workoutContent');
-    el.style.display = 'block';
-
+    const el = document.getElementById('workoutContent'); el.style.display = 'block';
     let html = '';
     if (data.workout_type || data.type) {
-      html += `<div class="card"><div class="card-header"><div>
-        <div class="card-title">${data.workout_type || data.type || 'Workout'}</div>
-        <div class="card-subtitle">${data.focus || data.muscle_groups || ''}</div></div>
-        <div class="card-subtitle">${data.duration || ''}</div></div>`;
+      html += `<div class="card"><div class="card-header"><div><div class="card-title">${data.workout_type || data.type || 'Workout'}</div><div class="card-subtitle">${data.focus || data.muscle_groups || ''}</div></div><div class="card-subtitle">${data.duration || ''}</div></div>`;
       if (data.coaching_note) html += `<div class="coaching-note" style="margin-top:12px">${data.coaching_note}</div>`;
-      html += `</div>`;
+      html += '</div>';
     }
-
     if (data.exercises && Array.isArray(data.exercises)) {
-      html += `<div class="card"><div class="card-title">Exercises</div>`;
-      data.exercises.forEach(ex => {
-        html += `<div class="exercise">
-          <div class="name">${ex.name || ex.exercise}</div>
-          <div class="detail">${ex.sets || ''}${ex.sets ? ' sets' : ''} ${ex.reps ? '× ' + ex.reps : ''} ${ex.weight ? '@ ' + ex.weight : ''} ${ex.rest ? '| Rest: ' + ex.rest : ''}</div>
-          ${ex.notes ? `<div class="notes">${ex.notes}</div>` : ''}
-        </div>`;
-      });
-      html += `</div>`;
+      html += '<div class="card"><div class="card-title">Exercises</div>';
+      data.exercises.forEach(ex => { html += `<div class="exercise"><div class="name">${ex.name || ex.exercise}</div><div class="detail">${ex.sets || ''}${ex.sets ? ' sets' : ''} ${ex.reps ? '× ' + ex.reps : ''} ${ex.weight ? '@ ' + ex.weight : ''} ${ex.rest ? '| Rest: ' + ex.rest : ''}</div>${ex.notes ? `<div class="notes">${ex.notes}</div>` : ''}</div>`; });
+      html += '</div>';
     }
-
-    if (!html) {
-      html = `<div class="card"><div class="card-title">Today's Workout</div>
-        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(data, null, 2)}</div></div>`;
-    }
-
-    html += `<button class="btn btn-primary" style="margin-top:8px" onclick="completeWorkout()">Mark Workout Complete</button>`;
+    if (!html) html = `<div class="card"><div class="card-title">Today's Workout</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(data, null, 2)}</div></div>`;
+    html += '<button class="btn btn-primary" style="margin-top:8px" onclick="completeWorkout()">Mark Workout Complete</button>';
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('workoutLoading').style.display = 'none';
-    document.getElementById('workoutStart').style.display = 'block';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('workoutLoading').style.display = 'none'; document.getElementById('workoutStart').style.display = 'block'; showToast('Error: ' + e.message, true); }
 }
-
-async function completeWorkout() {
-  try {
-    await apiPost('/fitness/complete', { notes: 'Completed via dashboard' });
-    showToast('Workout marked complete!');
-  } catch(e) {
-    showToast('Error: ' + e.message);
-  }
-}
+async function completeWorkout() { try { await apiPost('/fitness/complete', { notes: 'Completed via dashboard' }); showToast('Workout marked complete!'); } catch(e) { showToast('Error: ' + e.message, true); } }
 
 // --- Nutrition ---
 async function loadNutrition() {
@@ -804,45 +1212,27 @@ async function loadNutrition() {
   try {
     const data = await api('/nutrition/today');
     document.getElementById('nutritionLoading').style.display = 'none';
-    const el = document.getElementById('nutritionContent');
-    el.style.display = 'block';
-
+    const el = document.getElementById('nutritionContent'); el.style.display = 'block';
     let html = '';
     if (data.target_calories || data.calories) {
-      html += `<div class="card"><div class="card-title">Daily Targets</div>
-        <div class="metrics" style="margin-top:12px">
-          <div class="metric"><div class="label">Calories</div><div class="value">${data.target_calories || data.calories || '--'}</div><div class="unit">kcal</div></div>
-          <div class="metric"><div class="label">Protein</div><div class="value">${data.protein || '--'}</div><div class="unit">g</div></div>
-          <div class="metric"><div class="label">Carbs</div><div class="value">${data.carbs || '--'}</div><div class="unit">g</div></div>
-          <div class="metric"><div class="label">Fat</div><div class="value">${data.fat || '--'}</div><div class="unit">g</div></div>
-        </div></div>`;
+      html += `<div class="card"><div class="card-title">Daily Targets</div><div class="metrics" style="margin-top:12px">
+        <div class="metric"><div class="label">Calories</div><div class="value">${data.target_calories || data.calories || '--'}</div><div class="unit">kcal</div></div>
+        <div class="metric"><div class="label">Protein</div><div class="value">${data.protein || '--'}</div><div class="unit">g</div></div>
+        <div class="metric"><div class="label">Carbs</div><div class="value">${data.carbs || '--'}</div><div class="unit">g</div></div>
+        <div class="metric"><div class="label">Fat</div><div class="value">${data.fat || '--'}</div><div class="unit">g</div></div>
+      </div></div>`;
     }
-
     if (data.meals && Array.isArray(data.meals)) {
       data.meals.forEach(meal => {
-        html += `<div class="card">
-          <div class="card-header"><div>
-            <div class="card-title">${meal.name || meal.meal_type || 'Meal'}</div>
-            <div class="card-subtitle">${meal.time || meal.timing || ''}</div></div>
-            <div class="card-subtitle">${meal.calories ? meal.calories + ' cal' : ''}</div>
-          </div>
-          <div style="font-size:14px;color:var(--text-dim);white-space:pre-wrap">${meal.description || meal.foods || ''}</div>
-          ${meal.macros ? `<div class="macros"><div class="macro">P: <span>${meal.macros.protein || ''}g</span></div><div class="macro">C: <span>${meal.macros.carbs || ''}g</span></div><div class="macro">F: <span>${meal.macros.fat || ''}g</span></div></div>` : ''}
+        html += `<div class="card"><div class="card-header"><div><div class="card-title">${meal.name || meal.meal_type || 'Meal'}</div><div class="card-subtitle">${meal.time || meal.timing || ''}</div></div><div class="card-subtitle">${meal.calories ? meal.calories + ' cal' : ''}</div></div>
+        <div style="font-size:14px;color:var(--text-dim);white-space:pre-wrap">${meal.description || meal.foods || ''}</div>
+        ${meal.macros ? `<div class="macros"><div class="macro">P: <span>${meal.macros.protein || ''}g</span></div><div class="macro">C: <span>${meal.macros.carbs || ''}g</span></div><div class="macro">F: <span>${meal.macros.fat || ''}g</span></div></div>` : ''}
         </div>`;
       });
     }
-
-    if (!html) {
-      html = `<div class="card"><div class="card-title">Today's Meal Plan</div>
-        <div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(data, null, 2)}</div></div>`;
-    }
-
+    if (!html) html = `<div class="card"><div class="card-title">Today's Meal Plan</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(data, null, 2)}</div></div>`;
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('nutritionLoading').style.display = 'none';
-    document.getElementById('nutritionStart').style.display = 'block';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('nutritionLoading').style.display = 'none'; document.getElementById('nutritionStart').style.display = 'block'; showToast('Error: ' + e.message, true); }
 }
 
 // --- Social ---
@@ -852,24 +1242,31 @@ async function loadSocialData() {
     const briefing = await api('/social/briefing');
     document.getElementById('socialLoading').style.display = 'none';
     const el = document.getElementById('socialContent');
-    let html = `<div class="card"><div class="card-header">
-      <div><div class="card-title">Social Health Score</div></div>
-      <div style="font-size:32px;font-weight:700;color:${scoreColor(briefing.score||0)}">${briefing.score||0}</div>
-    </div></div>`;
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Social Circle</div><button class="btn btn-primary btn-sm" onclick="openModal('socialModal')">+ Add Contact</button></div>`;
+    html += `<div class="card"><div class="card-header"><div><div class="card-title">Social Health Score</div></div>
+      <div style="font-size:32px;font-weight:700;color:${scoreColor(briefing.score||0)}">${briefing.score||0}</div></div></div>`;
     if (briefing.nudge) html += `<div class="card coaching-note">${briefing.nudge}</div>`;
     if (briefing.overdue_connections && briefing.overdue_connections.length > 0) {
-      html += `<div class="card"><div class="card-title">Overdue Connections</div>`;
+      html += '<div class="card"><div class="card-title">Overdue Connections</div>';
       briefing.overdue_connections.forEach(c => {
-        html += `<div class="trend-row"><div class="trend-date">${c.name}</div>
-          <div class="trend-vals"><div class="trend-val">${c.days_since_contact||'?'} days<div class="trend-label">${c.relationship_type||'Contact'}</div></div></div></div>`;
+        html += `<div class="trend-row"><div class="trend-date">${c.name}</div><div class="trend-vals"><div class="trend-val">${c.days_since_contact||'?'} days<div class="trend-label">${c.relationship_type||'Contact'}</div></div></div></div>`;
       });
-      html += `</div>`;
+      html += '</div>';
     }
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('socialLoading').style.display = 'none';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('socialLoading').style.display = 'none'; showToast('Error: ' + e.message, true); }
+}
+async function submitContact() {
+  try {
+    const activities = val('contactActivities');
+    await apiPost('/social/circle', {
+      name: val('contactName'), relationship_type: val('contactType'),
+      importance_weight: numVal('contactImportance'), target_contact_days: numVal('contactDays'),
+      preferred_activities: activities ? csvToArray(activities) : [], notes: val('contactNotes') || null
+    });
+    closeModal('socialModal'); showToast('Contact added!');
+    loaded.social = false; loadSocialData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
 // --- Growth ---
@@ -880,25 +1277,38 @@ async function loadGrowthData() {
     const score = await api('/growth/score');
     document.getElementById('growthLoading').style.display = 'none';
     const el = document.getElementById('growthContent');
-    let html = `<div class="card"><div class="card-header">
-      <div><div class="card-title">Compound Score</div><div class="card-subtitle">${data.completed}/${data.total} habits done today</div></div>
-      <div style="font-size:32px;font-weight:700;color:${scoreColor(score.score||0)}">${score.score||0}</div>
-    </div></div>`;
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Growth Engine</div><button class="btn btn-primary btn-sm" onclick="openModal('growthModal')">+ Add Habit</button></div>`;
+    html += `<div class="card"><div class="card-header"><div><div class="card-title">Compound Score</div><div class="card-subtitle">${data.completed}/${data.total} habits done today</div></div>
+      <div style="font-size:32px;font-weight:700;color:${scoreColor(score.score||0)}">${score.score||0}</div></div></div>`;
     if (data.habits) {
-      html += `<div class="card"><div class="card-title">Today's Habits</div>`;
+      html += '<div class="card"><div class="card-title">Today\'s Habits</div>';
       data.habits.forEach(h => {
-        const done = h.completed_today ? '✓' : '○';
-        const color = h.completed_today ? 'var(--green)' : 'var(--text-dim)';
-        html += `<div class="exercise"><div class="name" style="color:${color}">${done} ${h.name}</div>
-          <div class="detail">${h.category} · Streak: ${h.current_streak}${h.current_streak > 0 ? ' 🔥' : ''}</div></div>`;
+        const done = h.completed_today;
+        const color = done ? 'var(--green)' : 'var(--text-dim)';
+        const icon = done ? '&#10003;' : '&#9711;';
+        html += `<div class="exercise" style="cursor:pointer" onclick="logHabit('${h.id}',${!done})">
+          <div class="name" style="color:${color}">${icon} ${h.name}</div>
+          <div class="detail">${h.category} · Streak: ${h.current_streak}${h.current_streak > 0 ? ' &#128293;' : ''}</div></div>`;
       });
-      html += `</div>`;
+      html += '</div>';
     }
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('growthLoading').style.display = 'none';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('growthLoading').style.display = 'none'; showToast('Error: ' + e.message, true); }
+}
+async function logHabit(id, completed) {
+  if (!completed) return;
+  try { await apiPost(`/growth/habits/${id}/log`); showToast('Habit logged!'); loaded.growth = false; loadGrowthData(); } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function submitHabit() {
+  try {
+    await apiPost('/growth/habits', {
+      name: val('habitName'), category: val('habitCategory'), difficulty: val('habitDifficulty'),
+      target_frequency: val('habitFreq'), description: val('habitDesc') || null,
+      micro_win_message: val('habitMicroWin') || null
+    });
+    closeModal('growthModal'); showToast('Habit added!');
+    loaded.growth = false; loadGrowthData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
 // --- Career ---
@@ -909,22 +1319,39 @@ async function loadCareerData() {
     document.getElementById('careerLoading').style.display = 'none';
     const el = document.getElementById('careerContent');
     const riskColor = burnout.risk_level === 'high' ? 'var(--red)' : burnout.risk_level === 'elevated' ? 'var(--yellow)' : 'var(--green)';
-    let html = `<div class="card" style="border-left:3px solid ${riskColor}">
-      <div class="card-header"><div><div class="card-title">Burnout Risk</div>
-      <div class="card-subtitle">${burnout.risk_level.toUpperCase()}</div></div>
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Career</div><button class="btn btn-primary btn-sm" onclick="openCareerEditor()">Edit Profile</button></div>`;
+    html += `<div class="card" style="border-left:3px solid ${riskColor}"><div class="card-header"><div><div class="card-title">Burnout Risk</div><div class="card-subtitle">${burnout.risk_level.toUpperCase()}</div></div>
       <div style="font-size:32px;font-weight:700;color:${riskColor}">${burnout.risk_score}</div></div>`;
-    if (burnout.contributing_factors.length > 0) {
-      burnout.contributing_factors.forEach(f => { html += `<div style="font-size:13px;color:var(--text-dim);margin-top:4px">• ${f}</div>`; });
-    }
-    if (burnout.recommendations.length > 0) {
-      burnout.recommendations.forEach(r => { html += `<div style="font-size:13px;color:var(--accent-light);margin-top:4px">→ ${r}</div>`; });
-    }
-    html += `</div>`;
+    if (burnout.contributing_factors.length > 0) burnout.contributing_factors.forEach(f => { html += `<div style="font-size:13px;color:var(--text-dim);margin-top:4px">&#8226; ${f}</div>`; });
+    if (burnout.recommendations.length > 0) burnout.recommendations.forEach(r => { html += `<div style="font-size:13px;color:var(--accent-light);margin-top:4px">&#8594; ${r}</div>`; });
+    html += '</div>';
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('careerLoading').style.display = 'none';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('careerLoading').style.display = 'none'; showToast('Error: ' + e.message, true); }
+}
+async function openCareerEditor() {
+  try { const p = await api('/career/profile'); if (p && p.role_title) {
+    document.getElementById('careerRole').value = p.role_title || '';
+    document.getElementById('careerIndustry').value = p.industry || '';
+    document.getElementById('careerYears').value = p.years_experience || '';
+    document.getElementById('careerGoals').value = p.career_goals || '';
+    document.getElementById('careerSkillsDev').value = (p.skills_to_develop || []).join(', ');
+    document.getElementById('careerSkillsStrong').value = (p.skills_strong || []).join(', ');
+    document.getElementById('careerSatisfaction').value = p.satisfaction_score || 7;
+    document.getElementById('careerMilestone').value = p.next_milestone || '';
+  }} catch(e) {}
+  openModal('careerModal');
+}
+async function submitCareer() {
+  try {
+    await apiPut('/career/profile', {
+      role_title: val('careerRole'), industry: val('careerIndustry'), years_experience: numVal('careerYears'),
+      career_goals: val('careerGoals') || null, skills_to_develop: csvToArray(val('careerSkillsDev')),
+      skills_strong: csvToArray(val('careerSkillsStrong')), work_style: val('careerWorkStyle'),
+      satisfaction_score: numVal('careerSatisfaction'), next_milestone: val('careerMilestone') || null
+    });
+    closeModal('careerModal'); showToast('Career profile saved!');
+    loaded.career = false; loadCareerData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
 // --- Travel ---
@@ -934,22 +1361,27 @@ async function loadTravelData() {
     const trips = await api('/travel/trips');
     document.getElementById('travelLoading').style.display = 'none';
     const el = document.getElementById('travelContent');
-    if (!trips || !trips.length) { el.innerHTML = '<div class="empty"><p>No trips yet.</p></div>'; return; }
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Trips</div><button class="btn btn-primary btn-sm" onclick="openModal('travelModal')">+ Add Trip</button></div>`;
+    if (!trips || !trips.length) { html += '<div class="empty"><p>No trips yet.</p></div>'; el.innerHTML = html; return; }
     trips.forEach(t => {
       const statusColor = t.status === 'active' ? 'var(--green)' : t.status === 'upcoming' ? 'var(--accent)' : 'var(--text-muted)';
-      html += `<div class="card" style="border-left:3px solid ${statusColor}">
-        <div class="card-header"><div><div class="card-title">${t.destination}</div>
-        <div class="card-subtitle">${t.departure_date} → ${t.return_date}</div></div>
+      html += `<div class="card" style="border-left:3px solid ${statusColor}"><div class="card-header"><div><div class="card-title">${t.destination}</div>
+        <div class="card-subtitle">${t.departure_date} &#8594; ${t.return_date}</div></div>
         <div style="font-size:12px;font-weight:600;color:${statusColor};text-transform:uppercase">${t.status}</div></div>
-        <div style="font-size:12px;color:var(--text-muted)">${t.trip_type||''} · ${t.travel_companions||''}</div>
-      </div>`;
+        <div style="font-size:12px;color:var(--text-muted)">${t.trip_type||''} &#183; ${t.travel_companions||''}</div></div>`;
     });
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('travelLoading').style.display = 'none';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('travelLoading').style.display = 'none'; showToast('Error: ' + e.message, true); }
+}
+async function submitTrip() {
+  try {
+    await apiPost('/travel/trips', {
+      destination: val('tripDestination'), departure_date: val('tripDepart'), return_date: val('tripReturn'),
+      trip_type: val('tripType'), travel_companions: val('tripCompanions') || null, notes: val('tripNotes') || null
+    });
+    closeModal('travelModal'); showToast('Trip added!');
+    loaded.travel = false; loadTravelData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
 // --- Wardrobe ---
@@ -959,28 +1391,34 @@ async function loadWardrobeData() {
     const items = await api('/wardrobe/items');
     document.getElementById('wardrobeLoading').style.display = 'none';
     const el = document.getElementById('wardrobeContent');
-    if (!items || !items.length) { el.innerHTML = '<div class="empty"><p>No wardrobe items yet.</p></div>'; return; }
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Wardrobe</div><button class="btn btn-primary btn-sm" onclick="openModal('wardrobeModal')">+ Add Item</button></div>`;
+    if (!items || !items.length) { html += '<div class="empty"><p>No wardrobe items yet.</p></div>'; el.innerHTML = html; return; }
     const categories = {};
     items.forEach(i => { const c = i.category || 'other'; if (!categories[c]) categories[c] = []; categories[c].push(i); });
-    let html = `<div class="card"><div class="card-title">Wardrobe Overview</div><div class="metrics">`;
-    Object.entries(categories).forEach(([cat, items]) => {
-      html += `<div class="metric"><div class="label">${cat}</div><div class="value">${items.length}</div></div>`;
-    });
-    html += `</div></div>`;
+    html += '<div class="card"><div class="card-title">Overview</div><div class="metrics">';
+    Object.entries(categories).forEach(([cat, arr]) => { html += `<div class="metric"><div class="label">${cat}</div><div class="value">${arr.length}</div></div>`; });
+    html += '</div></div>';
     items.forEach(i => {
-      html += `<div class="card"><div class="card-header"><div>
-        <div class="card-title">${i.item_name}</div>
-        <div class="card-subtitle">${i.category||''} · ${i.color||''}</div></div>
+      html += `<div class="card"><div class="card-header"><div><div class="card-title">${i.item_name}</div>
+        <div class="card-subtitle">${i.category||''} &#183; ${i.color||''}</div></div>
         <div class="card-subtitle">Worn ${i.times_worn}x</div></div></div>`;
     });
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('wardrobeLoading').style.display = 'none';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('wardrobeLoading').style.display = 'none'; showToast('Error: ' + e.message, true); }
+}
+async function submitWardrobe() {
+  try {
+    await apiPost('/wardrobe/items', {
+      item_name: val('wardName'), category: val('wardCategory'), color: val('wardColor') || null,
+      occasion: val('wardOccasion'), season: val('wardSeason'), brand: val('wardBrand') || null,
+      condition: val('wardCondition'), notes: val('wardNotes') || null
+    });
+    closeModal('wardrobeModal'); showToast('Item added!');
+    loaded.wardrobe = false; loadWardrobeData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Financial ---
+// --- Financial (Subscriptions) ---
 async function loadFinancialData() {
   document.getElementById('financialLoading').style.display = 'flex';
   try {
@@ -988,110 +1426,195 @@ async function loadFinancialData() {
     document.getElementById('financialLoading').style.display = 'none';
     const el = document.getElementById('financialContent');
     const total = subs.reduce((acc, s) => acc + (s.monthly_cost || 0), 0);
-    let html = `<div class="card"><div class="card-title">Monthly Subscriptions</div>
-      <div style="font-size:32px;font-weight:700;color:var(--text);margin-top:8px">$${total.toFixed(2)}/mo</div>
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Subscriptions</div><button class="btn btn-primary btn-sm" onclick="openModal('subscriptionModal')">+ Add</button></div>`;
+    html += `<div class="card"><div class="card-title">Monthly Subscriptions</div>
+      <div style="font-size:32px;font-weight:700;margin-top:8px">$${total.toFixed(2)}/mo</div>
       <div class="card-subtitle">${subs.length} active subscriptions</div></div>`;
     subs.forEach(s => {
-      html += `<div class="card"><div class="card-header"><div>
-        <div class="card-title">${s.service_name}</div>
-        <div class="card-subtitle">${s.category||'Uncategorized'} · ${s.usage_frequency||''}</div></div>
-        <div style="font-size:18px;font-weight:700;color:var(--text)">$${(s.monthly_cost||0).toFixed(2)}</div></div></div>`;
+      html += `<div class="card"><div class="card-header"><div><div class="card-title">${s.service_name}</div>
+        <div class="card-subtitle">${s.category||'Uncategorized'} &#183; ${s.usage_frequency||''}</div></div>
+        <div style="font-size:18px;font-weight:700">$${(s.monthly_cost||0).toFixed(2)}</div></div></div>`;
     });
-    if (subs.length === 0) html += '<div class="empty"><p>No subscriptions tracked yet.</p></div>';
+    if (!subs.length) html += '<div class="empty"><p>No subscriptions tracked yet.</p></div>';
     el.innerHTML = html;
-  } catch(e) {
-    document.getElementById('financialLoading').style.display = 'none';
-    showToast('Error: ' + e.message);
-  }
+  } catch(e) { document.getElementById('financialLoading').style.display = 'none'; showToast('Error: ' + e.message, true); }
+}
+async function submitSubscription() {
+  try {
+    await apiPost('/financial/subscriptions', {
+      service_name: val('subName'), category: val('subCategory'), monthly_cost: numVal('subCost'),
+      billing_cycle: val('subBilling'), usage_frequency: val('subUsage')
+    });
+    closeModal('subscriptionModal'); showToast('Subscription added!');
+    loaded.financial = false; loadFinancialData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 5: Personality ---
+// --- Personality ---
+let quizQuestions = [];
+let quizIndex = 0;
+let quizResponses = [];
 async function loadPersonalityData() {
   try {
     const profile = await api('/personality/profile');
     const el = document.getElementById('personalityContent');
     if (profile && profile.mbti_type) {
       const dims = profile.mbti_dimensions || {};
-      el.innerHTML = `
-        <div class="card"><div class="card-title">Personality Profile</div>
-          <div style="font-size:36px;font-weight:800;color:var(--accent);margin:12px 0">${profile.mbti_type}</div>
-          <div class="card-subtitle">${profile.mbti_label || ''}</div>
-          <div style="margin-top:16px">
-            <div class="card-subtitle">E/I: ${(dims.EI||0.5).toFixed(2)} · S/N: ${(dims.SN||0.5).toFixed(2)} · T/F: ${(dims.TF||0.5).toFixed(2)} · J/P: ${(dims.JP||0.5).toFixed(2)}</div>
-            <div style="margin-top:8px;color:var(--text-dim)">Energy: ${profile.energy_source || '—'} · Decision: ${profile.decision_style || '—'} · Structure: ${profile.structure_preference || '—'}</div>
-          </div>
-        </div>`;
+      el.innerHTML = `<div class="card"><div class="card-title">Personality Profile</div>
+        <div style="font-size:36px;font-weight:800;color:var(--accent);margin:12px 0">${profile.mbti_type}</div>
+        <div class="card-subtitle">${profile.mbti_label || ''}</div>
+        <div style="margin-top:16px">
+          <div class="card-subtitle">E/I: ${(dims.EI||0.5).toFixed(2)} &#183; S/N: ${(dims.SN||0.5).toFixed(2)} &#183; T/F: ${(dims.TF||0.5).toFixed(2)} &#183; J/P: ${(dims.JP||0.5).toFixed(2)}</div>
+          <div style="margin-top:8px;color:var(--text-dim)">Energy: ${profile.energy_source || '---'} &#183; Decision: ${profile.decision_style || '---'} &#183; Structure: ${profile.structure_preference || '---'}</div>
+        </div></div>
+        <button class="btn btn-secondary" style="margin-top:8px" onclick="startPersonalityQuiz()">Retake Assessment</button>`;
     } else {
-      el.innerHTML = '<div class="empty"><p>No personality assessment yet. Complete it in the mobile app.</p></div>';
+      el.innerHTML = `<div class="card"><div class="empty"><div class="icon">&#129504;</div>
+        <p>No personality assessment yet.</p></div></div>
+        <button class="btn btn-primary" onclick="startPersonalityQuiz()">Take Personality Assessment</button>`;
     }
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function startPersonalityQuiz() {
+  try {
+    const data = await api('/personality/questions');
+    quizQuestions = data.questions || data; quizIndex = 0; quizResponses = [];
+    renderQuizQuestion();
+    openModal('personalityModal');
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+function renderQuizQuestion() {
+  const q = quizQuestions[quizIndex];
+  if (!q) return;
+  const pct = Math.round((quizIndex / quizQuestions.length) * 100);
+  let html = `<div class="quiz-progress"><div class="quiz-progress-bar" style="width:${pct}%"></div></div>`;
+  html += `<div class="card-subtitle">Question ${quizIndex + 1} of ${quizQuestions.length}</div>`;
+  html += `<div style="font-size:16px;font-weight:600;margin:16px 0">${q.question || q.text}</div>`;
+  const options = q.options || q.choices || ['Strongly Agree', 'Agree', 'Neutral', 'Disagree', 'Strongly Disagree'];
+  options.forEach((opt, i) => {
+    const label = typeof opt === 'string' ? opt : opt.text || opt.label;
+    html += `<button class="quiz-option" onclick="answerQuiz(${i}, '${label.replace(/'/g, "\\'")}')">${label}</button>`;
+  });
+  document.getElementById('quizContainer').innerHTML = html;
+}
+function answerQuiz(index, label) {
+  const q = quizQuestions[quizIndex];
+  quizResponses.push({ question_id: q.id || quizIndex, selected_option: label, selected_index: index, answer: label });
+  quizIndex++;
+  if (quizIndex >= quizQuestions.length) { submitPersonalityQuiz(); return; }
+  renderQuizQuestion();
+}
+async function submitPersonalityQuiz() {
+  document.getElementById('quizContainer').innerHTML = '<div class="loading"><div class="spinner"></div>Analyzing your personality...</div>';
+  try {
+    const result = await apiPost('/personality/score', { responses: quizResponses });
+    closeModal('personalityModal');
+    showToast('Personality assessment complete!');
+    loaded.personality = false; loadPersonalityData();
+  } catch(e) { closeModal('personalityModal'); showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 5: Legacy ---
+// --- Legacy ---
 async function loadLegacyData() {
   try {
     const [profile, milestones, drift] = await Promise.all([
       api('/legacy/profile'), api('/legacy/milestones?limit=10'), api('/legacy/drift')
     ]);
     const el = document.getElementById('legacyContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Legacy & Vision</div><button class="btn btn-primary btn-sm" onclick="openLegacyEditor()">Edit Vision</button></div>`;
     if (profile && profile.ten_year_vision) {
       html += `<div class="card"><div class="card-title">10-Year Vision</div><p style="color:var(--text-dim);line-height:1.6">${profile.ten_year_vision}</p></div>`;
+      if (profile.career_legacy) html += `<div class="card"><div class="card-title">Career Legacy</div><p style="color:var(--text-dim)">${profile.career_legacy}</p></div>`;
+      if (profile.health_legacy) html += `<div class="card"><div class="card-title">Health Legacy</div><p style="color:var(--text-dim)">${profile.health_legacy}</p></div>`;
     }
     if (drift && drift.detected) {
       html += `<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Values Drift Detected</div><p style="color:var(--text-dim)">${drift.gentle_observation}</p></div>`;
     }
     if (milestones && milestones.length) {
       html += '<div class="card"><div class="card-title">Milestones</div>';
-      milestones.forEach(m => {
-        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><strong>${m.title}</strong><br><span class="card-subtitle">${m.milestone_date} · ${m.category}</span></div>`;
-      });
+      milestones.forEach(m => { html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><strong>${m.title}</strong><br><span class="card-subtitle">${m.milestone_date} &#183; ${m.category}</span></div>`; });
       html += '</div>';
     }
-    if (!html) html = '<div class="empty"><p>No legacy profile yet.</p></div>';
+    if (!html.includes('10-Year')) html += '<div class="empty"><p>No legacy profile yet. Set your vision!</p></div>';
     el.innerHTML = html;
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function openLegacyEditor() {
+  try { const p = await api('/legacy/profile'); if (p) {
+    document.getElementById('legacyVision').value = p.ten_year_vision || '';
+    document.getElementById('legacyCareer').value = p.career_legacy || '';
+    document.getElementById('legacyRelationship').value = p.relationship_legacy || '';
+    document.getElementById('legacyHealth').value = p.health_legacy || '';
+    document.getElementById('legacyContribution').value = p.contribution_legacy || '';
+  }} catch(e) {}
+  openModal('legacyModal');
+}
+async function submitLegacy() {
+  try {
+    await apiPut('/legacy/profile', {
+      ten_year_vision: val('legacyVision'), career_legacy: val('legacyCareer') || null,
+      relationship_legacy: val('legacyRelationship') || null, health_legacy: val('legacyHealth') || null,
+      contribution_legacy: val('legacyContribution') || null
+    });
+    closeModal('legacyModal'); showToast('Vision saved!');
+    loaded.legacy = false; loadLegacyData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 5: Learning ---
+// --- Learning ---
 async function loadLearningData() {
   try {
     const [profile, books, weekly] = await Promise.all([
       api('/learning/profile'), api('/learning/books'), api('/learning/weekly')
     ]);
     const el = document.getElementById('learningContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Learning</div><button class="btn btn-primary btn-sm" onclick="openModal('bookModal')">+ Add Book</button></div>`;
     if (weekly) {
-      html += `<div class="metrics">
-        <div class="metric"><div class="label">Streak</div><div class="value">${weekly.current_streak||0}</div><div class="unit">days</div></div>
+      html += `<div class="metrics"><div class="metric"><div class="label">Streak</div><div class="value">${weekly.current_streak||0}</div><div class="unit">days</div></div>
         <div class="metric"><div class="label">This Week</div><div class="value">${weekly.minutes_this_week||0}</div><div class="unit">min</div></div>
-        <div class="metric"><div class="label">Books/Mo</div><div class="value">${weekly.books_completed_this_month||0}</div></div>
-      </div>`;
+        <div class="metric"><div class="label">Books/Mo</div><div class="value">${weekly.books_completed_this_month||0}</div></div></div>`;
     }
     if (books && books.length) {
-      html += '<div class="card"><div class="card-title">Books</div>';
+      html += '<div class="card" style="margin-top:16px"><div class="card-title">Books</div>';
       books.forEach(b => {
         const pct = b.total_pages ? Math.round((b.current_page||0)/b.total_pages*100) : 0;
         html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><strong>${b.title}</strong> ${b.author?'by '+b.author:''}<br><span class="card-subtitle">${b.status} ${b.status==='reading'?pct+'%':''}</span></div>`;
       });
       html += '</div>';
     }
-    if (!html) html = '<div class="empty"><p>No learning data yet.</p></div>';
+    if (!books || !books.length) html += '<div class="empty"><p>No books yet. Add your first book!</p></div>';
     el.innerHTML = html;
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function submitBook() {
+  try {
+    await apiPost('/learning/books', {
+      title: val('bookTitle'), author: val('bookAuthor') || null, category: val('bookCategory'),
+      total_pages: numVal('bookPages'), linked_goal: val('bookGoal') || null
+    });
+    closeModal('bookModal'); showToast('Book added!');
+    loaded.learning = false; loadLearningData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 5: Home Environment ---
+// --- Home Environment ---
 async function loadHomeEnvData() {
   try {
-    const [profile, recs] = await Promise.all([
-      api('/home/profile'), api('/home/recommendations')
-    ]);
+    const [profile, recs] = await Promise.all([api('/home/profile'), api('/home/recommendations')]);
     const el = document.getElementById('homeEnvContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Home Environment</div><button class="btn btn-primary btn-sm" onclick="openHomeEditor()">Edit Setup</button></div>`;
     if (profile && profile.id) {
       html += `<div class="card"><div class="card-title">Home Profile</div>
-        <div class="card-subtitle">Type: ${profile.home_type||'—'} · Noise: ${profile.noise_level||'—'} · Light: ${profile.natural_light_quality||'—'}</div></div>`;
+        <div class="card-subtitle">Type: ${profile.home_type||'---'} &#183; Noise: ${profile.noise_level||'---'} &#183; Light: ${profile.natural_light_quality||'---'}</div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px">
+          ${profile.has_air_purifier ? '<span class="chip">Air Purifier</span>' : ''}
+          ${profile.indoor_plants ? '<span class="chip">Plants</span>' : ''}
+          ${profile.has_smart_lights ? '<span class="chip">Smart Lights</span>' : ''}
+          ${profile.bedroom_blackout ? '<span class="chip">Blackout</span>' : ''}
+          ${profile.standing_desk ? '<span class="chip">Standing Desk</span>' : ''}
+          ${profile.ergonomic_chair ? '<span class="chip">Ergo Chair</span>' : ''}
+          ${profile.white_noise_device ? '<span class="chip">White Noise</span>' : ''}
+        </div></div>`;
     }
     if (recs && recs.length) {
       const done = recs.filter(r=>r.completed).length;
@@ -1101,12 +1624,44 @@ async function loadHomeEnvData() {
       });
       html += '</div>';
     }
-    if (!html) html = '<div class="empty"><p>No home profile yet.</p></div>';
+    if (!profile || !profile.id) html += '<div class="empty"><p>No home profile yet. Set up your environment!</p></div>';
     el.innerHTML = html;
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function openHomeEditor() {
+  try { const p = await api('/home/profile'); if (p && p.id) {
+    document.getElementById('homeType').value = p.home_type || 'apartment';
+    document.getElementById('homeNoise').value = p.noise_level || 'moderate';
+    document.getElementById('homeLight').value = p.natural_light_quality || 'good';
+    document.getElementById('homeAirPurifier').checked = !!p.has_air_purifier;
+    document.getElementById('homePlants').checked = !!p.indoor_plants;
+    document.getElementById('homeSmartLights').checked = !!p.has_smart_lights;
+    document.getElementById('homeBlackout').checked = !!p.bedroom_blackout;
+    document.getElementById('homeStandingDesk').checked = !!p.standing_desk;
+    document.getElementById('homeErgoChair').checked = !!p.ergonomic_chair;
+    document.getElementById('homeWhiteNoise').checked = !!p.white_noise_device;
+  }} catch(e) {}
+  openModal('homeModal');
+}
+async function submitHome() {
+  try {
+    await apiPut('/home/profile', {
+      home_type: val('homeType'), noise_level: val('homeNoise'), natural_light_quality: val('homeLight'),
+      has_air_purifier: document.getElementById('homeAirPurifier').checked,
+      indoor_plants: document.getElementById('homePlants').checked,
+      has_smart_lights: document.getElementById('homeSmartLights').checked,
+      bedroom_blackout: document.getElementById('homeBlackout').checked,
+      standing_desk: document.getElementById('homeStandingDesk').checked,
+      ergonomic_chair: document.getElementById('homeErgoChair').checked,
+      white_noise_device: document.getElementById('homeWhiteNoise').checked,
+      notes: val('homeNotes') || null
+    });
+    closeModal('homeModal'); showToast('Home profile saved!');
+    loaded.home = false; loadHomeEnvData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 5: Onboarding ---
+// --- Onboarding ---
 async function loadOnboardingData() {
   try {
     const status = await api('/onboarding/status');
@@ -1118,20 +1673,21 @@ async function loadOnboardingData() {
           <div style="background:var(--green);height:8px;border-radius:4px;width:${pct}%"></div></div>
         <div class="card-subtitle">${status.completed_steps}/${status.total_steps} steps complete (${Math.round(pct)}%)</div>
         ${status.next_step ? '<div style="margin-top:8px;color:var(--text-dim)">Next: '+status.next_step+'</div>' : '<div style="margin-top:8px;color:var(--green)">Setup complete!</div>'}
-        ${status.skipped_steps.length ? '<div style="margin-top:8px;color:var(--yellow)">Skipped: '+status.skipped_steps.join(', ')+'</div>' : ''}
+        ${status.skipped_steps && status.skipped_steps.length ? '<div style="margin-top:8px;color:var(--yellow)">Skipped: '+status.skipped_steps.join(', ')+'</div>' : ''}
       </div>`;
     }
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Skincare ---
+// --- Skincare ---
 async function loadSkincareData() {
   try {
     const [weekly, products, profile] = await Promise.all([
       api('/skincare/weekly'), api('/skincare/products'), api('/skincare/profile')
     ]);
     const el = document.getElementById('skincareContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Skincare</div>
+      <div style="display:flex;gap:4px"><button class="btn btn-secondary btn-sm" onclick="openSkinProfileEditor()">Profile</button><button class="btn btn-primary btn-sm" onclick="openModal('skincareProductModal')">+ Product</button></div></div>`;
     if (weekly) {
       const c = weekly.avg_condition != null ? weekly.avg_condition.toFixed(1) : '--';
       const tc = weekly.avg_condition >= 7 ? 'var(--green)' : weekly.avg_condition >= 4 ? 'var(--yellow)' : 'var(--red)';
@@ -1140,10 +1696,8 @@ async function loadSkincareData() {
         <div style="color:var(--text-dim);margin:4px 0">Trend: ${weekly.trend||'--'} | Breakout days: ${weekly.breakout_days||0}</div></div>`;
     }
     if (profile && profile.skin_type) {
-      html += `<div class="card"><div class="card-title">Skin Profile</div>
-        <div>Type: ${profile.skin_type}</div>
-        ${profile.primary_concerns ? '<div style="color:var(--text-dim)">Concerns: '+profile.primary_concerns.join(', ')+'</div>' : ''}
-      </div>`;
+      html += `<div class="card"><div class="card-title">Skin Profile</div><div>Type: ${profile.skin_type}</div>
+        ${profile.primary_concerns ? '<div style="color:var(--text-dim)">Concerns: '+profile.primary_concerns.join(', ')+'</div>' : ''}</div>`;
     }
     if (products && products.length) {
       html += `<div class="card"><div class="card-title">Products (${products.length})</div>`;
@@ -1154,16 +1708,49 @@ async function loadSkincareData() {
       });
       html += '</div>';
     }
-    el.innerHTML = html || '<div class="card">No skincare data yet. Add products and log check-ins to get started.</div>';
-  } catch(e) { showToast('Error: ' + e.message); }
+    el.innerHTML = html || '<div class="card">No skincare data yet. Set your skin profile and add products!</div>';
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function openSkinProfileEditor() {
+  try { const p = await api('/skincare/profile'); if (p && p.skin_type) {
+    document.getElementById('skinType').value = p.skin_type || 'normal';
+    document.getElementById('skinSensitivity').value = p.sensitivity_level || 'medium';
+    document.getElementById('skinConcerns').value = (p.primary_concerns || []).join(', ');
+    document.getElementById('skinAllergies').value = (p.allergies || []).join(', ');
+    document.getElementById('skinClimate').value = p.climate || 'temperate';
+    document.getElementById('skinAge').value = p.age_range || '26-35';
+    document.getElementById('skinGoals').value = (p.goals || []).join(', ');
+  }} catch(e) {}
+  openModal('skinProfileModal');
+}
+async function submitSkinProfile() {
+  try {
+    await apiPut('/skincare/profile', {
+      skin_type: val('skinType'), sensitivity_level: val('skinSensitivity'),
+      concerns: csvToArray(val('skinConcerns')), allergies: csvToArray(val('skinAllergies')),
+      climate: val('skinClimate'), age_range: val('skinAge'), goals: csvToArray(val('skinGoals'))
+    });
+    closeModal('skinProfileModal'); showToast('Skin profile saved!');
+    loaded.skincare = false; loadSkincareData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function submitSkincareProduct() {
+  try {
+    await apiPost('/skincare/products', {
+      product_name: val('skinProductName'), brand: val('skinProductBrand') || null,
+      product_type: val('skinProductType'), active_ingredients: csvToArray(val('skinProductIngredients')),
+      routine_slot: val('skinProductSlot'), frequency: val('skinProductFreq'),
+      application_order: numVal('skinProductOrder')
+    });
+    closeModal('skincareProductModal'); showToast('Product added!');
+    loaded.skincare = false; loadSkincareData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Relationships ---
+// --- Relationships ---
 async function loadRelationshipsData() {
   try {
-    const [health, briefing] = await Promise.all([
-      api('/relationships/health'), api('/relationships/briefing')
-    ]);
+    const [health, briefing] = await Promise.all([api('/relationships/health'), api('/relationships/briefing')]);
     const el = document.getElementById('relationshipsContent');
     let html = '';
     if (health) {
@@ -1171,35 +1758,32 @@ async function loadRelationshipsData() {
       html += `<div class="card"><div class="card-title">Relationship Health</div>
         <div style="font-size:36px;font-weight:700;color:${sc}">${health.score||0}<span style="font-size:16px;color:var(--text-dim)">/100</span></div>
         ${health.needs_attention && health.needs_attention.length ? '<div style="color:var(--yellow);margin-top:8px">Needs attention: '+health.needs_attention.map(n=>n.name||n).join(', ')+'</div>' : ''}
-        ${health.coach_insight ? '<div style="margin-top:8px;color:var(--text-dim);font-style:italic">'+health.coach_insight+'</div>' : ''}
-      </div>`;
+        ${health.coach_insight ? '<div style="margin-top:8px;color:var(--text-dim);font-style:italic">'+health.coach_insight+'</div>' : ''}</div>`;
     }
     if (briefing && briefing.coach_insight) {
-      html += `<div class="card"><div class="card-title">Weekly Briefing</div>
-        <div>${briefing.coach_insight}</div></div>`;
+      html += `<div class="card"><div class="card-title">Weekly Briefing</div><div>${briefing.coach_insight}</div></div>`;
     }
-    el.innerHTML = html || '<div class="card">No relationship data yet. Add relationships to contacts to get started.</div>';
-  } catch(e) { showToast('Error: ' + e.message); }
+    el.innerHTML = html || '<div class="card">No relationship data yet. Add relationships via the Social tab first.</div>';
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Hobbies ---
+// --- Hobbies ---
 async function loadHobbiesData() {
   try {
     const [score, hobbies, dormant] = await Promise.all([
       api('/hobbies/health-score'), api('/hobbies'), api('/hobbies/dormant')
     ]);
     const el = document.getElementById('hobbiesContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Hobbies</div><button class="btn btn-primary btn-sm" onclick="openModal('hobbyModal')">+ Add Hobby</button></div>`;
     if (score) {
       const sc = score.score >= 70 ? 'var(--green)' : score.score >= 40 ? 'var(--yellow)' : 'var(--red)';
       html += `<div class="card"><div class="card-title">Hobby Health Score</div>
         <div style="font-size:36px;font-weight:700;color:${sc}">${score.score||0}<span style="font-size:16px;color:var(--text-dim)">/100</span></div>
         <div style="color:var(--text-dim)">Active: ${score.active_count||0} | Dormant: ${score.dormant_count||0}</div>
-        ${score.top_insight ? '<div style="margin-top:8px">'+score.top_insight+'</div>' : ''}
-      </div>`;
+        ${score.top_insight ? '<div style="margin-top:8px">'+score.top_insight+'</div>' : ''}</div>`;
     }
     if (hobbies && hobbies.length) {
-      html += `<div class="card"><div class="card-title">Active Hobbies</div>`;
+      html += '<div class="card"><div class="card-title">Active Hobbies</div>';
       hobbies.filter(h=>h.status==='active').forEach(h => {
         html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">
           <div style="font-weight:600">${h.name} <span style="color:var(--text-dim);font-size:12px">${h.category||''}</span></div>
@@ -1208,27 +1792,39 @@ async function loadHobbiesData() {
       html += '</div>';
     }
     if (dormant && dormant.length) {
-      html += `<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Dormant Hobbies</div>`;
-      dormant.forEach(h => { html += `<div style="padding:4px 0;color:var(--text-dim)">${h.name} — last session: ${h.last_session_date||'never'}</div>`; });
+      html += '<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Dormant Hobbies</div>';
+      dormant.forEach(h => { html += `<div style="padding:4px 0;color:var(--text-dim)">${h.name} &#8212; last: ${h.last_session_date||'never'}</div>`; });
       html += '</div>';
     }
     el.innerHTML = html || '<div class="card">No hobbies tracked yet.</div>';
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function submitHobby() {
+  try {
+    await apiPost('/hobbies', {
+      name: val('hobbyName'), category: val('hobbyCategory'), status: val('hobbyStatus'),
+      seasonal: document.getElementById('hobbySeasonal').checked,
+      weekly_hours_target: numVal('hobbyHours'), satisfaction_rating: numVal('hobbySatisfaction'),
+      health_benefit: val('hobbyHealth') || null, notes: val('hobbyNotes') || null
+    });
+    closeModal('hobbyModal'); showToast('Hobby added!');
+    loaded.hobbies = false; loadHobbiesData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Financial Planning ---
+// --- Financial Planning ---
 async function loadFinPlanningData() {
   try {
-    const [goals, stressFlag, timeline] = await Promise.all([
-      api('/financial-planning/goals'), api('/financial-planning/stress-flag'), api('/financial-planning/timeline')
+    const [goals, stressFlag] = await Promise.all([
+      api('/financial-planning/goals'), api('/financial-planning/stress-flag')
     ]);
     const el = document.getElementById('finPlanningContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Financial Goals</div><button class="btn btn-primary btn-sm" onclick="openModal('finGoalModal')">+ Add Goal</button></div>`;
     if (stressFlag && stressFlag.stress_active) {
-      html += `<div class="card" style="border-color:var(--red)"><div style="color:var(--red);font-weight:600">Financial stress active — budget-conscious mode enabled</div></div>`;
+      html += '<div class="card" style="border-color:var(--red)"><div style="color:var(--red);font-weight:600">Financial stress active &#8212; budget-conscious mode enabled</div></div>';
     }
     if (goals && goals.length) {
-      html += `<div class="card"><div class="card-title">Financial Goals (${goals.length})</div>`;
+      html += `<div class="card"><div class="card-title">Goals (${goals.length})</div>`;
       goals.forEach(g => {
         const pct = g.target_amount ? Math.round((g.current_amount||0)/g.target_amount*100) : 0;
         const pc = pct >= 75 ? 'var(--green)' : pct >= 40 ? 'var(--yellow)' : 'var(--red)';
@@ -1236,29 +1832,68 @@ async function loadFinPlanningData() {
           <div style="display:flex;justify-content:space-between"><span style="font-weight:600">${g.goal_name}</span><span style="color:${pc}">${pct}%</span></div>
           <div style="background:var(--card-border);border-radius:4px;height:6px;margin:6px 0">
             <div style="background:${pc};height:6px;border-radius:4px;width:${Math.min(pct,100)}%"></div></div>
-          <div style="color:var(--text-dim);font-size:12px">$${(g.current_amount||0).toLocaleString()} / $${(g.target_amount||0).toLocaleString()} ${g.linked_life_goal ? '→ '+g.linked_life_goal : ''}</div></div>`;
+          <div style="color:var(--text-dim);font-size:12px">$${(g.current_amount||0).toLocaleString()} / $${(g.target_amount||0).toLocaleString()} ${g.linked_life_goal ? '&#8594; '+g.linked_life_goal : ''}</div></div>`;
       });
       html += '</div>';
     }
     el.innerHTML = html || '<div class="card">No financial goals set yet.</div>';
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function submitFinGoal() {
+  try {
+    await apiPost('/financial-planning/goals', {
+      goal_name: val('finGoalName'), goal_type: val('finGoalType'), target_amount: numVal('finGoalTarget'),
+      current_amount: numVal('finGoalCurrent'), monthly_contribution: numVal('finGoalMonthly'),
+      target_date: val('finGoalDate') || null, linked_life_goal: val('finGoalLinked') || null
+    });
+    closeModal('finGoalModal'); showToast('Goal added!');
+    loaded.finplanning = false; loadFinPlanningData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Digital Identity ---
+// --- Digital Identity ---
 async function loadDigitalData() {
   try {
     const profile = await api('/digital/profile');
     const el = document.getElementById('digitalContent');
-    let html = '';
+    let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="card-title">Digital Identity</div><button class="btn btn-primary btn-sm" onclick="openDigitalEditor()">Edit Profile</button></div>`;
     if (profile && profile.personal_brand_statement) {
       html += `<div class="card"><div class="card-title">Personal Brand</div><div style="font-style:italic">"${profile.personal_brand_statement}"</div></div>`;
     }
-    if (profile && profile.platforms_active) {
-      html += `<div class="card"><div class="card-title">Active Platforms</div><div>${profile.platforms_active.join(', ')}</div></div>`;
+    if (profile && profile.platforms_active && profile.platforms_active.length) {
+      html += `<div class="card"><div class="card-title">Active Platforms</div><div style="display:flex;flex-wrap:wrap;gap:4px">${profile.platforms_active.map(p=>'<span class="chip">'+p+'</span>').join('')}</div></div>`;
     }
-    html += `<div class="card"><button class="btn btn-primary" onclick="runLinkedInAudit()">Run LinkedIn Audit</button><div id="linkedinAuditResult"></div></div>`;
-    el.innerHTML = html || '<div class="card">No digital identity profile yet.</div>';
-  } catch(e) { showToast('Error: ' + e.message); }
+    html += '<div class="card"><button class="btn btn-primary" onclick="runLinkedInAudit()">Run LinkedIn Audit</button><div id="linkedinAuditResult"></div></div>';
+    el.innerHTML = html;
+  } catch(e) { showToast('Error: ' + e.message, true); }
+}
+async function openDigitalEditor() {
+  try { const p = await api('/digital/profile'); if (p) {
+    document.getElementById('diLinkedin').value = p.linkedin_url || '';
+    document.getElementById('diHeadline').value = p.linkedin_headline || '';
+    document.getElementById('diSummary').value = p.linkedin_summary || '';
+    document.getElementById('diWebsite').value = p.personal_website || '';
+    document.getElementById('diGithub').value = p.github_url || '';
+    document.getElementById('diTwitter').value = p.twitter_handle || '';
+    document.getElementById('diContentStyle').value = p.content_style || 'thought_leader';
+    document.getElementById('diAudience').value = p.target_audience || '';
+    document.getElementById('diBrandKeywords').value = (p.brand_keywords || []).join(', ');
+    document.getElementById('diVisibility').value = p.visibility_comfort || 'medium';
+  }} catch(e) {}
+  openModal('digitalModal');
+}
+async function submitDigital() {
+  try {
+    await apiPut('/digital/profile', {
+      linkedin_url: val('diLinkedin') || null, linkedin_headline: val('diHeadline') || null,
+      linkedin_summary: val('diSummary') || null, personal_website: val('diWebsite') || null,
+      github_url: val('diGithub') || null, twitter_handle: val('diTwitter') || null,
+      content_style: val('diContentStyle'), target_audience: val('diAudience') || null,
+      brand_keywords: csvToArray(val('diBrandKeywords')), visibility_comfort: val('diVisibility')
+    });
+    closeModal('digitalModal'); showToast('Digital profile saved!');
+    loaded.digital = false; loadDigitalData();
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 async function runLinkedInAudit() {
   document.getElementById('linkedinAuditResult').innerHTML = '<div class="loading"><div class="spinner"></div>Generating audit...</div>';
@@ -1266,41 +1901,38 @@ async function runLinkedInAudit() {
     const result = await apiPost('/digital/linkedin-audit');
     if (result) {
       let h = `<div style="margin-top:12px"><div style="font-weight:600">Score: ${result.overall_score||'--'}/100</div>`;
-      if (result.priority_actions) result.priority_actions.forEach(a => { h += `<div style="padding:4px 0;color:var(--text-dim)">• ${a}</div>`; });
+      if (result.priority_actions) result.priority_actions.forEach(a => { h += `<div style="padding:4px 0;color:var(--text-dim)">&#8226; ${a}</div>`; });
       h += '</div>';
       document.getElementById('linkedinAuditResult').innerHTML = h;
     }
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Contextual Intelligence ---
+// --- Contextual Intelligence ---
 async function loadContextualData() {
   try {
-    const [signals, anomalies] = await Promise.all([
-      api('/context/signals?days=7'), api('/context/anomalies')
-    ]);
+    const [signals, anomalies] = await Promise.all([api('/context/signals?days=7'), api('/context/anomalies')]);
     const el = document.getElementById('contextualContent');
     let html = '';
     if (anomalies && anomalies.length) {
-      html += `<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Anomalies Detected</div>`;
+      html += '<div class="card" style="border-color:var(--yellow)"><div class="card-title" style="color:var(--yellow)">Anomalies Detected</div>';
       anomalies.forEach(a => { html += `<div style="padding:6px 0;color:var(--text-dim)">${a.insight||a.description||JSON.stringify(a)}</div>`; });
       html += '</div>';
     }
     if (signals && signals.length) {
-      html += `<div class="card"><div class="card-title">Recent Signals</div>`;
+      html += '<div class="card"><div class="card-title">Recent Signals</div>';
       signals.forEach(s => {
-        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)">
-          <div style="font-weight:600">${s.signal_text||''}</div>
-          <div style="color:var(--text-dim);font-size:12px">${s.signal_type||''} — ${s.signal_date||''}</div></div>`;
+        html += `<div style="padding:8px 0;border-bottom:1px solid var(--card-border)"><div style="font-weight:600">${s.signal_text||''}</div>
+          <div style="color:var(--text-dim);font-size:12px">${s.signal_type||''} &#8212; ${s.signal_date||''}</div></div>`;
       });
       html += '</div>';
     }
     html += `<div class="card"><div class="card-title">Manual Signal</div>
-      <input type="text" id="signalInput" placeholder="Tell me something happening..." style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--card-border);background:var(--bg);color:var(--text);margin:8px 0">
+      <input type="text" id="signalInput" class="form-input" placeholder="Tell me something happening..." style="margin:8px 0">
       <button class="btn btn-primary" onclick="submitSignal()">Process Signal</button>
       <div id="signalResult"></div></div>`;
     el.innerHTML = html || '<div class="card">No signals yet.</div>';
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 async function submitSignal() {
   const text = document.getElementById('signalInput').value;
@@ -1311,21 +1943,20 @@ async function submitSignal() {
     if (result && result.expanded_implications) {
       const imp = result.expanded_implications;
       let h = '<div style="margin-top:8px">';
-      if (imp.proactive_suggestions) imp.proactive_suggestions.forEach(s => { h += `<div style="padding:4px 0;color:var(--accent-light)">• ${s}</div>`; });
+      if (imp.proactive_suggestions) imp.proactive_suggestions.forEach(s => { h += `<div style="padding:4px 0;color:var(--accent-light)">&#8226; ${s}</div>`; });
       if (imp.implications) imp.implications.forEach(i => { h += `<div style="padding:4px 0;color:var(--text-dim)">[${i.module}] ${i.insight}</div>`; });
       h += '</div>';
       document.getElementById('signalResult').innerHTML = h;
     }
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Session 6: Conversation ---
+// --- Chat ---
 let chatSessionId = null;
 let chatHistory = [];
 async function sendChatMessage() {
   const input = document.getElementById('chatInput');
-  const text = input.value.trim();
-  if (!text) return;
+  const text = input.value.trim(); if (!text) return;
   input.value = '';
   const msgs = document.getElementById('chatMessages');
   msgs.innerHTML += `<div style="text-align:right;margin:8px 0"><span style="background:var(--accent);padding:8px 12px;border-radius:12px;display:inline-block;max-width:80%">${text}</span></div>`;
@@ -1340,11 +1971,11 @@ async function sendChatMessage() {
       msgs.innerHTML += `<div style="margin:8px 0"><span style="background:var(--card);padding:8px 12px;border-radius:12px;display:inline-block;max-width:80%;border:1px solid var(--card-border)">${result.response}</span></div>`;
       msgs.scrollTop = msgs.scrollHeight;
     }
-  } catch(e) { document.getElementById('chatLoading').remove(); showToast('Error: ' + e.message); }
+  } catch(e) { document.getElementById('chatLoading').remove(); showToast('Error: ' + e.message, true); }
 }
 function sendQuickChat(text) { document.getElementById('chatInput').value = text; sendChatMessage(); }
 
-// --- Session 6: Reviews ---
+// --- Reviews ---
 async function loadWeeklyReview() {
   try {
     const el = document.getElementById('reviewsContent');
@@ -1353,22 +1984,14 @@ async function loadWeeklyReview() {
     if (review) {
       let html = '<div class="card"><div class="card-title">Weekly Review</div>';
       if (review.week_summary) html += `<div style="margin-bottom:12px">${review.week_summary}</div>`;
-      if (review.wins && review.wins.length) {
-        html += '<div style="margin:8px 0"><div style="font-weight:600;color:var(--green)">Wins</div>';
-        review.wins.forEach(w => { html += `<div style="padding:2px 0">• ${w}</div>`; });
-        html += '</div>';
-      }
-      if (review.patterns && review.patterns.length) {
-        html += '<div style="margin:8px 0"><div style="font-weight:600;color:var(--yellow)">Patterns</div>';
-        review.patterns.forEach(p => { html += `<div style="padding:2px 0">• ${p}</div>`; });
-        html += '</div>';
-      }
+      if (review.wins && review.wins.length) { html += '<div style="margin:8px 0"><div style="font-weight:600;color:var(--green)">Wins</div>'; review.wins.forEach(w => { html += `<div style="padding:2px 0">&#8226; ${w}</div>`; }); html += '</div>'; }
+      if (review.patterns && review.patterns.length) { html += '<div style="margin:8px 0"><div style="font-weight:600;color:var(--yellow)">Patterns</div>'; review.patterns.forEach(p => { html += `<div style="padding:2px 0">&#8226; ${p}</div>`; }); html += '</div>'; }
       if (review.coach_insight) html += `<div style="margin-top:12px;padding:12px;background:rgba(108,92,231,0.1);border-radius:8px;border-left:3px solid var(--accent)">${review.coach_insight}</div>`;
       if (review.next_week_intention) html += `<div style="margin-top:8px;color:var(--accent-light)">Next week focus: ${review.next_week_intention}</div>`;
       html += '</div>';
       el.innerHTML = html;
     }
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 async function loadMonthlyReview() {
   try {
@@ -1385,10 +2008,10 @@ async function loadMonthlyReview() {
       html += '</div>';
       el.innerHTML = html;
     }
-  } catch(e) { showToast('Error: ' + e.message); }
+  } catch(e) { showToast('Error: ' + e.message, true); }
 }
 
-// --- Page loader ---
+// ======================== PAGE LOADER ========================
 const loaded = {};
 function loadPage(page) {
   if (loaded[page]) return;
@@ -1399,7 +2022,6 @@ function loadPage(page) {
     case 'checkin': loadCheckin(); break;
     case 'supplements': loadSupplements(); break;
     case 'bloodwork': loadBloodwork(); break;
-    // all other pages load on button click
   }
 }
 loadPage('dashboard');
