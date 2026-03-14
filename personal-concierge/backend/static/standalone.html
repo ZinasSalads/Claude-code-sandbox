@@ -1549,6 +1549,12 @@ async function submitSubscription() {
 let quizQuestions = [];
 let quizIndex = 0;
 let quizResponses = [];
+function saveQuizProgress() {
+  localStorage.setItem('quizProgress', JSON.stringify({ index: quizIndex, responses: quizResponses, questions: quizQuestions }));
+  closeModal('personalityModal');
+  showToast('Progress saved! Resume anytime.');
+}
+function clearQuizProgress() { localStorage.removeItem('quizProgress'); }
 async function loadPersonalityData() {
   try {
     const profile = await api('/personality/profile');
@@ -1564,16 +1570,34 @@ async function loadPersonalityData() {
         </div></div>
         <button class="btn btn-secondary" style="margin-top:8px" onclick="startPersonalityQuiz()">Retake Assessment</button>`;
     } else {
+      const saved = localStorage.getItem('quizProgress');
+      let resumeHtml = '';
+      if (saved) {
+        try {
+          const p = JSON.parse(saved);
+          resumeHtml = `<button class="btn btn-primary" onclick="startPersonalityQuiz(false)">Resume Assessment (${p.index}/${p.questions.length})</button>
+            <button class="btn btn-secondary" style="margin-top:8px" onclick="startPersonalityQuiz(true)">Start Over</button>`;
+        } catch(e) { resumeHtml = ''; }
+      }
+      if (!resumeHtml) {
+        resumeHtml = `<button class="btn btn-primary" onclick="startPersonalityQuiz(false)">Take Personality Assessment</button>`;
+      }
       el.innerHTML = `<div class="card"><div class="empty"><div class="icon">&#129504;</div>
-        <p>No personality assessment yet.</p></div></div>
-        <button class="btn btn-primary" onclick="startPersonalityQuiz()">Take Personality Assessment</button>`;
+        <p>No personality assessment yet.</p></div></div>${resumeHtml}`;
     }
   } catch(e) { showToast('Error: ' + e.message, true); }
 }
-async function startPersonalityQuiz() {
+async function startPersonalityQuiz(fresh) {
   try {
-    const data = await api('/personality/questions');
-    quizQuestions = data.questions || data; quizIndex = 0; quizResponses = [];
+    const saved = !fresh && localStorage.getItem('quizProgress');
+    if (saved) {
+      const p = JSON.parse(saved);
+      quizQuestions = p.questions; quizIndex = p.index; quizResponses = p.responses;
+    } else {
+      const data = await api('/personality/questions');
+      quizQuestions = data.questions || data; quizIndex = 0; quizResponses = [];
+      clearQuizProgress();
+    }
     renderQuizQuestion();
     openModal('personalityModal');
   } catch(e) { showToast('Error: ' + e.message, true); }
@@ -1590,6 +1614,7 @@ function renderQuizQuestion() {
     const label = typeof opt === 'string' ? opt : opt.text || opt.label;
     html += `<button class="quiz-option" onclick="answerQuiz(${i}, '${label.replace(/'/g, "\\'")}')">${label}</button>`;
   });
+  html += `<button class="btn btn-secondary" style="margin-top:16px" onclick="saveQuizProgress()">Save & Finish Later</button>`;
   document.getElementById('quizContainer').innerHTML = html;
 }
 function answerQuiz(index, label) {
@@ -1603,6 +1628,7 @@ async function submitPersonalityQuiz() {
   document.getElementById('quizContainer').innerHTML = '<div class="loading"><div class="spinner"></div>Analyzing your personality...</div>';
   try {
     const result = await apiPost('/personality/score', { responses: quizResponses });
+    clearQuizProgress();
     closeModal('personalityModal');
     showToast('Personality assessment complete!');
     loaded.personality = false; loadPersonalityData();
