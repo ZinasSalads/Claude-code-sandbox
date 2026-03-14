@@ -81,10 +81,16 @@ class EnvironmentService:
         else:
             weather = await self._fetch_open_meteo(lat, lon)
             data.update(weather)
+            # AQI from Open-Meteo Air Quality API (free, no key)
+            aqi = await self._fetch_open_meteo_aqi(lat, lon)
+            data.update(aqi)
 
-        # Pollen from Ambee
+        # Pollen from Ambee or Open-Meteo fallback
         if AMBEE_API_KEY:
             pollen = await self._fetch_ambee_pollen(lat, lon)
+            data.update(pollen)
+        else:
+            pollen = await self._fetch_open_meteo_pollen(lat, lon)
             data.update(pollen)
 
         # Compute safety recommendations
@@ -186,6 +192,80 @@ class EnvironmentService:
                     }
         except Exception as e:
             logger.error(f"Open-Meteo fetch error: {e}")
+        return {}
+
+    async def _fetch_open_meteo_aqi(self, lat: float, lon: float) -> dict:
+        """Fetch AQI from Open-Meteo Air Quality API (free, no key)."""
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(
+                    "https://air-quality-api.open-meteo.com/v1/air-quality",
+                    params={
+                        "latitude": lat,
+                        "longitude": lon,
+                        "current": "us_aqi,pm2_5,pm10",
+                    },
+                )
+                if resp.status_code == 200:
+                    current = resp.json().get("current", {})
+                    aqi_val = current.get("us_aqi", 0)
+                    if aqi_val <= 50:
+                        category = "Good"
+                    elif aqi_val <= 100:
+                        category = "Moderate"
+                    elif aqi_val <= 150:
+                        category = "Unhealthy for Sensitive"
+                    elif aqi_val <= 200:
+                        category = "Unhealthy"
+                    elif aqi_val <= 300:
+                        category = "Very Unhealthy"
+                    else:
+                        category = "Hazardous"
+                    return {
+                        "aqi": aqi_val,
+                        "pm25": current.get("pm2_5"),
+                        "pm10": current.get("pm10"),
+                        "aqi_category": category,
+                    }
+        except Exception as e:
+            logger.error(f"Open-Meteo AQI fetch error: {e}")
+        return {}
+
+    async def _fetch_open_meteo_pollen(self, lat: float, lon: float) -> dict:
+        """Fetch pollen data from Open-Meteo (free, no key). Available in Europe and North America."""
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(
+                    "https://air-quality-api.open-meteo.com/v1/air-quality",
+                    params={
+                        "latitude": lat,
+                        "longitude": lon,
+                        "current": "birch_pollen,grass_pollen,ragweed_pollen",
+                    },
+                )
+                if resp.status_code == 200:
+                    current = resp.json().get("current", {})
+                    tree = current.get("birch_pollen") or 0
+                    grass = current.get("grass_pollen") or 0
+                    weed = current.get("ragweed_pollen") or 0
+                    max_val = max(tree, grass, weed)
+                    # Classify pollen risk based on grains/m³
+                    if max_val < 10:
+                        risk = "Low"
+                    elif max_val < 50:
+                        risk = "Moderate"
+                    elif max_val < 100:
+                        risk = "High"
+                    else:
+                        risk = "Very High"
+                    return {
+                        "pollen_tree": tree,
+                        "pollen_grass": grass,
+                        "pollen_weed": weed,
+                        "pollen_risk_level": risk,
+                    }
+        except Exception as e:
+            logger.error(f"Open-Meteo pollen fetch error: {e}")
         return {}
 
     async def _fetch_ambee_pollen(self, lat: float, lon: float) -> dict:
