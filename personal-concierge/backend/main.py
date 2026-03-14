@@ -156,6 +156,58 @@ async def startup():
         logger.info(f"  {icon} {service}: {'configured' if configured else 'MISSING'}")
     logger.info("=========================================")
 
+    # Auto-create daily_plans cache table if missing
+    if supabase:
+        try:
+            supabase.table("daily_plans").select("id").limit(1).execute()
+            logger.info("  ✓ daily_plans table exists")
+        except Exception:
+            logger.info("  Creating daily_plans cache table...")
+            import httpx
+            from config import SUPABASE_URL, SUPABASE_SERVICE_KEY
+            ddl = """
+            CREATE TABLE IF NOT EXISTS daily_plans (
+                id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+                date DATE NOT NULL UNIQUE,
+                plan JSONB NOT NULL,
+                generated_at TIMESTAMPTZ DEFAULT NOW(),
+                invalidated BOOLEAN DEFAULT false,
+                created_at TIMESTAMPTZ DEFAULT NOW()
+            );
+            CREATE INDEX IF NOT EXISTS idx_daily_plans_date ON daily_plans(date);
+            """
+            try:
+                resp = httpx.post(
+                    f"{SUPABASE_URL}/rest/v1/rpc/exec_sql",
+                    headers={
+                        "apikey": SUPABASE_SERVICE_KEY,
+                        "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={"query": ddl},
+                    timeout=15,
+                )
+                if resp.status_code < 400:
+                    logger.info("  ✓ daily_plans table created via rpc")
+                else:
+                    # rpc not available — try direct query endpoint
+                    resp2 = httpx.post(
+                        f"{SUPABASE_URL}/pg/query",
+                        headers={
+                            "apikey": SUPABASE_SERVICE_KEY,
+                            "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                            "Content-Type": "application/json",
+                        },
+                        json={"query": ddl},
+                        timeout=15,
+                    )
+                    if resp2.status_code < 400:
+                        logger.info("  ✓ daily_plans table created via pg/query")
+                    else:
+                        logger.warning("  ✗ Could not auto-create daily_plans table — run migration 006 manually")
+            except Exception as e:
+                logger.warning(f"  daily_plans auto-create failed: {e}")
+
     # Seed skincare ingredient conflicts on startup
     try:
         from services.skincare import skincare_service
