@@ -103,7 +103,7 @@ export default function Growth() {
         </View>
       )}
 
-      {todayData?.habits.map((habit) => (
+      {(todayData?.habits || []).map((habit) => (
         <TouchableOpacity
           key={habit.id}
           style={styles.card}

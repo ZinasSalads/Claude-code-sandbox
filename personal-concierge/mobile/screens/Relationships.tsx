@@ -113,9 +113,9 @@ export default function Relationships() {
           <Text style={styles.briefingText}>{briefing.summary}</Text>
           <Text style={styles.priorityLabel}>Top Priority</Text>
           <Text style={styles.priorityText}>{briefing.top_priority}</Text>
-          {briefing.action_items.length > 0 && (
+          {(briefing.action_items || []).length > 0 && (
             <View style={{ marginTop: 8 }}>
-              {briefing.action_items.map((item, i) => (
+              {(briefing.action_items || []).map((item, i) => (
                 <Text key={i} style={styles.actionItem}>• {item}</Text>
               ))}
             </View>

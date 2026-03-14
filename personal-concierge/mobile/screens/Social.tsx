@@ -22,7 +22,7 @@ export default function Social() {
 
   const fetchData = useCallback(async () => {
     const [c, s] = await Promise.all([getSocialCircle(), getSocialScore()]);
-    setContacts(c);
+    setContacts(c || []);
     setScore(s);
     setLoading(false);
   }, []);

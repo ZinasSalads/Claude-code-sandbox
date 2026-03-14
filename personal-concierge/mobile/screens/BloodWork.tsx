@@ -107,8 +107,8 @@ function DashboardTab() {
 
   const load = useCallback(async () => {
     const [bm, fl] = await Promise.all([getBiomarkers(), getFlaggedBiomarkers()]);
-    setBiomarkers(bm);
-    setFlagged(fl);
+    setBiomarkers(bm || []);
+    setFlagged(fl || []);
     setLoading(false);
     setRefreshing(false);
   }, []);
@@ -172,7 +172,7 @@ function UploadTab() {
   const [uploads, setUploads] = useState<BloodWorkUpload[]>([]);
 
   useEffect(() => {
-    getBloodWorkUploads().then(setUploads);
+    getBloodWorkUploads().then(u => setUploads(u || []));
   }, [result]);
 
   const handlePick = useCallback(async () => {
@@ -348,7 +348,7 @@ function TrendsTab() {
 
   useEffect(() => {
     getBiomarkers().then((bm) => {
-      setBiomarkers(bm);
+      setBiomarkers(bm || []);
       setLoading(false);
     });
   }, []);
@@ -443,7 +443,7 @@ function DeltaTab() {
           {report.total_markers} markers compared
         </Text>
       </View>
-      {report.deltas.map((d, i) => {
+      {(report.deltas || []).map((d, i) => {
         const changeColor =
           d.direction === 'improved'
             ? '#4CAF50'

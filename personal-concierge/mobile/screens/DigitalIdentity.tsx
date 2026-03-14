@@ -284,20 +284,20 @@ export default function DigitalIdentity() {
               <Text style={[styles.auditScore, { color: scoreColor(latestAudit.score) }]}>{latestAudit.score}</Text>
               <Text style={styles.auditScoreLabel}>/ 100</Text>
             </View>
-            {latestAudit.strengths.length > 0 && (
+            {(latestAudit.strengths || []).length > 0 && (
               <View style={{ marginBottom: 8 }}>
                 <Text style={styles.subLabel}>Strengths</Text>
-                {latestAudit.strengths.map((s, i) => (
+                {(latestAudit.strengths || []).map((s, i) => (
                   <View key={i} style={styles.badgeGreen}>
                     <Text style={styles.badgeGreenText}>{s}</Text>
                   </View>
                 ))}
               </View>
             )}
-            {latestAudit.improvements.length > 0 && (
+            {(latestAudit.improvements || []).length > 0 && (
               <View>
                 <Text style={styles.subLabel}>Improvements</Text>
-                {latestAudit.improvements.map((s, i) => (
+                {(latestAudit.improvements || []).map((s, i) => (
                   <View key={i} style={styles.badgeAmber}>
                     <Text style={styles.badgeAmberText}>{s}</Text>
                   </View>
@@ -360,10 +360,10 @@ export default function DigitalIdentity() {
               </View>
               {expandedAuditIdx === idx && (
                 <View style={{ marginTop: 8 }}>
-                  {audit.strengths.map((s, i) => (
+                  {(audit.strengths || []).map((s, i) => (
                     <Text key={i} style={styles.historyDetail}>+ {s}</Text>
                   ))}
-                  {audit.improvements.map((s, i) => (
+                  {(audit.improvements || []).map((s, i) => (
                     <Text key={i} style={[styles.historyDetail, { color: '#fdcb6e' }]}>- {s}</Text>
                   ))}
                 </View>

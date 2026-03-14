@@ -23,7 +23,7 @@ export default function Financial() {
 
   const fetchData = useCallback(async () => {
     const s = await getSubscriptions();
-    setSubs(s);
+    setSubs(s || []);
     setLoading(false);
   }, []);
 
@@ -83,18 +83,18 @@ export default function Financial() {
           <Text style={styles.auditText}>
             Potential savings: ${audit.monthly_savings_potential.toFixed(2)}/mo
           </Text>
-          {audit.dormant_subscriptions.length > 0 && (
+          {(audit.dormant_subscriptions || []).length > 0 && (
             <>
               <Text style={styles.auditSubtitle}>Dormant</Text>
-              {audit.dormant_subscriptions.map((s, i) => (
+              {(audit.dormant_subscriptions || []).map((s, i) => (
                 <Text key={i} style={styles.auditItem}>{s.service_name} — ${s.monthly_cost}/mo</Text>
               ))}
             </>
           )}
-          {audit.cancellation_candidates.length > 0 && (
+          {(audit.cancellation_candidates || []).length > 0 && (
             <>
               <Text style={styles.auditSubtitle}>Cancel Candidates</Text>
-              {audit.cancellation_candidates.map((s, i) => (
+              {(audit.cancellation_candidates || []).map((s, i) => (
                 <Text key={i} style={styles.auditItem}>{s.service_name} — ${s.monthly_cost}/mo</Text>
               ))}
             </>

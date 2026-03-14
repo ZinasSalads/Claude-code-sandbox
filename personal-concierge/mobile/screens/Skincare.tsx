@@ -160,7 +160,7 @@ export default function Skincare() {
   const renderRoutine = (title: string, products: Product[]) => (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{title}</Text>
-      {products.sort((a, b) => a.application_order - b.application_order).map((p) => (
+      {[...(products || [])].sort((a, b) => a.application_order - b.application_order).map((p) => (
         <View key={p.id} style={styles.productRow}>
           <View style={styles.stepBadge}>
             <Text style={styles.stepText}>{p.application_order}</Text>

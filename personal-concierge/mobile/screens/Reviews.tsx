@@ -127,19 +127,19 @@ export default function Reviews() {
 
           <Text style={styles.sectionTitle}>WINS</Text>
           <View style={styles.card}>
-            {currentReview.wins.slice(0, 3).map((win, i) => (
+            {(currentReview.wins || []).slice(0, 3).map((win, i) => (
               <View key={i} style={styles.winBadge}>
                 <Text style={styles.winText}>{win}</Text>
               </View>
             ))}
-            {currentReview.wins.length === 0 && <Text style={styles.dimText}>No wins recorded yet</Text>}
+            {(currentReview.wins || []).length === 0 && <Text style={styles.dimText}>No wins recorded yet</Text>}
           </View>
 
-          {currentReview.patterns.length > 0 && (
+          {(currentReview.patterns || []).length > 0 && (
             <>
               <Text style={styles.sectionTitle}>PATTERNS DETECTED</Text>
               <View style={styles.card}>
-                {currentReview.patterns.map((p, i) => (
+                {(currentReview.patterns || []).map((p, i) => (
                   <View key={i} style={styles.patternBadge}>
                     <Text style={styles.patternText}>{p}</Text>
                   </View>
@@ -148,11 +148,11 @@ export default function Reviews() {
             </>
           )}
 
-          {currentReview.metrics.length > 0 && (
+          {(currentReview.metrics || []).length > 0 && (
             <>
               <Text style={styles.sectionTitle}>METRICS</Text>
               <View style={styles.metricsGrid}>
-                {currentReview.metrics.map((m, i) => (
+                {(currentReview.metrics || []).map((m, i) => (
                   <View key={i} style={styles.metricCard}>
                     <Text style={styles.metricValue}>{m.value}</Text>
                     {m.change && (
@@ -238,9 +238,9 @@ export default function Reviews() {
               {expandedHistoryId === review.id && (
                 <View style={{ marginTop: 10 }}>
                   <Text style={styles.narrative}>{review.narrative}</Text>
-                  {review.wins.length > 0 && (
+                  {(review.wins || []).length > 0 && (
                     <View style={{ marginTop: 8 }}>
-                      {review.wins.slice(0, 3).map((w, i) => (
+                      {(review.wins || []).slice(0, 3).map((w, i) => (
                         <View key={i} style={styles.winBadge}><Text style={styles.winText}>{w}</Text></View>
                       ))}
                     </View>

@@ -25,7 +25,7 @@ export default function Travel() {
 
   const fetchData = useCallback(async () => {
     const [t, a] = await Promise.all([getTrips(), getActiveTrip()]);
-    setTrips(t);
+    setTrips(t || []);
     setActiveTrip(a);
     setLoading(false);
   }, []);

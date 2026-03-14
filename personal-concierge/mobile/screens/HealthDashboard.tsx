@@ -33,7 +33,7 @@ export default function HealthDashboard({ navigation }: Props) {
   const load = useCallback(async () => {
     const [h, f] = await Promise.all([getTodayHealth(), getFlaggedBiomarkers()]);
     setHealth(h);
-    setFlagged(f);
+    setFlagged(f || []);
   }, []);
 
   useEffect(() => { load(); }, [load]);

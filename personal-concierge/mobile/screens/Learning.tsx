@@ -107,7 +107,7 @@ export default function Learning() {
         <View style={[styles.card, styles.todayCard]}>
           <Text style={styles.todayLabel}>Today's Learning</Text>
           <Text style={styles.todayText}>{today.suggestion}</Text>
-          {today.format_options && (
+          {today.format_options && Array.isArray(today.format_options) && (
             <Text style={styles.formatText}>
               Formats: {today.format_options.join(', ')}
             </Text>

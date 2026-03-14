@@ -124,10 +124,10 @@ export default function Career() {
               {burnout.risk_level.toUpperCase()}
             </Text>
           </View>
-          {burnout.contributing_factors.map((f, i) => (
+          {(burnout.contributing_factors || []).map((f, i) => (
             <Text key={i} style={styles.factorText}>• {f}</Text>
           ))}
-          {burnout.recommendations.map((r, i) => (
+          {(burnout.recommendations || []).map((r, i) => (
             <Text key={i} style={styles.recText}>→ {r}</Text>
           ))}
         </View>

@@ -486,7 +486,7 @@ function StatsTab() {
         </View>
       </View>
 
-      {stats.breakdown && stats.breakdown.length > 0 && (
+      {Array.isArray(stats.breakdown) && stats.breakdown.length > 0 && (
         <>
           <Text style={tabStyles.sectionTitle}>BY SUPPLEMENT</Text>
           {stats.breakdown.map((b, i) => (

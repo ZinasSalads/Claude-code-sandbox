@@ -27,7 +27,7 @@ export default function WardrobeScreen() {
 
   const fetchData = useCallback(async () => {
     const items = await getWardrobeItems();
-    setItems(items);
+    setItems(items || []);
     setLoading(false);
   }, []);
 

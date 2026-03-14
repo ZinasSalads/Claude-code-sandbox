@@ -67,7 +67,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
     setCheckIn(c);
     setWorkout(w);
     setMealPlan(m);
-    setFlaggedBiomarkers(fb);
+    setFlaggedBiomarkers(fb || []);
     setLoading(false);
   }, []);
 
