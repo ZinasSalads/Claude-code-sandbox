@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { completeWorkout } from '../lib/api';
 import type { Workout, Exercise, WarmupCooldown } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface WorkoutDetailProps {
   route: {
@@ -18,12 +19,12 @@ interface WorkoutDetailProps {
 }
 
 function IntensityBadge({ intensity }: { intensity: string }) {
-  const colors: Record<string, string> = {
-    low: '#4CAF50',
-    moderate: '#FFC107',
-    high: '#F44336',
+  const intensityColors: Record<string, string> = {
+    low: colors.success,
+    moderate: colors.warning,
+    high: colors.error,
   };
-  const bg = colors[intensity] || '#6C63FF';
+  const bg = intensityColors[intensity] || colors.accent;
 
   return (
     <View style={[badgeStyles.badge, { backgroundColor: bg + '20' }]}>
@@ -36,14 +37,14 @@ function IntensityBadge({ intensity }: { intensity: string }) {
 
 const badgeStyles = StyleSheet.create({
   badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm + 4,
     alignSelf: 'flex-start',
   },
   text: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: font.xs + 1,
+    fontWeight: font.bold,
     letterSpacing: 0.5,
   },
 });
@@ -83,67 +84,65 @@ function ExerciseCard({ exercise, index }: { exercise: Exercise; index: number }
 
 const exerciseStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#1E1E2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 10,
+    ...cardStyle,
+    marginBottom: spacing.md - 2,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   numberBadge: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#6C63FF20',
+    backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
+    marginRight: spacing.md - 2,
   },
   number: {
-    color: '#6C63FF',
-    fontWeight: '700',
-    fontSize: 13,
+    color: colors.accent,
+    fontWeight: font.bold,
+    fontSize: font.sm,
   },
   name: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.md + 1,
+    fontWeight: font.semibold,
     flex: 1,
   },
   details: {
     flexDirection: 'row',
-    gap: 24,
-    marginBottom: 8,
+    gap: spacing['2xl'],
+    marginBottom: spacing.sm,
   },
   detail: {
     alignItems: 'center',
   },
   detailLabel: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: font.xs,
+    color: colors.textTertiary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   detailValue: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: font.lg,
+    fontWeight: font.semibold,
+    color: colors.textPrimary,
     marginTop: 2,
   },
   weight: {
-    fontSize: 13,
-    color: '#6C63FF',
-    fontWeight: '500',
-    marginTop: 4,
+    fontSize: font.sm,
+    color: colors.textAccent,
+    fontWeight: font.medium,
+    marginTop: spacing.xs,
   },
   notes: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: font.sm,
+    color: colors.textSecondary,
     fontStyle: 'italic',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });
 
@@ -166,29 +165,24 @@ function PhaseList({ title, items }: { title: string; items: WarmupCooldown[] })
 
 const phaseStyles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   title: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: 10,
+    ...sectionLabel,
   },
   item: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 6,
+    marginBottom: spacing.xs + 2,
   },
   dot: {
-    color: 'rgba(255,255,255,0.4)',
-    marginRight: 8,
-    fontSize: 14,
+    color: colors.textTertiary,
+    marginRight: spacing.sm,
+    fontSize: font.sm + 1,
   },
   text: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: font.sm + 1,
     flex: 1,
   },
 });
@@ -267,82 +261,77 @@ export default function WorkoutDetail({ route }: WorkoutDetailProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D1A',
+    backgroundColor: colors.bg,
   },
   content: {
-    padding: 20,
+    padding: spacing.xl,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 10,
+    fontSize: font['3xl'] - 6,
+    fontWeight: font.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.md - 2,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
+    gap: spacing.md,
+    marginBottom: spacing.xl,
   },
   duration: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
-    fontWeight: '500',
+    fontSize: font.sm + 1,
+    color: colors.textSecondary,
+    fontWeight: font.medium,
   },
   reasoningCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 20,
+    ...cardStyle,
+    marginBottom: spacing.xl,
     borderLeftWidth: 3,
-    borderLeftColor: '#6C63FF',
+    borderLeftColor: colors.accent,
   },
   reasoningTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: font.xs + 1,
+    fontWeight: font.bold,
+    color: colors.textTertiary,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   reasoningText: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+    fontSize: font.sm + 1,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   coachingCard: {
-    backgroundColor: 'rgba(108,99,255,0.1)',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 20,
+    backgroundColor: colors.accentMuted,
+    borderRadius: radii.md + 2,
+    padding: spacing.lg - 2,
+    marginBottom: spacing.xl,
   },
   coachingText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '500',
+    fontSize: font.sm + 1,
+    color: colors.textPrimary,
+    fontWeight: font.medium,
     lineHeight: 20,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 12,
-    marginTop: 4,
+    ...sectionLabel,
+    marginTop: spacing.xs,
   },
   completeButton: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 16,
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: spacing.xl,
+    ...shadow.glow,
   },
   completedButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: colors.success,
   },
   completeButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '700',
+    color: colors.white,
+    fontSize: font.xl - 2,
+    fontWeight: font.bold,
   },
 });

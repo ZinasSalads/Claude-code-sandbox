@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface Props {
   navigation: {
@@ -47,30 +48,28 @@ export default function VoiceDashboard({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.lg },
   pageTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 4,
-    marginTop: 8,
+    fontSize: font['3xl'],
+    fontWeight: font.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+    marginTop: spacing.sm,
   },
   pageSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.4)',
-    marginBottom: 20,
+    fontSize: font.sm,
+    color: colors.textSecondary,
+    marginBottom: spacing.xl,
   },
   moduleRow: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
+    ...cardStyle,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
-  moduleEmoji: { fontSize: 26, marginRight: 14 },
-  moduleTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  moduleDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 2 },
-  chevron: { color: 'rgba(255,255,255,0.3)', fontSize: 22, fontWeight: '300' },
+  moduleEmoji: { fontSize: 26, marginRight: spacing.lg },
+  moduleTitle: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.semibold },
+  moduleDesc: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
+  chevron: { color: colors.textTertiary, fontSize: 22, fontWeight: '300' },
 });

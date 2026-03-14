@@ -7,12 +7,7 @@ import {
   getLegacyProfile, saveLegacyProfile, getLegacyMilestones,
   logLegacyMilestone, getLegacyDrift, getLegacyBridge,
 } from '../lib/api';
-
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
-const AMBER = '#FFB547';
-const GREEN = '#00C48C';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 export default function Legacy() {
   const [profile, setProfile] = useState<any>(null);
@@ -78,7 +73,7 @@ export default function Legacy() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={ACCENT} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
   }
 
   const categories = ['fitness', 'career', 'relationship', 'travel', 'health', 'personal'];
@@ -87,7 +82,7 @@ export default function Legacy() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Legacy & Vision</Text>
       <Text style={styles.subtitle}>Your 10-year horizon</Text>
@@ -126,7 +121,7 @@ export default function Legacy() {
               value={visionText}
               onChangeText={setVisionText}
               placeholder="Where do you want to be in 10 years?"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={colors.textTertiary}
             />
             <TouchableOpacity style={styles.saveBtn} onPress={saveVision} disabled={saving}>
               <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Save Vision'}</Text>
@@ -153,7 +148,7 @@ export default function Legacy() {
             <TextInput
               style={styles.input}
               placeholder="Milestone title"
-              placeholderTextColor="rgba(255,255,255,0.3)"
+              placeholderTextColor={colors.textTertiary}
               value={milestoneTitle}
               onChangeText={setMilestoneTitle}
             />
@@ -194,53 +189,54 @@ export default function Legacy() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, backgroundColor: BG, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 10 },
-  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  center: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: font['3xl'], fontWeight: font.bold, color: colors.textPrimary, marginTop: spacing.sm },
+  subtitle: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xl },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
-  editBtn: { color: ACCENT, fontSize: 14, fontWeight: '600' },
-  bridgeCard: { borderColor: 'rgba(108,99,255,0.3)', backgroundColor: 'rgba(108,99,255,0.08)' },
-  bridgeLabel: { fontSize: 12, color: ACCENT, fontWeight: '600', marginBottom: 8 },
-  bridgeText: { fontSize: 15, color: '#fff', lineHeight: 24 },
-  driftCard: { borderColor: 'rgba(255,181,71,0.3)', backgroundColor: 'rgba(255,181,71,0.08)' },
-  driftLabel: { fontSize: 12, color: AMBER, fontWeight: '600', marginBottom: 8 },
-  driftText: { fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 22 },
-  visionText: { fontSize: 15, color: 'rgba(255,255,255,0.8)', lineHeight: 24 },
-  emptyText: { fontSize: 14, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary },
+  editBtn: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  bridgeCard: { borderColor: colors.accentBorder, backgroundColor: colors.accentGlow },
+  bridgeLabel: { fontSize: font.xs, color: colors.accent, fontWeight: font.semibold, marginBottom: spacing.sm },
+  bridgeText: { fontSize: font.md, color: colors.textPrimary, lineHeight: 24 },
+  driftCard: { borderColor: colors.warningMuted, backgroundColor: 'rgba(251, 191, 36, 0.08)' },
+  driftLabel: { fontSize: font.xs, color: colors.warning, fontWeight: font.semibold, marginBottom: spacing.sm },
+  driftText: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22 },
+  visionText: { fontSize: font.md, color: colors.textSecondary, lineHeight: 24 },
+  emptyText: { fontSize: font.sm, color: colors.textTertiary, fontStyle: 'italic' },
   textArea: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 14,
-    color: '#fff', fontSize: 15, minHeight: 120, textAlignVertical: 'top',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.lg,
+    color: colors.textPrimary, fontSize: font.md, minHeight: 120, textAlignVertical: 'top',
+    borderWidth: 1, borderColor: colors.border,
   },
-  saveBtn: { backgroundColor: ACCENT, borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 12 },
-  saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  addForm: { marginBottom: 16 },
+  saveBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.md, alignItems: 'center', marginTop: spacing.md },
+  saveBtnText: { color: colors.white, fontSize: font.sm, fontWeight: font.semibold },
+  addForm: { marginBottom: spacing.lg },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 14,
-    color: '#fff', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.lg,
+    color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border,
+    marginBottom: spacing.md,
   },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: spacing.md },
   chip: {
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+    paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radii.lg,
+    backgroundColor: colors.bgInput, borderWidth: 1, borderColor: colors.border,
   },
-  chipSelected: { borderColor: ACCENT, backgroundColor: 'rgba(108,99,255,0.2)' },
-  chipText: { fontSize: 12, color: 'rgba(255,255,255,0.5)', textTransform: 'capitalize' },
-  chipTextSel: { color: '#fff' },
-  milestoneRow: { flexDirection: 'row', marginBottom: 16, paddingLeft: 4 },
+  chipSelected: { borderColor: colors.accent, backgroundColor: colors.accentMuted },
+  chipText: { fontSize: font.xs, color: colors.textTertiary, textTransform: 'capitalize' },
+  chipTextSel: { color: colors.textPrimary },
+  milestoneRow: { flexDirection: 'row', marginBottom: spacing.lg, paddingLeft: spacing.xs },
   milestoneDot: {
-    width: 8, height: 8, borderRadius: 4, backgroundColor: GREEN, marginTop: 6, marginRight: 12,
+    width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success, marginTop: 6, marginRight: spacing.md,
   },
   milestoneContent: { flex: 1 },
-  milestoneTitle: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  milestoneDate: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
-  milestoneDesc: { fontSize: 13, color: 'rgba(255,255,255,0.6)', marginTop: 4 },
+  milestoneTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  milestoneDate: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
+  milestoneDesc: { fontSize: font.sm, color: colors.textSecondary, marginTop: spacing.xs },
 });

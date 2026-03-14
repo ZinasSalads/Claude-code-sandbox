@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, ViewStyle } from 'react-native';
+import { colors, radii, spacing } from '../theme';
 
 interface LoadingSkeletonProps {
   width: number;
@@ -85,25 +86,25 @@ export function SkeletonRing({ size = 80, style }: { size?: number; style?: View
 
 const styles = StyleSheet.create({
   skeleton: {
-    backgroundColor: '#2A2A3E',
+    backgroundColor: colors.skeleton,
   },
   card: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 12,
+    backgroundColor: colors.bgCard,
+    borderRadius: radii.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: colors.border,
   },
   listRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.04)',
+    borderBottomColor: colors.borderSubtle,
   },
   listContent: {
-    marginLeft: 12,
+    marginLeft: spacing.md,
     flex: 1,
   },
 });

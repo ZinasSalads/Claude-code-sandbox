@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { getTrips, getActiveTrip, createTrip, getPreTripPlan } from '../lib/api';
 import type { Trip } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 export default function Travel() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -71,12 +72,12 @@ export default function Travel() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Travel Intelligence</Text>
 
       {activeTrip && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#00b894' }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.success }]}>
           <Text style={styles.activeLabel}>ACTIVE TRIP</Text>
           <Text style={styles.tripDest}>{activeTrip.destination}</Text>
           <Text style={styles.tripDates}>{activeTrip.departure_date} → {activeTrip.return_date}</Text>
@@ -110,9 +111,9 @@ export default function Travel() {
 
       {showForm && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Destination" placeholderTextColor="#555577" value={dest} onChangeText={setDest} />
-          <TextInput style={styles.input} placeholder="Departure (YYYY-MM-DD)" placeholderTextColor="#555577" value={depDate} onChangeText={setDepDate} />
-          <TextInput style={styles.input} placeholder="Return (YYYY-MM-DD)" placeholderTextColor="#555577" value={retDate} onChangeText={setRetDate} />
+          <TextInput style={styles.input} placeholder="Destination" placeholderTextColor={colors.textTertiary} value={dest} onChangeText={setDest} />
+          <TextInput style={styles.input} placeholder="Departure (YYYY-MM-DD)" placeholderTextColor={colors.textTertiary} value={depDate} onChangeText={setDepDate} />
+          <TextInput style={styles.input} placeholder="Return (YYYY-MM-DD)" placeholderTextColor={colors.textTertiary} value={retDate} onChangeText={setRetDate} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleCreate}>
             <Text style={styles.primaryBtnText}>Create Trip</Text>
           </TouchableOpacity>
@@ -121,7 +122,7 @@ export default function Travel() {
 
       {trips.filter(t => t.status === 'completed').length > 0 && (
         <>
-          <Text style={styles.sectionTitle}>Past Trips</Text>
+          <Text style={styles.sectionTitle}>PAST TRIPS</Text>
           {trips.filter(t => t.status === 'completed').map((trip) => (
             <View key={trip.id} style={[styles.card, { opacity: 0.7 }]}>
               <Text style={styles.tripDest}>{trip.destination}</Text>
@@ -135,34 +136,35 @@ export default function Travel() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 20,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 16,
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#f0f0f5', marginBottom: 12 },
-  activeLabel: { fontSize: 11, fontWeight: '700', color: '#00b894', letterSpacing: 1, marginBottom: 4 },
+  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.md },
+  activeLabel: { ...sectionLabel, color: colors.success, marginTop: 0, marginBottom: spacing.xs },
   tripHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  tripDest: { fontSize: 18, fontWeight: '700', color: '#f0f0f5' },
-  countdown: { fontSize: 20, fontWeight: '700', color: '#6c5ce7' },
-  tripDates: { fontSize: 13, color: '#8888aa', marginTop: 4 },
-  tripMeta: { fontSize: 12, color: '#555577', marginTop: 4 },
+  tripDest: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary },
+  countdown: { fontSize: font.xl, fontWeight: font.bold, color: colors.accent },
+  tripDates: { fontSize: font.sm, color: colors.textSecondary, marginTop: spacing.xs },
+  tripMeta: { fontSize: font.xs, color: colors.textTertiary, marginTop: spacing.xs },
   prepBtn: {
-    marginTop: 12, backgroundColor: 'rgba(108,92,231,0.15)', borderRadius: 12,
-    padding: 12, alignItems: 'center',
+    marginTop: spacing.md, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    padding: spacing.md, alignItems: 'center',
   },
-  prepBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 13 },
-  planText: { fontSize: 12, color: '#8888aa', fontFamily: 'monospace' },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6c5ce7', fontWeight: '600', fontSize: 15 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#555577', letterSpacing: 1, marginBottom: 12, textTransform: 'uppercase' },
+  prepBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
+  planText: { fontSize: font.xs, color: colors.textSecondary, fontFamily: 'monospace' },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  sectionTitle: { ...sectionLabel },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

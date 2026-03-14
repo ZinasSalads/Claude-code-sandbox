@@ -4,11 +4,7 @@ import {
   TextInput, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { getOnboardingStatus, getStepContent, completeOnboardingStep, skipOnboardingStep } from '../lib/api';
-
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
-const GREEN = '#00C48C';
+import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 export default function Onboarding({ navigation }: any) {
   const [status, setStatus] = useState<any>(null);
@@ -70,7 +66,7 @@ export default function Onboarding({ navigation }: any) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={ACCENT} />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -78,7 +74,7 @@ export default function Onboarding({ navigation }: any) {
   if (!status || status.is_complete) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
       >
         <Text style={styles.bigTitle}>All Set!</Text>
         <Text style={styles.subtitle}>Your app is fully personalized</Text>
@@ -100,7 +96,7 @@ export default function Onboarding({ navigation }: any) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       {/* Progress */}
       <View style={styles.progressBar}>
@@ -124,7 +120,7 @@ export default function Onboarding({ navigation }: any) {
                   <TextInput
                     style={styles.input}
                     keyboardType="numeric"
-                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    placeholderTextColor={colors.textTertiary}
                     placeholder={field.label}
                     value={formData[field.key]?.toString() || ''}
                     onChangeText={v => setFormData(prev => ({ ...prev, [field.key]: parseInt(v) || 0 }))}
@@ -140,7 +136,7 @@ export default function Onboarding({ navigation }: any) {
                     style={[styles.input, field.type === 'textarea' && styles.textArea]}
                     multiline={field.type === 'textarea'}
                     numberOfLines={field.type === 'textarea' ? 4 : 1}
-                    placeholderTextColor="rgba(255,255,255,0.3)"
+                    placeholderTextColor={colors.textTertiary}
                     placeholder={field.label}
                     value={formData[field.key] || ''}
                     onChangeText={v => setFormData(prev => ({ ...prev, [field.key]: v }))}
@@ -211,7 +207,7 @@ export default function Onboarding({ navigation }: any) {
             disabled={submitting}
           >
             {submitting ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={styles.primaryBtnText}>
                 {step.step_name === 'complete' ? 'Finish Setup' : 'Continue'}
@@ -231,38 +227,39 @@ export default function Onboarding({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, backgroundColor: BG, justifyContent: 'center', alignItems: 'center' },
-  bigTitle: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 20, marginBottom: 8 },
-  subtitle: { fontSize: 16, color: 'rgba(255,255,255,0.5)', marginBottom: 24 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  center: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
+  bigTitle: { fontSize: font['3xl'], fontWeight: '800', color: colors.textPrimary, marginTop: spacing.xl, marginBottom: spacing.sm },
+  subtitle: { fontSize: font.lg, color: colors.textSecondary, marginBottom: spacing['2xl'] },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
-  desc: { fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 22, marginBottom: 16 },
-  progressBar: { height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginBottom: 8 },
-  progressFill: { height: 4, backgroundColor: GREEN, borderRadius: 2 },
-  progressText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginBottom: 24 },
-  fieldRow: { marginBottom: 20 },
-  fieldLabel: { fontSize: 14, fontWeight: '600', color: '#fff', marginBottom: 8 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
+  desc: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.lg },
+  progressBar: { height: 4, backgroundColor: colors.border, borderRadius: 2, marginBottom: spacing.sm },
+  progressFill: { height: 4, backgroundColor: colors.success, borderRadius: 2 },
+  progressText: { color: colors.textSecondary, fontSize: font.xs, marginBottom: spacing['2xl'] },
+  fieldRow: { marginBottom: spacing.xl },
+  fieldLabel: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.sm },
   input: {
-    backgroundColor: CARD, borderRadius: 10, padding: 14, color: '#fff', fontSize: 15,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.bgInput, borderRadius: radii.sm, padding: spacing.lg, color: colors.textPrimary, fontSize: font.md,
+    borderWidth: 1, borderColor: colors.border,
   },
   textArea: { height: 100, textAlignVertical: 'top' },
-  optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  optionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: {
-    backgroundColor: CARD, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 4,
+    backgroundColor: colors.bgCard, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full,
+    borderWidth: 1, borderColor: colors.border, marginBottom: spacing.xs,
   },
-  chipSelected: { borderColor: ACCENT, backgroundColor: 'rgba(108,99,255,0.2)' },
-  chipText: { fontSize: 13, color: 'rgba(255,255,255,0.6)', textTransform: 'capitalize' },
-  chipTextSelected: { color: '#fff' },
-  primaryBtn: { backgroundColor: ACCENT, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8 },
+  chipSelected: { borderColor: colors.accent, backgroundColor: colors.accentMuted },
+  chipText: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize' },
+  chipTextSelected: { color: colors.textPrimary },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm, ...shadow.glow },
   primaryBtnDisabled: { opacity: 0.5 },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  skipBtn: { alignItems: 'center', padding: 14, marginTop: 8 },
-  skipBtnText: { color: 'rgba(255,255,255,0.4)', fontSize: 14 },
+  primaryBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
+  skipBtn: { alignItems: 'center', padding: spacing.lg, marginTop: spacing.sm },
+  skipBtnText: { color: colors.textSecondary, fontSize: font.sm },
 });

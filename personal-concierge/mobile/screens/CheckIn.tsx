@@ -11,6 +11,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { submitCheckIn } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 interface SliderRowProps {
   emoji: string;
@@ -20,9 +21,9 @@ interface SliderRowProps {
 }
 
 function getSliderColor(value: number): string {
-  if (value <= 3) return '#F44336';
-  if (value <= 6) return '#FFC107';
-  return '#4CAF50';
+  if (value <= 3) return colors.error;
+  if (value <= 6) return colors.warning;
+  return colors.success;
 }
 
 function SliderRow({ emoji, label, value, onChange }: SliderRowProps) {
@@ -43,7 +44,7 @@ function SliderRow({ emoji, label, value, onChange }: SliderRowProps) {
             style={[
               sliderStyles.dot,
               {
-                backgroundColor: n <= value ? color : 'rgba(255,255,255,0.1)',
+                backgroundColor: n <= value ? color : colors.border,
                 width: n <= value ? 28 : 24,
                 height: n <= value ? 28 : 24,
               },
@@ -53,7 +54,7 @@ function SliderRow({ emoji, label, value, onChange }: SliderRowProps) {
             <Text
               style={[
                 sliderStyles.dotText,
-                { color: n <= value ? '#fff' : 'rgba(255,255,255,0.3)' },
+                { color: n <= value ? colors.white : colors.textTertiary },
               ]}
             >
               {n}
@@ -72,21 +73,21 @@ const sliderStyles = StyleSheet.create({
   labelRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   emoji: {
     fontSize: 22,
     marginRight: 10,
   },
   label: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: font.lg,
+    fontWeight: font.semibold,
+    color: colors.textPrimary,
     flex: 1,
   },
   value: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: font['2xl'],
+    fontWeight: font.bold,
   },
   dotsRow: {
     flexDirection: 'row',
@@ -99,8 +100,8 @@ const sliderStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   dotText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: font.xs,
+    fontWeight: font.semibold,
   },
 });
 
@@ -171,7 +172,7 @@ export default function CheckIn({ navigation }: CheckInProps) {
         <TextInput
           style={styles.notesInput}
           placeholder="Anything else to note?"
-          placeholderTextColor="rgba(255,255,255,0.3)"
+          placeholderTextColor={colors.textTertiary}
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -197,64 +198,67 @@ export default function CheckIn({ navigation }: CheckInProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D1A',
+    backgroundColor: colors.bg,
   },
   content: {
-    padding: 20,
-    paddingTop: 16,
+    padding: spacing.xl,
+    paddingTop: spacing.lg,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 4,
+    fontSize: font['3xl'],
+    fontWeight: font.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.4)',
-    marginBottom: 32,
+    fontSize: font.md,
+    color: colors.textSecondary,
+    marginBottom: spacing['3xl'],
   },
   slidersContainer: {
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   notesInput: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    color: '#fff',
-    fontSize: 15,
+    backgroundColor: colors.bgCard,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    color: colors.textPrimary,
+    fontSize: font.md,
     minHeight: 80,
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   doneButton: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 16,
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: spacing['3xl'],
+    ...shadow.glow,
   },
   doneButtonDisabled: {
     opacity: 0.6,
   },
   doneButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: font.bold,
   },
   successContainer: {
     flex: 1,
-    backgroundColor: '#0D0D1A',
+    backgroundColor: colors.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   successEmoji: {
     fontSize: 64,
-    color: '#4CAF50',
-    marginBottom: 16,
+    color: colors.success,
+    marginBottom: spacing.lg,
   },
   successText: {
     fontSize: 22,
-    fontWeight: '600',
-    color: '#fff',
+    fontWeight: font.semibold,
+    color: colors.textPrimary,
   },
 });

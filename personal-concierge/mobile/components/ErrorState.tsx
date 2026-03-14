@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-
-const ACCENT = '#6C63FF';
-const RED = '#FF4757';
+import { colors, font, radii, spacing } from '../theme';
 
 interface ErrorStateProps {
   section: string;
@@ -42,42 +40,42 @@ export default function ErrorState({ section, error, onRetry }: ErrorStateProps)
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    padding: 30,
+    padding: spacing['3xl'],
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
+    fontSize: font.lg,
+    fontWeight: font.semibold,
+    color: colors.textPrimary,
     marginBottom: 6,
   },
   subtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.4)',
-    marginBottom: 16,
+    fontSize: font.sm,
+    color: colors.textTertiary,
+    marginBottom: spacing.lg,
   },
   retryBtn: {
-    backgroundColor: ACCENT,
-    borderRadius: 8,
-    paddingHorizontal: 20,
+    backgroundColor: colors.accent,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.xl,
     paddingVertical: 10,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   retryText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.white,
+    fontSize: font.md,
+    fontWeight: font.semibold,
   },
   detailBtn: {
-    padding: 8,
+    padding: spacing.sm,
   },
   detailBtnText: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 12,
+    color: colors.textTertiary,
+    fontSize: font.xs,
   },
   errorText: {
-    fontSize: 11,
-    color: RED,
-    marginTop: 8,
+    fontSize: font.xs,
+    color: colors.error,
+    marginTop: spacing.sm,
     maxWidth: 300,
     textAlign: 'center',
     fontFamily: 'monospace',

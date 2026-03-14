@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors, font } from '../theme';
 
 interface TrendArrowProps {
   direction: 'up' | 'down' | 'flat';
@@ -8,9 +9,9 @@ interface TrendArrowProps {
 
 export default function TrendArrow({ direction, color }: TrendArrowProps) {
   const defaultColors = {
-    up: '#4CAF50',
-    down: '#F44336',
-    flat: '#888',
+    up: colors.success,
+    down: colors.error,
+    flat: colors.textTertiary,
   };
 
   const symbols = {
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   arrow: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: font.lg,
+    fontWeight: font.bold,
   },
 });

@@ -5,6 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
+import { colors, font, shadow } from './theme';
 
 // Dashboard / hub screens (landing pages for each tab)
 import HealthDashboard from './screens/HealthDashboard';
@@ -59,12 +60,12 @@ const DarkTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#6C63FF',
-    background: '#0D0D1A',
-    card: '#0D0D1A',
-    text: '#fff',
-    border: 'rgba(255,255,255,0.08)',
-    notification: '#6C63FF',
+    primary: colors.accent,
+    background: colors.bg,
+    card: colors.bg,
+    text: colors.textPrimary,
+    border: colors.border,
+    notification: colors.accent,
   },
 };
 
@@ -168,9 +169,9 @@ function ChatIcon() {
 }
 
 const stackScreenOptions = {
-  headerStyle: { backgroundColor: '#0D0D1A' },
-  headerTintColor: '#fff',
-  headerTitleStyle: { fontWeight: '600' as const },
+  headerStyle: { backgroundColor: colors.bg },
+  headerTintColor: colors.textPrimary,
+  headerTitleStyle: { fontWeight: font.semibold },
   headerShadowVisible: false,
 };
 
@@ -262,22 +263,22 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor="#0D0D1A" />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <NavigationContainer theme={DarkTheme} ref={navigationRef}>
         <View style={{ flex: 1 }}>
           <Tab.Navigator
             screenOptions={{
               tabBarStyle: {
-                backgroundColor: '#0D0D1A',
-                borderTopColor: 'rgba(255,255,255,0.06)',
+                backgroundColor: colors.tabBar,
+                borderTopColor: colors.tabBarBorder,
                 borderTopWidth: 1,
                 paddingBottom: 8,
                 paddingTop: 8,
                 height: 60,
               },
-              tabBarActiveTintColor: '#6C63FF',
-              tabBarInactiveTintColor: 'rgba(255,255,255,0.3)',
-              tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+              tabBarActiveTintColor: colors.tabActive,
+              tabBarInactiveTintColor: colors.tabInactive,
+              tabBarLabelStyle: { fontSize: 10, fontWeight: font.semibold },
               headerShown: false,
             }}
           >
@@ -330,13 +331,9 @@ const fabStyles = RNStyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#6C63FF',
+    backgroundColor: colors.accent,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#6C63FF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    ...shadow.glow,
   },
 });

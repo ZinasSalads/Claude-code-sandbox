@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, getScoreColor } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -97,7 +98,6 @@ export default function Hobbies() {
     fetchData();
   }, [logHobbyId, logDuration, logQuality, logNotes, fetchData]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
   const categories = ['creative', 'physical', 'intellectual', 'social', 'outdoor', 'other'];
 
   const activeHobbies = hobbies.filter((h) => h.dormant_weeks < 3);
@@ -111,13 +111,13 @@ export default function Hobbies() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Hobbies</Text>
 
       <View style={styles.card}>
         <View style={styles.ringContainer}>
-          <Text style={[styles.ringScore, { color: scoreColor(healthScore) }]}>{healthScore}</Text>
+          <Text style={[styles.ringScore, { color: getScoreColor(healthScore) }]}>{healthScore}</Text>
           <Text style={styles.ringLabel}>/ 100</Text>
         </View>
         <Text style={styles.ringSubtitle}>Hobby Health Score</Text>
@@ -133,22 +133,22 @@ export default function Hobbies() {
                 <Text style={styles.hobbyName}>{h.name}</Text>
                 <Text style={styles.hobbyCategory}>{h.category}</Text>
               </View>
-              <Text style={[styles.hobbyHours, { color: scoreColor(pct) }]}>
+              <Text style={[styles.hobbyHours, { color: getScoreColor(pct) }]}>
                 {h.weekly_actual_hours.toFixed(1)}h / {h.weekly_target_hours}h
               </Text>
             </View>
             <View style={styles.progressBarBg}>
-              <View style={[styles.progressBarFill, { width: `${pct}%`, backgroundColor: scoreColor(pct) }]} />
+              <View style={[styles.progressBarFill, { width: `${pct}%`, backgroundColor: getScoreColor(pct) }]} />
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={styles.dimText}>Last activity: {h.last_activity_date}</Text>
               <TouchableOpacity onPress={() => setLogHobbyId(logHobbyId === h.id ? null : h.id)}>
-                <Text style={{ color: '#6C63FF', fontSize: 12, fontWeight: '600' }}>Log Session</Text>
+                <Text style={{ color: colors.accent, fontSize: font.xs, fontWeight: font.semibold }}>Log Session</Text>
               </TouchableOpacity>
             </View>
             {logHobbyId === h.id && (
-              <View style={{ marginTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', paddingTop: 12 }}>
-                <TextInput style={styles.input} placeholder="Duration (minutes)" placeholderTextColor="#555577" keyboardType="numeric" value={logDuration} onChangeText={setLogDuration} />
+              <View style={{ marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md }}>
+                <TextInput style={styles.input} placeholder="Duration (minutes)" placeholderTextColor={colors.textTertiary} keyboardType="numeric" value={logDuration} onChangeText={setLogDuration} />
                 <Text style={styles.formLabel}>Quality ({logQuality}/10)</Text>
                 <View style={styles.typeRow}>
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
@@ -157,7 +157,7 @@ export default function Hobbies() {
                     </TouchableOpacity>
                   ))}
                 </View>
-                <TextInput style={styles.input} placeholder="Notes (optional)" placeholderTextColor="#555577" value={logNotes} onChangeText={setLogNotes} />
+                <TextInput style={styles.input} placeholder="Notes (optional)" placeholderTextColor={colors.textTertiary} value={logNotes} onChangeText={setLogNotes} />
                 <TouchableOpacity style={styles.primaryBtn} onPress={handleLogSession}>
                   <Text style={styles.primaryBtnText}>Submit</Text>
                 </TouchableOpacity>
@@ -174,7 +174,7 @@ export default function Hobbies() {
         <>
           <Text style={styles.sectionTitle}>DORMANT ALERTS</Text>
           {dormantHobbies.map((h) => (
-            <View key={h.id} style={[styles.card, { borderColor: 'rgba(253,203,110,0.3)' }]}>
+            <View key={h.id} style={[styles.card, { borderColor: colors.warningMuted }]}>
               <View style={styles.dormantRow}>
                 <View style={styles.dormantIcon}>
                   <Text style={styles.dormantIconText}>!</Text>
@@ -214,7 +214,7 @@ export default function Hobbies() {
         <>
           <Text style={styles.sectionTitle}>PRIORITY CONFLICTS</Text>
           {conflicts.map((c, i) => (
-            <View key={i} style={[styles.card, { borderColor: 'rgba(225,112,85,0.3)' }]}>
+            <View key={i} style={[styles.card, { borderColor: colors.errorMuted }]}>
               <Text style={styles.conflictTitle}>{c.hobby_a} vs {c.hobby_b}</Text>
               <Text style={styles.conflictOverlap}>{c.overlap}</Text>
               <View style={styles.suggestionBox}>
@@ -231,7 +231,7 @@ export default function Hobbies() {
 
       {showAddForm && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Hobby name" placeholderTextColor="#555577" value={newName} onChangeText={setNewName} />
+          <TextInput style={styles.input} placeholder="Hobby name" placeholderTextColor={colors.textTertiary} value={newName} onChangeText={setNewName} />
           <Text style={styles.formLabel}>Category</Text>
           <View style={styles.typeRow}>
             {categories.map((c) => (
@@ -240,7 +240,7 @@ export default function Hobbies() {
               </TouchableOpacity>
             ))}
           </View>
-          <TextInput style={styles.input} placeholder="Weekly target hours" placeholderTextColor="#555577" keyboardType="numeric" value={newTargetHours} onChangeText={setNewTargetHours} />
+          <TextInput style={styles.input} placeholder="Weekly target hours" placeholderTextColor={colors.textTertiary} keyboardType="numeric" value={newTargetHours} onChangeText={setNewTargetHours} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAddHobby}>
             <Text style={styles.primaryBtnText}>Add Hobby</Text>
           </TouchableOpacity>
@@ -251,54 +251,54 @@ export default function Hobbies() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#8888aa', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
-  dimText: { fontSize: 13, color: '#8888aa' },
-  ringContainer: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: 4 },
-  ringScore: { fontSize: 56, fontWeight: '700' },
-  ringLabel: { fontSize: 20, color: '#8888aa', marginLeft: 4 },
-  ringSubtitle: { textAlign: 'center', color: '#8888aa', fontSize: 13 },
-  hobbyHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  hobbyName: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  hobbyCategory: { fontSize: 12, color: '#8888aa', marginTop: 2 },
-  hobbyHours: { fontSize: 14, fontWeight: '700' },
-  progressBarBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden', marginBottom: 6 },
+  sectionTitle: { ...sectionLabel },
+  dimText: { fontSize: font.sm, color: colors.textSecondary },
+  ringContainer: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: spacing.xs },
+  ringScore: { fontSize: 56, fontWeight: font.bold },
+  ringLabel: { fontSize: font.xl, color: colors.textSecondary, marginLeft: spacing.xs },
+  ringSubtitle: { textAlign: 'center', color: colors.textSecondary, fontSize: font.sm },
+  hobbyHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+  hobbyName: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  hobbyCategory: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
+  hobbyHours: { fontSize: font.sm, fontWeight: font.bold },
+  progressBarBg: { height: 6, backgroundColor: colors.border, borderRadius: 3, overflow: 'hidden', marginBottom: 6 },
   progressBarFill: { height: 6, borderRadius: 3 },
   dormantRow: { flexDirection: 'row', alignItems: 'center' },
   dormantIcon: {
-    width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(253,203,110,0.15)',
-    alignItems: 'center', justifyContent: 'center', marginRight: 12,
+    width: 32, height: 32, borderRadius: radii.full, backgroundColor: colors.warningMuted,
+    alignItems: 'center', justifyContent: 'center', marginRight: spacing.md,
   },
-  dormantIconText: { color: '#fdcb6e', fontSize: 16, fontWeight: '700' },
-  dormantText: { color: '#fdcb6e', fontSize: 14, fontWeight: '500' },
-  seasonalRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8 },
-  seasonalRowBorder: { borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.06)' },
-  seasonBadge: { backgroundColor: 'rgba(108,99,255,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, marginRight: 12 },
-  seasonBadgeText: { color: '#6C63FF', fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-  seasonalName: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  conflictTitle: { fontSize: 15, fontWeight: '600', color: '#e17055', marginBottom: 4 },
-  conflictOverlap: { fontSize: 13, color: '#8888aa', marginBottom: 8 },
-  suggestionBox: { backgroundColor: 'rgba(108,99,255,0.08)', borderRadius: 8, padding: 10 },
-  suggestionText: { color: '#fff', fontSize: 13 },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6C63FF', fontWeight: '600', fontSize: 15 },
-  formLabel: { fontSize: 12, color: '#8888aa', fontWeight: '600', marginBottom: 6, marginTop: 4 },
-  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  typeChip: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: 'rgba(108,99,255,0.2)' },
-  typeChipText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
-  typeChipTextActive: { color: '#6C63FF' },
+  dormantIconText: { color: colors.warning, fontSize: font.lg, fontWeight: font.bold },
+  dormantText: { color: colors.warning, fontSize: font.sm, fontWeight: font.medium },
+  seasonalRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
+  seasonalRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
+  seasonBadge: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: spacing.xs, marginRight: spacing.md },
+  seasonBadgeText: { color: colors.accent, fontSize: font.xs, fontWeight: font.bold, textTransform: 'uppercase' },
+  seasonalName: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary },
+  conflictTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.error, marginBottom: spacing.xs },
+  conflictOverlap: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.sm },
+  suggestionBox: { backgroundColor: colors.accentGlow, borderRadius: radii.sm, padding: spacing.sm },
+  suggestionText: { color: colors.textPrimary, fontSize: font.sm },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  formLabel: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: 6, marginTop: spacing.xs },
+  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: spacing.md },
+  typeChip: { backgroundColor: colors.bgInput, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 6 },
+  typeChipActive: { backgroundColor: colors.accentMuted },
+  typeChipText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
+  typeChipTextActive: { color: colors.accent },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#fff', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

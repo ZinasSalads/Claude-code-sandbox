@@ -8,12 +8,7 @@ import {
   syncToBackend, getConnectionStatus,
 } from '../lib/appleHealth';
 import { getHealthGaps } from '../lib/api';
-
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
-const GREEN = '#00C48C';
-const AMBER = '#FFB547';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 export default function AppleHealth() {
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -93,7 +88,7 @@ export default function AppleHealth() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Apple Health</Text>
       <Text style={styles.subtitle}>Fill data gaps when Oura isn't worn</Text>
@@ -103,21 +98,21 @@ export default function AppleHealth() {
         <Text style={styles.cardTitle}>Connection Status</Text>
         {Platform.OS !== 'ios' ? (
           <View style={styles.statusRow}>
-            <View style={[styles.statusDot, { backgroundColor: '#FF4757' }]} />
+            <View style={[styles.statusDot, { backgroundColor: colors.error }]} />
             <Text style={styles.statusText}>Not Available (iOS only)</Text>
           </View>
         ) : available === null ? (
-          <ActivityIndicator color={ACCENT} />
+          <ActivityIndicator color={colors.accent} />
         ) : available ? (
           connected ? (
             <View style={styles.statusRow}>
-              <View style={[styles.statusDot, { backgroundColor: GREEN }]} />
+              <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
               <Text style={styles.statusText}>Connected</Text>
             </View>
           ) : (
             <>
               <View style={styles.statusRow}>
-                <View style={[styles.statusDot, { backgroundColor: AMBER }]} />
+                <View style={[styles.statusDot, { backgroundColor: colors.warning }]} />
                 <Text style={styles.statusText}>Available — not connected</Text>
               </View>
               <TouchableOpacity style={styles.connectBtn} onPress={handleConnect}>
@@ -127,7 +122,7 @@ export default function AppleHealth() {
           )
         ) : (
           <View style={styles.statusRow}>
-            <View style={[styles.statusDot, { backgroundColor: '#FF4757' }]} />
+            <View style={[styles.statusDot, { backgroundColor: colors.error }]} />
             <Text style={styles.statusText}>Not available in Expo Go — requires dev build</Text>
           </View>
         )}
@@ -195,29 +190,32 @@ export default function AppleHealth() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  title: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 10 },
-  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  title: { fontSize: font['3xl'], fontWeight: '800', color: colors.textPrimary, marginTop: spacing.md },
+  subtitle: { fontSize: font.md, color: colors.textSecondary, marginBottom: spacing.xl },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
-  desc: { fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 22 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
+  desc: { fontSize: font.md, color: colors.textSecondary, lineHeight: 22 },
   statusRow: { flexDirection: 'row', alignItems: 'center' },
-  statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
-  statusText: { fontSize: 15, color: '#fff' },
+  statusDot: { width: 10, height: 10, borderRadius: radii.full, marginRight: spacing.md },
+  statusText: { fontSize: font.md, color: colors.textPrimary },
   connectBtn: {
-    backgroundColor: ACCENT, borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 12,
+    backgroundColor: colors.accent, borderRadius: radii.sm, padding: spacing.md, alignItems: 'center', marginTop: spacing.md,
+    ...shadow.glow,
   },
-  connectBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  gapDate: { fontSize: 13, color: AMBER, marginTop: 4, fontFamily: 'monospace' },
+  connectBtnText: { color: colors.white, fontSize: font.md, fontWeight: font.semibold },
+  gapDate: { fontSize: font.sm, color: colors.warning, marginTop: spacing.xs, fontFamily: 'monospace' },
   syncBtn: {
-    backgroundColor: ACCENT, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 8,
+    backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm,
+    ...shadow.glow,
   },
   syncBtnDisabled: { opacity: 0.5 },
-  syncBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
-  syncResult: { color: GREEN, textAlign: 'center', marginTop: 12, fontSize: 14 },
-  lastSync: { color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: 8, fontSize: 12 },
+  syncBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
+  syncResult: { color: colors.success, textAlign: 'center', marginTop: spacing.md, fontSize: font.md },
+  lastSync: { color: colors.textTertiary, textAlign: 'center', marginTop: spacing.sm, fontSize: font.sm },
 });

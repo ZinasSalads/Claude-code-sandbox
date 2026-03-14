@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface Supplement {
   id: string;
@@ -86,7 +87,7 @@ function TodayTab() {
     load();
   }, [load]);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color="#6C63FF" size="large" /></View>;
+  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
 
   if (logs.length === 0) {
     return (
@@ -103,7 +104,7 @@ function TodayTab() {
   return (
     <ScrollView
       style={tabStyles.scroll}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#6C63FF" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.accent} />}
     >
       {/* Progress */}
       <View style={todayStyles.progressCard}>
@@ -139,32 +140,29 @@ function TodayTab() {
 
 const todayStyles = StyleSheet.create({
   progressCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
+    ...cardStyle,
+    marginBottom: spacing.lg,
   },
   progressText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 10,
+    color: colors.textPrimary,
+    fontSize: font.lg,
+    fontWeight: font.bold,
+    marginBottom: spacing.md,
   },
   progressBar: {
     height: 6,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 3,
+    backgroundColor: colors.border,
+    borderRadius: radii.full,
   },
   progressFill: {
     height: 6,
-    backgroundColor: '#4CAF50',
-    borderRadius: 3,
+    backgroundColor: colors.success,
+    borderRadius: radii.full,
   },
   item: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    ...cardStyle,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -174,35 +172,35 @@ const todayStyles = StyleSheet.create({
   checkbox: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: radii.full,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
-    marginRight: 14,
+    borderColor: colors.textTertiary,
+    marginRight: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#4CAF50',
-    borderColor: '#4CAF50',
+    backgroundColor: colors.success,
+    borderColor: colors.success,
   },
   check: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
+    color: colors.white,
+    fontWeight: font.bold,
+    fontSize: font.md,
   },
   name: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.semibold,
   },
   nameTaken: {
     textDecorationLine: 'line-through',
-    color: 'rgba(255,255,255,0.5)',
+    color: colors.textSecondary,
   },
   dose: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
-    marginTop: 4,
+    color: colors.textTertiary,
+    fontSize: font.sm,
+    marginTop: spacing.xs,
   },
 });
 
@@ -232,7 +230,7 @@ function StackTab() {
     ]);
   }, []);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color="#6C63FF" size="large" /></View>;
+  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
 
   return (
     <ScrollView style={tabStyles.scroll}>
@@ -264,20 +262,19 @@ function StackTab() {
 
 const stackStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    ...cardStyle,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
   },
   inactive: { opacity: 0.4 },
-  name: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  detail: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 },
-  purpose: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 4, fontStyle: 'italic' },
-  inactiveLabel: { color: '#F44336', fontSize: 11, fontWeight: '700', marginTop: 4 },
-  removeBtn: { padding: 8 },
-  removeTxt: { color: '#F44336', fontSize: 22, fontWeight: '700' },
+  name: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold },
+  detail: { color: colors.textTertiary, fontSize: font.sm, marginTop: spacing.xs },
+  purpose: { color: colors.textSecondary, fontSize: font.sm, marginTop: spacing.xs, fontStyle: 'italic' },
+  inactiveLabel: { color: colors.error, fontSize: font.xs, fontWeight: font.bold, marginTop: spacing.xs },
+  removeBtn: { padding: spacing.sm },
+  removeTxt: { color: colors.error, fontSize: 22, fontWeight: font.bold },
 });
 
 // ---- Add Tab ----
@@ -324,7 +321,7 @@ function AddTab({ onAdded }: { onAdded: () => void }) {
         value={name}
         onChangeText={setName}
         placeholder="e.g., Vitamin D3"
-        placeholderTextColor="rgba(255,255,255,0.3)"
+        placeholderTextColor={colors.textTertiary}
       />
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
@@ -335,7 +332,7 @@ function AddTab({ onAdded }: { onAdded: () => void }) {
             value={dose}
             onChangeText={setDose}
             placeholder="5000"
-            placeholderTextColor="rgba(255,255,255,0.3)"
+            placeholderTextColor={colors.textTertiary}
             keyboardType="numeric"
           />
         </View>
@@ -346,7 +343,7 @@ function AddTab({ onAdded }: { onAdded: () => void }) {
             value={unit}
             onChangeText={setUnit}
             placeholder="mg, mcg, IU"
-            placeholderTextColor="rgba(255,255,255,0.3)"
+            placeholderTextColor={colors.textTertiary}
           />
         </View>
       </View>
@@ -372,7 +369,7 @@ function AddTab({ onAdded }: { onAdded: () => void }) {
         value={purpose}
         onChangeText={setPurpose}
         placeholder="e.g., Bone health, immune support"
-        placeholderTextColor="rgba(255,255,255,0.3)"
+        placeholderTextColor={colors.textTertiary}
       />
 
       <TouchableOpacity
@@ -394,54 +391,56 @@ function AddTab({ onAdded }: { onAdded: () => void }) {
 
 const addStyles = StyleSheet.create({
   label: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 12,
-    fontWeight: '700',
+    ...sectionLabel,
     letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-    marginTop: 16,
+    marginBottom: spacing.sm,
   },
   input: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    color: '#fff',
-    fontSize: 16,
+    backgroundColor: colors.bgInput,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    color: colors.textPrimary,
+    fontSize: font.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   timingRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: spacing.sm,
   },
   timingBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    backgroundColor: '#1A1A2E',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.sm,
+    backgroundColor: colors.bgCard,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   timingActive: {
-    backgroundColor: '#6C63FF',
+    backgroundColor: colors.accentMuted,
+    borderColor: colors.accent,
   },
   timingText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 13,
-    fontWeight: '600',
+    color: colors.textSecondary,
+    fontSize: font.sm,
+    fontWeight: font.semibold,
   },
   timingActiveText: {
-    color: '#fff',
+    color: colors.textAccent,
   },
   addBtn: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 16,
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: spacing['2xl'],
+    ...shadow.glow,
   },
   addBtnText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.white,
+    fontSize: font.lg,
+    fontWeight: font.bold,
   },
 });
 
@@ -457,7 +456,7 @@ function StatsTab() {
     });
   }, []);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color="#6C63FF" size="large" /></View>;
+  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
   if (!stats || !stats.total_logs) {
     return (
       <View style={tabStyles.center}>
@@ -507,40 +506,38 @@ function StatsTab() {
 
 const statsStyles = StyleSheet.create({
   overviewCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 20,
-    marginBottom: 20,
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.xl,
   },
   statRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
   },
   stat: { alignItems: 'center' },
-  statValue: { color: '#6C63FF', fontSize: 28, fontWeight: '700' },
-  statLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 },
+  statValue: { color: colors.textAccent, fontSize: 28, fontWeight: font.bold },
+  statLabel: { color: colors.textTertiary, fontSize: font.sm, marginTop: spacing.xs },
   breakdownRow: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 6,
+    ...cardStyle,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  breakdownName: { color: '#fff', fontSize: 14, fontWeight: '600', width: 100 },
+  breakdownName: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold, width: 100 },
   barContainer: {
     flex: 1,
     height: 6,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 3,
-    marginHorizontal: 12,
+    backgroundColor: colors.border,
+    borderRadius: radii.full,
+    marginHorizontal: spacing.md,
   },
   bar: {
     height: 6,
-    backgroundColor: '#4CAF50',
-    borderRadius: 3,
+    backgroundColor: colors.success,
+    borderRadius: radii.full,
   },
-  breakdownPct: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '600', width: 45, textAlign: 'right' },
+  breakdownPct: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold, width: 45, textAlign: 'right' },
 });
 
 // ---- Main Screen ----
@@ -575,38 +572,40 @@ export default function Supplements() {
 }
 
 const tabStyles = StyleSheet.create({
-  scroll: { flex: 1, paddingHorizontal: 20 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40 },
-  empty: { color: 'rgba(255,255,255,0.5)', fontSize: 16, textAlign: 'center' },
-  emptyHint: { color: 'rgba(255,255,255,0.3)', fontSize: 13, textAlign: 'center', marginTop: 8 },
+  scroll: { flex: 1, paddingHorizontal: spacing.xl },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing['5xl'] },
+  empty: { color: colors.textSecondary, fontSize: font.lg, textAlign: 'center' },
+  emptyHint: { color: colors.textTertiary, fontSize: font.sm, textAlign: 'center', marginTop: spacing.sm },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    marginTop: 16,
+    ...sectionLabel,
   },
 });
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
+  container: { flex: 1, backgroundColor: colors.bg },
   tabBar: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    gap: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    gap: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   tab: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#1A1A2E',
+    borderRadius: radii.sm,
+    backgroundColor: 'transparent',
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  activeTab: { backgroundColor: '#6C63FF' },
-  tabText: { color: 'rgba(255,255,255,0.5)', fontSize: 13, fontWeight: '600' },
-  activeTabText: { color: '#fff' },
-  content: { flex: 1, paddingTop: 8 },
+  activeTab: {
+    borderBottomColor: colors.accent,
+    backgroundColor: colors.accentGlow,
+  },
+  tabText: { color: colors.textTertiary, fontSize: font.sm, fontWeight: font.semibold },
+  activeTabText: { color: colors.textAccent },
+  content: { flex: 1, paddingTop: spacing.sm },
 });

@@ -8,6 +8,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { getOnboardingStatus, getPersonalityProfile, getDataSummary } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface Props {
   navigation: {
@@ -55,7 +56,7 @@ export default function ProfileDashboard({ navigation }: Props) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6C63FF" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       {/* Profile summary card */}
       <View style={styles.summaryCard}>
@@ -127,34 +128,31 @@ export default function ProfileDashboard({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.lg },
   summaryCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 16,
-    padding: 20,
+    ...cardStyle,
+    padding: spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   avatarCircle: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: 'rgba(108,99,255,0.15)',
+    backgroundColor: colors.accentMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: { fontSize: 28 },
-  mbtiType: { color: '#6C63FF', fontSize: 20, fontWeight: '700' },
-  mbtiLabel: { color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 2 },
+  mbtiType: { color: colors.accent, fontSize: font.xl, fontWeight: font.bold },
+  mbtiLabel: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
   onboardingCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: '#6C63FF',
+    borderLeftColor: colors.accent,
   },
   onboardingHeader: {
     flexDirection: 'row',
@@ -162,48 +160,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  onboardingTitle: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  onboardingPct: { color: '#6C63FF', fontSize: 15, fontWeight: '700' },
+  onboardingTitle: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold },
+  onboardingPct: { color: colors.accent, fontSize: font.md, fontWeight: font.bold },
   progressBar: {
     height: 6,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: colors.border,
     borderRadius: 3,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   progressFill: {
     height: 6,
-    backgroundColor: '#6C63FF',
+    backgroundColor: colors.accent,
     borderRadius: 3,
   },
-  onboardingSub: { color: 'rgba(255,255,255,0.4)', fontSize: 12 },
+  onboardingSub: { color: colors.textSecondary, fontSize: font.xs },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    marginTop: 8,
+    ...sectionLabel,
   },
   moduleRow: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
+    ...cardStyle,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
-  moduleEmoji: { fontSize: 26, marginRight: 14 },
-  moduleTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  moduleDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 2 },
+  moduleEmoji: { fontSize: 26, marginRight: spacing.lg },
+  moduleTitle: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.semibold },
+  moduleDesc: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
   badge: {
-    backgroundColor: '#6C63FF',
+    backgroundColor: colors.accent,
     borderRadius: 10,
     width: 22,
     height: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  chevron: { color: 'rgba(255,255,255,0.3)', fontSize: 22, fontWeight: '300' },
+  badgeText: { color: colors.white, fontSize: font.xs, fontWeight: font.bold },
+  chevron: { color: colors.textTertiary, fontSize: 22, fontWeight: '300' },
 });

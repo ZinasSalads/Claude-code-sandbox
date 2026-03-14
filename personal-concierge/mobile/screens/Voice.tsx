@@ -8,6 +8,7 @@ import {
   TextInput,
 } from 'react-native';
 import { getMorningBriefing, getEveningWindDown, processVoiceCommand } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 const SESSION_TYPES = ['Morning', 'Workout', 'Evening', 'Command'] as const;
 
@@ -76,7 +77,7 @@ export default function Voice() {
         <TextInput
           style={styles.input}
           placeholder="Type a command..."
-          placeholderTextColor="#555577"
+          placeholderTextColor={colors.textTertiary}
           value={transcript}
           onChangeText={setTranscript}
           multiline
@@ -101,37 +102,38 @@ export default function Voice() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 4 },
-  subtitle: { fontSize: 14, color: '#8888aa', marginBottom: 20 },
-  typeRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.xs },
+  subtitle: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xl },
+  typeRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   typeBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
-    backgroundColor: '#141420', borderWidth: 1, borderColor: '#1e1e30',
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full,
+    backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border,
   },
-  typeBtnActive: { backgroundColor: '#6c5ce7', borderColor: '#6c5ce7' },
-  typeBtnText: { fontSize: 13, fontWeight: '500', color: '#8888aa' },
-  typeBtnTextActive: { color: '#fff' },
+  typeBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  typeBtnText: { fontSize: font.sm, fontWeight: font.medium, color: colors.textSecondary },
+  typeBtnTextActive: { color: colors.textPrimary },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 20,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 16,
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#f0f0f5', marginBottom: 12 },
+  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.md },
   actionBtn: {
-    backgroundColor: 'rgba(108,92,231,0.15)', borderRadius: 12, padding: 14,
+    backgroundColor: colors.accentMuted, borderRadius: radii.md, padding: spacing.lg,
     alignItems: 'center',
   },
-  actionBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 14 },
+  actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, minHeight: 60, borderWidth: 1, borderColor: '#1e1e30',
-    marginBottom: 12, textAlignVertical: 'top',
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, minHeight: 60, borderWidth: 1, borderColor: colors.border,
+    marginBottom: spacing.md, textAlignVertical: 'top',
   },
   primaryBtn: {
-    backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center',
+    backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
   },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
   disabled: { opacity: 0.5 },
-  responseText: { fontSize: 14, color: '#a29bfe', lineHeight: 22 },
+  responseText: { fontSize: font.sm, color: colors.textAccent, lineHeight: 22 },
 });

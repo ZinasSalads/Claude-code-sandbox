@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface EnvData {
   location?: string;
@@ -54,7 +55,7 @@ export default function Environment() {
   }, [load]);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator color="#6C63FF" size="large" /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
   }
 
   if (error) {
@@ -80,18 +81,18 @@ export default function Environment() {
     );
   }
 
-  const aqiColor = (data.air_quality_index ?? 0) <= 50 ? '#4CAF50'
-    : (data.air_quality_index ?? 0) <= 100 ? '#FFC107' : '#F44336';
+  const aqiColor = (data.air_quality_index ?? 0) <= 50 ? colors.success
+    : (data.air_quality_index ?? 0) <= 100 ? colors.warning : colors.error;
 
-  const uvColor = (data.uv_index ?? 0) <= 2 ? '#4CAF50'
-    : (data.uv_index ?? 0) <= 5 ? '#FFC107'
-    : (data.uv_index ?? 0) <= 7 ? '#FF9800' : '#F44336';
+  const uvColor = (data.uv_index ?? 0) <= 2 ? colors.success
+    : (data.uv_index ?? 0) <= 5 ? colors.warning
+    : (data.uv_index ?? 0) <= 7 ? colors.scorePoor : colors.error;
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6C63FF" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       {data.location && <Text style={styles.location}>{data.location}</Text>}
 
@@ -150,26 +151,29 @@ export default function Environment() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 16 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: '#0D0D1A' },
-  location: { color: 'rgba(255,255,255,0.5)', fontSize: 14, marginBottom: 12, textAlign: 'center' },
-  card: { backgroundColor: '#1A1A2E', borderRadius: 14, padding: 16, marginBottom: 12 },
-  cardLabel: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.4)', letterSpacing: 1.2, marginBottom: 8 },
-  weatherText: { color: '#fff', fontSize: 18, fontWeight: '600' },
-  tempText: { color: 'rgba(255,255,255,0.5)', fontSize: 14, marginTop: 6 },
-  metricsRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  metricCard: { flex: 1, backgroundColor: '#1A1A2E', borderRadius: 14, padding: 14, alignItems: 'center' },
-  metricLabel: { fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.4)', letterSpacing: 1, marginBottom: 6 },
-  metricValue: { fontSize: 28, fontWeight: '700', color: '#fff' },
-  metricSub: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.4)', letterSpacing: 1.2, marginBottom: 10, marginTop: 8 },
-  recText: { color: 'rgba(255,255,255,0.8)', fontSize: 14, lineHeight: 22, marginBottom: 6 },
-  updatedText: { color: 'rgba(255,255,255,0.3)', fontSize: 12, textAlign: 'center', marginTop: 8 },
-  emptyEmoji: { fontSize: 48, marginBottom: 12 },
-  emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '600', marginBottom: 6 },
-  emptyDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  errorText: { color: 'rgba(255,255,255,0.5)', fontSize: 16 },
-  retryButton: { marginTop: 12, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: '#6C63FF', borderRadius: 20 },
-  retryText: { color: '#fff', fontWeight: '600' },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.lg },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing['5xl'], backgroundColor: colors.bg },
+  location: { color: colors.textSecondary, fontSize: font.md, marginBottom: spacing.md, textAlign: 'center' },
+  card: { ...cardStyle, marginBottom: spacing.md },
+  cardLabel: { ...sectionLabel, marginTop: 0 },
+  weatherText: { color: colors.textPrimary, fontSize: font.xl, fontWeight: font.semibold },
+  tempText: { color: colors.textSecondary, fontSize: font.md, marginTop: spacing.sm },
+  metricsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  metricCard: {
+    flex: 1, backgroundColor: colors.bgCard, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
+    borderWidth: 1, borderColor: colors.border, ...shadow.card,
+  },
+  metricLabel: { ...sectionLabel, marginTop: 0, marginBottom: spacing.sm },
+  metricValue: { fontSize: 28, fontWeight: font.bold, color: colors.textPrimary },
+  metricSub: { fontSize: font.sm, color: colors.textTertiary, marginTop: spacing.xs },
+  sectionTitle: { ...sectionLabel },
+  recText: { color: colors.textPrimary, fontSize: font.md, lineHeight: 22, marginBottom: spacing.sm },
+  updatedText: { color: colors.textTertiary, fontSize: font.sm, textAlign: 'center', marginTop: spacing.sm },
+  emptyEmoji: { fontSize: 48, marginBottom: spacing.md },
+  emptyTitle: { color: colors.textPrimary, fontSize: font.xl, fontWeight: font.semibold, marginBottom: spacing.sm },
+  emptyDesc: { color: colors.textSecondary, fontSize: font.md, textAlign: 'center', lineHeight: 20 },
+  errorText: { color: colors.textSecondary, fontSize: font.lg },
+  retryButton: { marginTop: spacing.md, paddingHorizontal: spacing['2xl'], paddingVertical: spacing.md, backgroundColor: colors.accent, borderRadius: radii.full, ...shadow.glow },
+  retryText: { color: colors.white, fontWeight: font.semibold },
 });

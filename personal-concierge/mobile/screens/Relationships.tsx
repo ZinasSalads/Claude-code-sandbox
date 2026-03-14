@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, getScoreColor } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -81,9 +82,8 @@ export default function Relationships() {
     fetchData();
   }, [logRelId, qualityRating, interactionType, energyAfter, fetchData]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
   const trendArrow = (t: string) => t === 'up' ? '↑' : t === 'down' ? '↓' : '→';
-  const trendColor = (t: string) => t === 'up' ? '#00b894' : t === 'down' ? '#e17055' : '#8888aa';
+  const trendColor = (t: string) => t === 'up' ? colors.success : t === 'down' ? colors.error : colors.textSecondary;
 
   const interactionTypes = ['in-person', 'call', 'text', 'video', 'social-media'];
 
@@ -95,26 +95,26 @@ export default function Relationships() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Relationships</Text>
 
       <View style={styles.card}>
         <View style={styles.ringContainer}>
-          <Text style={[styles.ringScore, { color: scoreColor(overallScore) }]}>{overallScore}</Text>
+          <Text style={[styles.ringScore, { color: getScoreColor(overallScore) }]}>{overallScore}</Text>
           <Text style={styles.ringLabel}>/ 100</Text>
         </View>
         <Text style={styles.ringSubtitle}>Relationship Health</Text>
       </View>
 
       {briefing && (
-        <View style={[styles.card, { borderColor: 'rgba(108,99,255,0.3)' }]}>
+        <View style={[styles.card, { borderColor: colors.accentBorder }]}>
           <Text style={styles.cardTitle}>Weekly Briefing</Text>
           <Text style={styles.briefingText}>{briefing.summary}</Text>
           <Text style={styles.priorityLabel}>Top Priority</Text>
           <Text style={styles.priorityText}>{briefing.top_priority}</Text>
           {(briefing.action_items || []).length > 0 && (
-            <View style={{ marginTop: 8 }}>
+            <View style={{ marginTop: spacing.sm }}>
               {(briefing.action_items || []).map((item, i) => (
                 <Text key={i} style={styles.actionItem}>• {item}</Text>
               ))}
@@ -126,7 +126,7 @@ export default function Relationships() {
       <Text style={styles.sectionTitle}>YOUR RELATIONSHIPS</Text>
 
       {relationships.map((rel) => (
-        <View key={rel.id} style={[styles.card, rel.needs_attention && { borderColor: 'rgba(253,203,110,0.3)' }]}>
+        <View key={rel.id} style={[styles.card, rel.needs_attention && { borderColor: colors.warningMuted }]}>
           <View style={styles.relHeader}>
             <View style={{ flex: 1 }}>
               <Text style={styles.relName}>{rel.name}</Text>
@@ -134,7 +134,7 @@ export default function Relationships() {
             </View>
             <View style={styles.relScoreCol}>
               <View style={styles.relScoreRow}>
-                <Text style={[styles.relScore, { color: scoreColor(rel.health_score) }]}>{rel.health_score}</Text>
+                <Text style={[styles.relScore, { color: getScoreColor(rel.health_score) }]}>{rel.health_score}</Text>
                 <Text style={[styles.trendArrow, { color: trendColor(rel.trend) }]}>{trendArrow(rel.trend)}</Text>
               </View>
               {rel.needs_attention && (
@@ -168,7 +168,7 @@ export default function Relationships() {
               <View style={styles.sliderRow}>
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
                   <TouchableOpacity key={v} style={[styles.sliderDot, qualityRating === v && styles.sliderDotActive]} onPress={() => setQualityRating(v)}>
-                    <Text style={[styles.sliderDotText, qualityRating === v && { color: '#fff' }]}>{v}</Text>
+                    <Text style={[styles.sliderDotText, qualityRating === v && { color: colors.white }]}>{v}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -184,7 +184,7 @@ export default function Relationships() {
               <View style={styles.sliderRow}>
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
                   <TouchableOpacity key={v} style={[styles.sliderDot, energyAfter === v && styles.sliderDotActive]} onPress={() => setEnergyAfter(v)}>
-                    <Text style={[styles.sliderDotText, energyAfter === v && { color: '#fff' }]}>{v}</Text>
+                    <Text style={[styles.sliderDotText, energyAfter === v && { color: colors.white }]}>{v}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -200,54 +200,54 @@ export default function Relationships() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 10 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#8888aa', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
-  ringContainer: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: 4 },
-  ringScore: { fontSize: 56, fontWeight: '700' },
-  ringLabel: { fontSize: 20, color: '#8888aa', marginLeft: 4 },
-  ringSubtitle: { textAlign: 'center', color: '#8888aa', fontSize: 13 },
-  briefingText: { color: '#fff', fontSize: 14, lineHeight: 20, marginBottom: 8 },
-  priorityLabel: { fontSize: 11, color: '#fdcb6e', fontWeight: '700', textTransform: 'uppercase', marginTop: 4 },
-  priorityText: { color: '#fff', fontSize: 14, fontWeight: '600', marginTop: 2 },
-  actionItem: { color: '#8888aa', fontSize: 13, lineHeight: 20 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
+  sectionTitle: { ...sectionLabel },
+  ringContainer: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: spacing.xs },
+  ringScore: { fontSize: 56, fontWeight: font.bold },
+  ringLabel: { fontSize: font.xl, color: colors.textSecondary, marginLeft: spacing.xs },
+  ringSubtitle: { textAlign: 'center', color: colors.textSecondary, fontSize: font.sm },
+  briefingText: { color: colors.textPrimary, fontSize: font.sm, lineHeight: 20, marginBottom: spacing.sm },
+  priorityLabel: { fontSize: font.xs, color: colors.warning, fontWeight: font.bold, textTransform: 'uppercase', marginTop: spacing.xs },
+  priorityText: { color: colors.textPrimary, fontSize: font.sm, fontWeight: font.semibold, marginTop: 2 },
+  actionItem: { color: colors.textSecondary, fontSize: font.sm, lineHeight: 20 },
   relHeader: { flexDirection: 'row', alignItems: 'center' },
-  relName: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  relType: { fontSize: 12, color: '#8888aa', marginTop: 2 },
+  relName: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  relType: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
   relScoreCol: { alignItems: 'flex-end' },
   relScoreRow: { flexDirection: 'row', alignItems: 'center' },
-  relScore: { fontSize: 22, fontWeight: '700' },
-  trendArrow: { fontSize: 18, fontWeight: '700', marginLeft: 4 },
-  attentionBadge: { backgroundColor: 'rgba(253,203,110,0.15)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, marginTop: 4 },
-  attentionText: { color: '#fdcb6e', fontSize: 10, fontWeight: '700' },
-  relActions: { flexDirection: 'row', marginTop: 10, gap: 8 },
-  actionBtn: { backgroundColor: 'rgba(108,99,255,0.15)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  actionBtnText: { color: '#6C63FF', fontSize: 12, fontWeight: '600' },
-  insightBtn: { backgroundColor: 'rgba(0,184,148,0.15)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  insightBtnText: { color: '#00b894', fontSize: 12, fontWeight: '600' },
-  insightBox: { backgroundColor: 'rgba(0,184,148,0.08)', borderRadius: 10, padding: 12, marginTop: 10 },
-  insightText: { color: '#fff', fontSize: 13, lineHeight: 19 },
-  logForm: { marginTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', paddingTop: 12 },
-  formLabel: { fontSize: 12, color: '#8888aa', fontWeight: '600', marginBottom: 6, marginTop: 8 },
+  relScore: { fontSize: 22, fontWeight: font.bold },
+  trendArrow: { fontSize: 18, fontWeight: font.bold, marginLeft: spacing.xs },
+  attentionBadge: { backgroundColor: colors.warningMuted, borderRadius: 6, paddingHorizontal: spacing.sm, paddingVertical: 2, marginTop: spacing.xs },
+  attentionText: { color: colors.warning, fontSize: 10, fontWeight: font.bold },
+  relActions: { flexDirection: 'row', marginTop: spacing.sm, gap: spacing.sm },
+  actionBtn: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  actionBtnText: { color: colors.accent, fontSize: font.xs, fontWeight: font.semibold },
+  insightBtn: { backgroundColor: colors.successMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  insightBtnText: { color: colors.success, fontSize: font.xs, fontWeight: font.semibold },
+  insightBox: { backgroundColor: colors.accentGlow, borderRadius: radii.md, padding: spacing.md, marginTop: spacing.sm },
+  insightText: { color: colors.textPrimary, fontSize: font.sm, lineHeight: 19 },
+  logForm: { marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
+  formLabel: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: 6, marginTop: spacing.sm },
   sliderRow: { flexDirection: 'row', justifyContent: 'space-between' },
   sliderDot: {
-    width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 28, height: 28, borderRadius: 14, backgroundColor: colors.bgInput,
     alignItems: 'center', justifyContent: 'center',
   },
-  sliderDotActive: { backgroundColor: '#6C63FF' },
-  sliderDotText: { color: '#8888aa', fontSize: 11, fontWeight: '600' },
+  sliderDotActive: { backgroundColor: colors.accent },
+  sliderDotText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  typeChip: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: 'rgba(108,99,255,0.2)' },
-  typeChipText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
-  typeChipTextActive: { color: '#6C63FF' },
-  primaryBtn: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 12 },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  typeChip: { backgroundColor: colors.bgInput, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 6 },
+  typeChipActive: { backgroundColor: colors.accentMuted },
+  typeChipText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
+  typeChipTextActive: { color: colors.accent },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.md },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

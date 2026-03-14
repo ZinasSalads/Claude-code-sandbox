@@ -9,6 +9,7 @@ import {
   Linking,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface Article {
   pubmed_id: string;
@@ -26,22 +27,28 @@ interface Article {
 }
 
 function GradeBadge({ grade }: { grade?: string }) {
-  const colors: Record<string, string> = {
-    high: '#4CAF50',
-    moderate: '#FFC107',
-    low: '#F44336',
+  const gradeColors: Record<string, string> = {
+    high: colors.success,
+    moderate: colors.warning,
+    low: colors.error,
   };
-  const bg = colors[grade || ''] || 'rgba(255,255,255,0.2)';
+  const gradeColorsBg: Record<string, string> = {
+    high: colors.successMuted,
+    moderate: colors.warningMuted,
+    low: colors.errorMuted,
+  };
+  const fg = gradeColors[grade || ''] || colors.textTertiary;
+  const bg = gradeColorsBg[grade || ''] || colors.bgElevated;
   return (
-    <View style={[badgeStyles.badge, { backgroundColor: bg + '20' }]}>
-      <Text style={[badgeStyles.text, { color: bg }]}>{(grade || 'unknown').toUpperCase()}</Text>
+    <View style={[badgeStyles.badge, { backgroundColor: bg }]}>
+      <Text style={[badgeStyles.text, { color: fg }]}>{(grade || 'unknown').toUpperCase()}</Text>
     </View>
   );
 }
 
 const badgeStyles = StyleSheet.create({
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  text: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+  badge: { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.sm },
+  text: { fontSize: font.xs, fontWeight: font.bold, letterSpacing: 0.5 },
 });
 
 export default function Research() {
@@ -72,7 +79,7 @@ export default function Research() {
   }, []);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator color="#6C63FF" size="large" /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
   }
 
   return (
@@ -138,82 +145,81 @@ export default function Research() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0D0D1A' },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
   sweepButton: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 16,
-    paddingVertical: 16,
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
+    ...shadow.glow,
   },
-  sweepText: { color: '#fff', fontSize: 17, fontWeight: '700' },
-  emptyContainer: { alignItems: 'center', paddingTop: 40 },
-  empty: { color: 'rgba(255,255,255,0.5)', fontSize: 16 },
-  emptyHint: { color: 'rgba(255,255,255,0.3)', fontSize: 13, marginTop: 8 },
+  sweepText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
+  emptyContainer: { alignItems: 'center', paddingTop: spacing['5xl'] },
+  empty: { color: colors.textSecondary, fontSize: font.lg },
+  emptyHint: { color: colors.textTertiary, fontSize: font.sm, marginTop: spacing.sm },
   card: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 10,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 10,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   studyType: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 11,
-    fontWeight: '600',
+    color: colors.textTertiary,
+    fontSize: font.xs,
+    fontWeight: font.semibold,
     textTransform: 'uppercase',
   },
   relevance: {
-    color: '#6C63FF',
-    fontSize: 12,
-    fontWeight: '600',
+    color: colors.textAccent,
+    fontSize: font.sm,
+    fontWeight: font.semibold,
     marginLeft: 'auto',
   },
   title: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.semibold,
     lineHeight: 22,
-    marginBottom: 6,
+    marginBottom: spacing.sm,
   },
   journal: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
-    marginBottom: 4,
+    color: colors.textTertiary,
+    fontSize: font.sm,
+    marginBottom: spacing.xs,
   },
   authors: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 11,
-    marginBottom: 8,
+    color: colors.textTertiary,
+    fontSize: font.xs,
+    marginBottom: spacing.sm,
   },
   reasons: {
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 13,
+    color: colors.textSecondary,
+    fontSize: font.sm,
     fontStyle: 'italic',
     lineHeight: 19,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   domains: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: spacing.sm,
   },
   domainTag: {
-    backgroundColor: 'rgba(108,99,255,0.15)',
-    paddingHorizontal: 8,
+    backgroundColor: colors.accentMuted,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: radii.sm,
   },
   domainText: {
-    color: '#6C63FF',
-    fontSize: 11,
-    fontWeight: '600',
+    color: colors.textAccent,
+    fontSize: font.xs,
+    fontWeight: font.semibold,
   },
 });

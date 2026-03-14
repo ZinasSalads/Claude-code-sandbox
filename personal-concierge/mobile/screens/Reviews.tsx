@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -89,7 +90,7 @@ export default function Reviews() {
     }
   }, [viewType]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
+  const scoreColor = (s: number) => s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
 
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading reviews...</Text></View>;
@@ -99,7 +100,7 @@ export default function Reviews() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Reviews</Text>
 
@@ -157,7 +158,7 @@ export default function Reviews() {
                     <Text style={styles.metricValue}>{m.value}</Text>
                     {m.change && (
                       <Text style={[styles.metricChange, {
-                        color: m.change.startsWith('+') ? '#00b894' : m.change.startsWith('-') ? '#e17055' : '#8888aa',
+                        color: m.change.startsWith('+') ? colors.success : m.change.startsWith('-') ? colors.error : colors.textSecondary,
                       }]}>{m.change}</Text>
                     )}
                     <Text style={styles.metricLabel}>{m.label}</Text>
@@ -170,7 +171,7 @@ export default function Reviews() {
           {currentReview.coach_insight ? (
             <>
               <Text style={styles.sectionTitle}>COACH INSIGHT</Text>
-              <View style={[styles.card, { borderColor: 'rgba(108,99,255,0.3)' }]}>
+              <View style={[styles.card, { borderColor: colors.borderAccent }]}>
                 <Text style={styles.coachText}>{currentReview.coach_insight}</Text>
               </View>
             </>
@@ -188,7 +189,7 @@ export default function Reviews() {
                   value={draftIntention}
                   onChangeText={setDraftIntention}
                   placeholder="What's your intention?"
-                  placeholderTextColor="#555577"
+                  placeholderTextColor={colors.textTertiary}
                 />
                 <View style={styles.btnRow}>
                   <TouchableOpacity style={styles.secondaryBtn} onPress={() => setEditingIntention(false)}>
@@ -261,55 +262,57 @@ export default function Reviews() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#8888aa', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
-  dimText: { fontSize: 13, color: '#8888aa' },
-  toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  sectionTitle: { ...sectionLabel },
+  dimText: { fontSize: font.sm, color: colors.textSecondary },
+  toggleRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   toggleBtn: {
-    flex: 1, padding: 12, borderRadius: 12, alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    flex: 1, padding: spacing.md, borderRadius: radii.md, alignItems: 'center',
+    backgroundColor: colors.bgInput, borderWidth: 1, borderColor: colors.border,
   },
-  toggleBtnActive: { backgroundColor: 'rgba(108,99,255,0.2)', borderColor: '#6C63FF' },
-  toggleText: { color: '#8888aa', fontWeight: '600', fontSize: 15 },
-  toggleTextActive: { color: '#6C63FF' },
-  periodLabel: { fontSize: 13, color: '#6C63FF', fontWeight: '700', marginBottom: 8, textTransform: 'uppercase' },
-  narrative: { fontSize: 15, color: '#fff', lineHeight: 22 },
-  winBadge: { backgroundColor: 'rgba(0,184,148,0.12)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 6 },
-  winText: { color: '#00b894', fontSize: 14, fontWeight: '500' },
-  patternBadge: { backgroundColor: 'rgba(253,203,110,0.12)', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 6 },
-  patternText: { color: '#fdcb6e', fontSize: 14, fontWeight: '500' },
-  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  toggleBtnActive: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  toggleText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.md },
+  toggleTextActive: { color: colors.accent },
+  periodLabel: { fontSize: font.sm, color: colors.accent, fontWeight: font.bold, marginBottom: spacing.sm, textTransform: 'uppercase' },
+  narrative: { fontSize: font.md, color: colors.textPrimary, lineHeight: 22 },
+  winBadge: { backgroundColor: colors.successMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, marginBottom: 6 },
+  winText: { color: colors.success, fontSize: font.sm, fontWeight: font.medium },
+  patternBadge: { backgroundColor: colors.warningMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, marginBottom: 6 },
+  patternText: { color: colors.warning, fontSize: font.sm, fontWeight: font.medium },
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
   metricCard: {
-    backgroundColor: '#141420', borderRadius: 12, padding: 12, width: '48%',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', alignItems: 'center',
+    backgroundColor: colors.bgCard, borderRadius: radii.md, padding: spacing.md, width: '48%',
+    borderWidth: 1, borderColor: colors.border, alignItems: 'center',
+    ...shadow.card,
   },
-  metricValue: { fontSize: 22, fontWeight: '700', color: '#fff' },
-  metricChange: { fontSize: 12, fontWeight: '600', marginTop: 2 },
-  metricLabel: { fontSize: 11, color: '#8888aa', marginTop: 4, textTransform: 'uppercase', textAlign: 'center' },
-  coachText: { fontSize: 14, color: '#fff', lineHeight: 21, fontStyle: 'italic' },
-  coachBox: { backgroundColor: 'rgba(108,99,255,0.08)', borderRadius: 10, padding: 12 },
-  intentionText: { fontSize: 15, color: '#fff', lineHeight: 22 },
+  metricValue: { fontSize: 22, fontWeight: font.bold, color: colors.textPrimary },
+  metricChange: { fontSize: font.xs, fontWeight: font.semibold, marginTop: 2 },
+  metricLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: spacing.xs, textTransform: 'uppercase', textAlign: 'center' },
+  coachText: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 21, fontStyle: 'italic' },
+  coachBox: { backgroundColor: colors.accentGlow, borderRadius: radii.sm, padding: spacing.md },
+  intentionText: { fontSize: font.md, color: colors.textPrimary, lineHeight: 22 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#fff', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  btnRow: { flexDirection: 'row', gap: 8 },
-  primaryBtn: { flex: 1, backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  secondaryBtn: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 14, alignItems: 'center' },
-  secondaryBtnText: { color: '#8888aa', fontWeight: '600', fontSize: 15 },
+  btnRow: { flexDirection: 'row', gap: spacing.sm },
+  primaryBtn: { flex: 1, backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
+  secondaryBtn: { flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  secondaryBtnText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.md },
   generateBtn: {
-    backgroundColor: '#6C63FF', borderRadius: 14, padding: 16, alignItems: 'center', marginVertical: 12,
+    backgroundColor: colors.accent, borderRadius: radii.lg, padding: spacing.lg, alignItems: 'center', marginVertical: spacing.md,
+    ...shadow.glow,
   },
-  generateBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  generateBtnText: { color: colors.white, fontWeight: font.bold, fontSize: font.lg },
   historyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  historyPeriod: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  historyDate: { fontSize: 12, color: '#8888aa' },
+  historyPeriod: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  historyDate: { fontSize: font.xs, color: colors.textSecondary },
 });

@@ -7,11 +7,9 @@ import {
   getPersonalityQuestions, scorePersonalityAssessment,
   getPersonalityProfile, getPersonalityInsight, getCoachingStyle,
 } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 const { width } = Dimensions.get('window');
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
 
 type AssessmentQuestion = {
   id: number;
@@ -107,7 +105,7 @@ export default function Personality() {
   if (phase === 'loading') {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={ACCENT} />
+        <ActivityIndicator size="large" color={colors.accent} />
       </View>
     );
   }
@@ -188,7 +186,7 @@ export default function Personality() {
   if (phase === 'scoring') {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={ACCENT} />
+        <ActivityIndicator size="large" color={colors.accent} />
         <Text style={styles.scoringText}>Analyzing your responses...</Text>
       </View>
     );
@@ -210,7 +208,7 @@ export default function Personality() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.bigTitle}>{profile?.mbti_type || '—'}</Text>
       <Text style={styles.subtitle}>{profile?.mbti_label || ''}</Text>
@@ -284,50 +282,53 @@ export default function Personality() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, backgroundColor: BG, justifyContent: 'center', alignItems: 'center' },
-  bigTitle: { fontSize: 36, fontWeight: '800', color: '#fff', textAlign: 'center', marginTop: 20 },
-  subtitle: { fontSize: 16, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 24 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  center: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
+  bigTitle: { fontSize: font['4xl'], fontWeight: '800', color: colors.textPrimary, textAlign: 'center', marginTop: spacing.xl },
+  subtitle: { fontSize: font.lg, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing['2xl'] },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
-  desc: { fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 22 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
+  desc: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22 },
   primaryBtn: {
-    backgroundColor: ACCENT, borderRadius: 12, padding: 16, alignItems: 'center', marginTop: 16,
+    backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
+    ...shadow.glow,
   },
   primaryBtnDisabled: { opacity: 0.4 },
-  primaryBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  primaryBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
   secondaryBtn: {
-    borderColor: ACCENT, borderWidth: 1, borderRadius: 12, padding: 14, alignItems: 'center', marginTop: 16,
+    borderColor: colors.accent, borderWidth: 1, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
   },
-  secondaryBtnText: { color: ACCENT, fontSize: 15, fontWeight: '600' },
+  secondaryBtnText: { color: colors.accent, fontSize: font.md, fontWeight: font.semibold },
   progressBar: {
-    height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginBottom: 8,
+    height: 4, backgroundColor: colors.border, borderRadius: 2, marginBottom: spacing.sm,
   },
-  progressFill: { height: 4, backgroundColor: ACCENT, borderRadius: 2 },
-  progressText: { color: 'rgba(255,255,255,0.4)', fontSize: 12, textAlign: 'center', marginBottom: 24 },
-  questionText: { fontSize: 20, fontWeight: '700', color: '#fff', marginBottom: 24, lineHeight: 28 },
+  progressFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  progressText: { color: colors.textSecondary, fontSize: font.xs, textAlign: 'center', marginBottom: spacing['2xl'] },
+  questionText: { fontSize: font.xl, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing['2xl'], lineHeight: 28 },
   optionBtn: {
-    backgroundColor: CARD, borderRadius: 12, padding: 16, marginBottom: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: colors.bgCard, borderRadius: radii.md, padding: spacing.lg, marginBottom: spacing.md,
+    borderWidth: 1, borderColor: colors.border,
+    ...shadow.card,
   },
-  optionBtnSelected: { borderColor: ACCENT, backgroundColor: 'rgba(108,99,255,0.15)' },
-  optionText: { fontSize: 15, color: 'rgba(255,255,255,0.8)', lineHeight: 22 },
-  optionTextSelected: { color: '#fff' },
-  scoringText: { color: 'rgba(255,255,255,0.5)', marginTop: 16, fontSize: 16 },
-  dimRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  dimLabel: { fontSize: 11, color: 'rgba(255,255,255,0.5)', width: 70, textAlign: 'center' },
+  optionBtnSelected: { borderColor: colors.accent, backgroundColor: colors.accentMuted },
+  optionText: { fontSize: font.md, color: colors.textSecondary, lineHeight: 22 },
+  optionTextSelected: { color: colors.textPrimary },
+  scoringText: { color: colors.textSecondary, marginTop: spacing.lg, fontSize: font.lg },
+  dimRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
+  dimLabel: { fontSize: font.xs, color: colors.textSecondary, width: 70, textAlign: 'center' },
   dimTrack: {
-    flex: 1, height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, marginHorizontal: 8,
+    flex: 1, height: 6, backgroundColor: colors.border, borderRadius: 3, marginHorizontal: spacing.sm,
   },
   dimThumb: {
     position: 'absolute', top: -5, width: 16, height: 16, borderRadius: 8,
-    backgroundColor: ACCENT, marginLeft: -8,
+    backgroundColor: colors.accent, marginLeft: -8,
   },
   valueRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
-  valueLabel: { fontSize: 14, color: 'rgba(255,255,255,0.5)' },
-  valueVal: { fontSize: 14, color: '#fff', fontWeight: '600', textTransform: 'capitalize' },
+  valueLabel: { fontSize: font.sm, color: colors.textSecondary },
+  valueVal: { fontSize: font.sm, color: colors.textPrimary, fontWeight: font.semibold, textTransform: 'capitalize' },
 });

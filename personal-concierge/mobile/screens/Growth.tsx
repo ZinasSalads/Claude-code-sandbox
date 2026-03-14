@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { getTodayHabits, logHabitCompletion, getGrowthScore, suggestNextHabit, addGrowthHabit } from '../lib/api';
 import type { TodayHabits, CompoundScore, GrowthHabit } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, getScoreColor } from '../theme';
 
 export default function Growth() {
   const [todayData, setTodayData] = useState<TodayHabits | null>(null);
@@ -54,8 +55,6 @@ export default function Growth() {
     fetchData();
   }, [newName, newCategory, fetchData]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
-
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading habits...</Text></View>;
   }
@@ -64,14 +63,14 @@ export default function Growth() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>1% Growth Engine</Text>
 
       {score && (
         <View style={styles.card}>
           <View style={styles.scoreRow}>
-            <Text style={[styles.scoreNum, { color: scoreColor(score.score) }]}>{score.score}</Text>
+            <Text style={[styles.scoreNum, { color: getScoreColor(score.score) }]}>{score.score}</Text>
             <Text style={styles.scoreLabel}>Compound Score</Text>
           </View>
           {Object.entries(score.domains).length > 0 && (
@@ -128,7 +127,7 @@ export default function Growth() {
       ))}
 
       {todayData?.streak_at_risk && todayData.streak_at_risk.length > 0 && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#fdcb6e' }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.warning }]}>
           <Text style={styles.riskTitle}>Streak at Risk</Text>
           {todayData.streak_at_risk.map((h) => (
             <Text key={h.id} style={styles.riskText}>
@@ -148,7 +147,7 @@ export default function Growth() {
       </View>
 
       {suggestion && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#6c5ce7' }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
           <Text style={styles.cardTitle}>Suggested: {(suggestion as Record<string, string>).name}</Text>
           <Text style={styles.suggestText}>{(suggestion as Record<string, string>).description}</Text>
           <Text style={styles.suggestWhy}>{(suggestion as Record<string, string>).why_now}</Text>
@@ -157,8 +156,8 @@ export default function Growth() {
 
       {showAdd && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Habit name" placeholderTextColor="#555577" value={newName} onChangeText={setNewName} />
-          <TextInput style={styles.input} placeholder="Category (health/skill/mindset)" placeholderTextColor="#555577" value={newCategory} onChangeText={setNewCategory} />
+          <TextInput style={styles.input} placeholder="Habit name" placeholderTextColor={colors.textTertiary} value={newName} onChangeText={setNewName} />
+          <TextInput style={styles.input} placeholder="Category (health/skill/mindset)" placeholderTextColor={colors.textTertiary} value={newCategory} onChangeText={setNewCategory} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAdd}>
             <Text style={styles.primaryBtnText}>Add Habit</Text>
           </TouchableOpacity>
@@ -169,52 +168,52 @@ export default function Growth() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#f0f0f5', marginBottom: 8 },
-  scoreRow: { alignItems: 'center', marginBottom: 12 },
-  scoreNum: { fontSize: 48, fontWeight: '700' },
-  scoreLabel: { fontSize: 13, color: '#8888aa', marginTop: 4 },
+  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.sm },
+  scoreRow: { alignItems: 'center', marginBottom: spacing.md },
+  scoreNum: { fontSize: 48, fontWeight: font.bold },
+  scoreLabel: { fontSize: font.sm, color: colors.textSecondary, marginTop: spacing.xs },
   domainRow: { flexDirection: 'row', justifyContent: 'space-around' },
   domainItem: { alignItems: 'center' },
-  domainVal: { fontSize: 16, fontWeight: '600', color: '#f0f0f5' },
-  domainLabel: { fontSize: 10, color: '#555577', textTransform: 'uppercase', marginTop: 2 },
-  progressRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  progressText: { fontSize: 15, fontWeight: '600', color: '#6c5ce7' },
-  progressBar: { height: 6, backgroundColor: '#1e1e30', borderRadius: 3 },
-  progressFill: { height: 6, backgroundColor: '#6c5ce7', borderRadius: 3 },
+  domainVal: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  domainLabel: { ...sectionLabel, marginBottom: 0, marginTop: 2 },
+  progressRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
+  progressText: { fontSize: font.md, fontWeight: font.semibold, color: colors.accent },
+  progressBar: { height: 6, backgroundColor: colors.border, borderRadius: 3 },
+  progressFill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
   habitRow: { flexDirection: 'row', alignItems: 'center' },
   checkbox: {
-    width: 28, height: 28, borderRadius: 8, borderWidth: 2, borderColor: '#1e1e30',
-    alignItems: 'center', justifyContent: 'center', marginRight: 12,
+    width: 28, height: 28, borderRadius: radii.sm, borderWidth: 2, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center', marginRight: spacing.md,
   },
-  checkboxDone: { backgroundColor: '#00b894', borderColor: '#00b894' },
-  checkmark: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  checkboxDone: { backgroundColor: colors.success, borderColor: colors.success },
+  checkmark: { color: colors.white, fontWeight: font.bold, fontSize: font.lg },
   habitInfo: { flex: 1 },
-  habitName: { fontSize: 15, fontWeight: '600', color: '#f0f0f5' },
-  habitDone: { textDecorationLine: 'line-through', color: '#8888aa' },
-  habitMeta: { fontSize: 12, color: '#8888aa', marginTop: 2 },
-  streakNum: { fontSize: 20, fontWeight: '700', color: '#6c5ce7' },
-  riskTitle: { fontSize: 13, fontWeight: '600', color: '#fdcb6e', marginBottom: 4 },
-  riskText: { fontSize: 13, color: '#8888aa' },
-  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  habitName: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  habitDone: { textDecorationLine: 'line-through', color: colors.textSecondary },
+  habitMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
+  streakNum: { fontSize: font.xl, fontWeight: font.bold, color: colors.accent },
+  riskTitle: { fontSize: font.sm, fontWeight: font.semibold, color: colors.warning, marginBottom: spacing.xs },
+  riskText: { fontSize: font.sm, color: colors.textSecondary },
+  actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   actionBtn: {
-    flex: 1, backgroundColor: 'rgba(108,92,231,0.15)', borderRadius: 12,
-    padding: 12, alignItems: 'center',
+    flex: 1, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    padding: spacing.md, alignItems: 'center',
   },
-  actionBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 13 },
-  suggestText: { fontSize: 14, color: '#8888aa', marginBottom: 4 },
-  suggestWhy: { fontSize: 13, color: '#a29bfe', fontStyle: 'italic' },
+  actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
+  suggestText: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xs },
+  suggestWhy: { fontSize: font.sm, color: colors.textAccent, fontStyle: 'italic' },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

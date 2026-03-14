@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { getWardrobeItems, getOutfitSuggestion, addWardrobeItem, getWardrobeAudit } from '../lib/api';
 import type { WardrobeItem, OutfitSuggestion } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 const CATEGORIES = ['All', 'tops', 'bottoms', 'outerwear', 'shoes', 'accessories', 'formalwear'];
 
@@ -73,7 +74,7 @@ export default function WardrobeScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Wardrobe</Text>
 
@@ -87,7 +88,7 @@ export default function WardrobeScreen() {
       </View>
 
       {outfit && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#6c5ce7' }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
           <Text style={styles.cardTitle}>Suggested Outfit</Text>
           {outfit.outfit_items?.map((item, i) => (
             <Text key={i} style={styles.outfitItem}>{item.category}: {item.name}</Text>
@@ -148,9 +149,9 @@ export default function WardrobeScreen() {
 
       {showAdd && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Item name" placeholderTextColor="#555577" value={newName} onChangeText={setNewName} />
-          <TextInput style={styles.input} placeholder="Category (tops/bottoms/shoes/etc)" placeholderTextColor="#555577" value={newCategory} onChangeText={setNewCategory} />
-          <TextInput style={styles.input} placeholder="Color" placeholderTextColor="#555577" value={newColor} onChangeText={setNewColor} />
+          <TextInput style={styles.input} placeholder="Item name" placeholderTextColor={colors.textTertiary} value={newName} onChangeText={setNewName} />
+          <TextInput style={styles.input} placeholder="Category (tops/bottoms/shoes/etc)" placeholderTextColor={colors.textTertiary} value={newCategory} onChangeText={setNewCategory} />
+          <TextInput style={styles.input} placeholder="Color" placeholderTextColor={colors.textTertiary} value={newColor} onChangeText={setNewColor} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAdd}>
             <Text style={styles.primaryBtnText}>Add Item</Text>
           </TouchableOpacity>
@@ -161,43 +162,43 @@ export default function WardrobeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#f0f0f5', marginBottom: 8 },
-  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.sm },
+  actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   actionBtn: {
-    flex: 1, backgroundColor: 'rgba(108,92,231,0.15)', borderRadius: 12,
-    padding: 12, alignItems: 'center',
+    flex: 1, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    padding: spacing.md, alignItems: 'center',
   },
-  actionBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 13 },
-  outfitItem: { fontSize: 14, color: '#f0f0f5', marginBottom: 4 },
-  reasoning: { fontSize: 13, color: '#a29bfe', marginTop: 8, fontStyle: 'italic', lineHeight: 20 },
-  auditText: { fontSize: 14, color: '#8888aa', marginBottom: 4 },
-  catRow: { flexDirection: 'row', marginBottom: 16, maxHeight: 40 },
+  actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
+  outfitItem: { fontSize: font.sm, color: colors.textPrimary, marginBottom: spacing.xs },
+  reasoning: { fontSize: font.sm, color: colors.textAccent, marginTop: spacing.sm, fontStyle: 'italic', lineHeight: 20 },
+  auditText: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xs },
+  catRow: { flexDirection: 'row', marginBottom: spacing.lg, maxHeight: 40 },
   catBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 8,
-    backgroundColor: '#141420', borderWidth: 1, borderColor: '#1e1e30',
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full, marginRight: spacing.sm,
+    backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border,
   },
-  catBtnActive: { backgroundColor: '#6c5ce7', borderColor: '#6c5ce7' },
-  catText: { fontSize: 13, color: '#8888aa' },
-  catTextActive: { color: '#fff' },
+  catBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  catText: { fontSize: font.sm, color: colors.textSecondary },
+  catTextActive: { color: colors.white },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  itemName: { fontSize: 15, fontWeight: '600', color: '#f0f0f5' },
-  itemMeta: { fontSize: 12, color: '#8888aa', marginTop: 2 },
-  condition: { fontSize: 12, color: '#555577', textTransform: 'capitalize' },
-  emptyText: { color: '#555577', textAlign: 'center', padding: 20 },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6c5ce7', fontWeight: '600', fontSize: 15 },
+  itemName: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  itemMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
+  condition: { fontSize: font.xs, color: colors.textTertiary, textTransform: 'capitalize' },
+  emptyText: { color: colors.textTertiary, textAlign: 'center', padding: spacing.xl },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

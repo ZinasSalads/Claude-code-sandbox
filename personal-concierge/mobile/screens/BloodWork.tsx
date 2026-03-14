@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 import {
   getBiomarkers,
   getFlaggedBiomarkers,
@@ -22,17 +23,17 @@ import type { Biomarker, BloodWorkUpload, DeltaReport } from '../lib/api';
 type Tab = 'dashboard' | 'upload' | 'trends' | 'delta';
 
 function StatusDot({ status }: { status?: string }) {
-  const colors: Record<string, string> = {
-    optimal: '#4CAF50',
-    suboptimal: '#FFC107',
-    high: '#F44336',
-    low: '#2196F3',
+  const statusColors: Record<string, string> = {
+    optimal: colors.success,
+    suboptimal: colors.warning,
+    high: colors.error,
+    low: colors.info,
   };
   return (
     <View
       style={[
         dotStyles.dot,
-        { backgroundColor: colors[status || ''] || 'rgba(255,255,255,0.3)' },
+        { backgroundColor: statusColors[status || ''] || colors.textTertiary },
       ]}
     />
   );
@@ -65,36 +66,35 @@ function BiomarkerCard({ bm }: { bm: Biomarker }) {
 
 const cardStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    ...cardStyle,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   name: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.semibold,
     flex: 1,
   },
   value: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.textPrimary,
+    fontSize: font.lg,
+    fontWeight: font.bold,
   },
   unit: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
-    fontWeight: '400',
+    color: colors.textTertiary,
+    fontSize: font.sm,
+    fontWeight: font.normal,
   },
   range: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
-    marginTop: 6,
-    marginLeft: 16,
+    color: colors.textSecondary,
+    fontSize: font.sm,
+    marginTop: spacing.sm,
+    marginLeft: spacing.lg,
   },
 });
 
@@ -120,7 +120,7 @@ function DashboardTab() {
   if (loading) {
     return (
       <View style={tabStyles.center}>
-        <ActivityIndicator color="#6C63FF" size="large" />
+        <ActivityIndicator color={colors.accent} size="large" />
       </View>
     );
   }
@@ -140,7 +140,7 @@ function DashboardTab() {
     <ScrollView
       style={tabStyles.scroll}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#6C63FF" />
+        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.accent} />
       }
     >
       {flagged.length > 0 && (
@@ -250,8 +250,8 @@ function UploadTab() {
                   {
                     backgroundColor:
                       u.processing_status === 'completed'
-                        ? '#4CAF5020'
-                        : '#FFC10720',
+                        ? colors.successMuted
+                        : colors.warningMuted,
                   },
                 ]}
               >
@@ -261,8 +261,8 @@ function UploadTab() {
                     {
                       color:
                         u.processing_status === 'completed'
-                          ? '#4CAF50'
-                          : '#FFC107',
+                          ? colors.success
+                          : colors.warning,
                     },
                   ]}
                 >
@@ -280,63 +280,61 @@ function UploadTab() {
 
 const uploadStyles = StyleSheet.create({
   button: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 16,
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
+    ...shadow.glow,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.white,
+    fontSize: font.lg,
+    fontWeight: font.bold,
   },
   resultCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 20,
+    ...cardStyle,
+    marginBottom: spacing.xl,
     borderLeftWidth: 3,
-    borderLeftColor: '#4CAF50',
+    borderLeftColor: colors.success,
   },
   resultTitle: {
-    color: '#4CAF50',
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 8,
+    color: colors.success,
+    fontSize: font.md,
+    fontWeight: font.bold,
+    marginBottom: spacing.sm,
   },
   resultText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-    marginBottom: 4,
+    color: colors.textSecondary,
+    fontSize: font.md,
+    marginBottom: spacing.xs,
   },
   uploadRow: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 8,
+    ...cardStyle,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
   },
   uploadName: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.semibold,
   },
   uploadMeta: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
-    marginTop: 4,
+    color: colors.textTertiary,
+    fontSize: font.sm,
+    marginTop: spacing.xs,
   },
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 8,
+    borderRadius: radii.sm,
     marginLeft: 10,
   },
   statusText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: font.xs,
+    fontWeight: font.bold,
     textTransform: 'uppercase',
   },
 });
@@ -356,7 +354,7 @@ function TrendsTab() {
   if (loading) {
     return (
       <View style={tabStyles.center}>
-        <ActivityIndicator color="#6C63FF" size="large" />
+        <ActivityIndicator color={colors.accent} size="large" />
       </View>
     );
   }
@@ -415,7 +413,7 @@ function DeltaTab() {
   if (loading) {
     return (
       <View style={tabStyles.center}>
-        <ActivityIndicator color="#6C63FF" size="large" />
+        <ActivityIndicator color={colors.accent} size="large" />
       </View>
     );
   }
@@ -446,10 +444,10 @@ function DeltaTab() {
       {(report.deltas || []).map((d, i) => {
         const changeColor =
           d.direction === 'improved'
-            ? '#4CAF50'
+            ? colors.success
             : d.direction === 'worsened'
-            ? '#F44336'
-            : 'rgba(255,255,255,0.5)';
+            ? colors.error
+            : colors.textSecondary;
         return (
           <View key={i} style={deltaStyles.row}>
             <Text style={deltaStyles.name} numberOfLines={1}>
@@ -476,55 +474,52 @@ function DeltaTab() {
 
 const deltaStyles = StyleSheet.create({
   header: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
+    ...cardStyle,
+    marginBottom: spacing.lg,
     alignItems: 'center',
   },
   headerText: {
-    color: '#6C63FF',
-    fontSize: 16,
-    fontWeight: '700',
+    color: colors.textAccent,
+    fontSize: font.lg,
+    fontWeight: font.bold,
   },
   headerSub: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 12,
-    marginTop: 4,
+    color: colors.textTertiary,
+    fontSize: font.sm,
+    marginTop: spacing.xs,
   },
   row: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 6,
+    ...cardStyle,
+    padding: spacing.lg,
+    marginBottom: spacing.sm,
   },
   name: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 6,
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.semibold,
+    marginBottom: spacing.sm,
   },
   values: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   oldVal: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: font.md,
   },
   arrow: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 14,
+    color: colors.textTertiary,
+    fontSize: font.md,
   },
   newVal: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.semibold,
   },
   change: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: font.sm,
+    fontWeight: font.semibold,
     marginLeft: 'auto',
   },
 });
@@ -564,67 +559,67 @@ export default function BloodWork() {
 const tabStyles = StyleSheet.create({
   scroll: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: spacing.xl,
   },
   center: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: spacing['5xl'],
   },
   empty: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 16,
+    color: colors.textSecondary,
+    fontSize: font.lg,
     textAlign: 'center',
   },
   emptyHint: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 13,
+    color: colors.textTertiary,
+    fontSize: font.sm,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    marginTop: 16,
+    ...sectionLabel,
   },
 });
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D1A',
+    backgroundColor: colors.bg,
   },
   tabBar: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
-    gap: 8,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    gap: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   tab: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#1A1A2E',
+    borderRadius: radii.sm,
+    backgroundColor: 'transparent',
     alignItems: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
   activeTab: {
-    backgroundColor: '#6C63FF',
+    borderBottomColor: colors.accent,
+    backgroundColor: colors.accentGlow,
   },
   tabText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontSize: 13,
-    fontWeight: '600',
+    color: colors.textTertiary,
+    fontSize: font.sm,
+    fontWeight: font.semibold,
   },
   activeTabText: {
-    color: '#fff',
+    color: colors.textAccent,
   },
   content: {
     flex: 1,
-    paddingTop: 8,
+    paddingTop: spacing.sm,
   },
 });

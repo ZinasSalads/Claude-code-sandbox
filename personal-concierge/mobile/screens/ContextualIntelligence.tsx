@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -63,7 +64,7 @@ export default function ContextualIntelligence() {
     fetchData();
   }, [manualInput, fetchData]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
+  const scoreColor = (s: number) => s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
 
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading intelligence...</Text></View>;
@@ -76,7 +77,7 @@ export default function ContextualIntelligence() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Contextual Intelligence</Text>
 
@@ -84,7 +85,7 @@ export default function ContextualIntelligence() {
         <TextInput
           style={styles.signalInput}
           placeholder="Share something you noticed..."
-          placeholderTextColor="#555577"
+          placeholderTextColor={colors.textTertiary}
           value={manualInput}
           onChangeText={setManualInput}
           multiline
@@ -124,7 +125,7 @@ export default function ContextualIntelligence() {
                       <View style={styles.breakdownHeader}>
                         <Text style={styles.breakdownModule}>{m.module}</Text>
                         <Text style={[styles.breakdownImpact, {
-                          color: m.impact === 'high' ? '#e17055' : m.impact === 'medium' ? '#fdcb6e' : '#00b894',
+                          color: m.impact === 'high' ? colors.error : m.impact === 'medium' ? colors.warning : colors.success,
                         }]}>{m.impact}</Text>
                       </View>
                       <Text style={styles.breakdownRelevance}>{m.relevance}</Text>
@@ -152,7 +153,7 @@ export default function ContextualIntelligence() {
         >
           <View style={styles.signalRow}>
             <View style={[styles.sourceDot, {
-              backgroundColor: signal.source === 'manual' ? '#6C63FF' : signal.source === 'health' ? '#00b894' : '#fdcb6e',
+              backgroundColor: signal.source === 'manual' ? colors.accent : signal.source === 'health' ? colors.success : colors.warning,
             }]} />
             <View style={{ flex: 1 }}>
               <Text style={styles.signalText}>{signal.text}</Text>
@@ -167,7 +168,7 @@ export default function ContextualIntelligence() {
                   <View style={styles.breakdownHeader}>
                     <Text style={styles.breakdownModule}>{m.module}</Text>
                     <Text style={[styles.breakdownImpact, {
-                      color: m.impact === 'high' ? '#e17055' : m.impact === 'medium' ? '#fdcb6e' : '#00b894',
+                      color: m.impact === 'high' ? colors.error : m.impact === 'medium' ? colors.warning : colors.success,
                     }]}>{m.impact}</Text>
                   </View>
                   <Text style={styles.breakdownRelevance}>{m.relevance}</Text>
@@ -187,42 +188,42 @@ export default function ContextualIntelligence() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  anomalyCard: { borderColor: 'rgba(225,112,85,0.3)' },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#8888aa', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
-  dimText: { fontSize: 13, color: '#8888aa' },
+  anomalyCard: { borderColor: colors.errorMuted },
+  sectionTitle: { ...sectionLabel },
+  dimText: { fontSize: font.sm, color: colors.textSecondary },
   inputCard: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 16,
+    ...cardStyle,
+    marginBottom: spacing.lg,
   },
   signalInput: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#fff', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
-    minHeight: 60, textAlignVertical: 'top', marginBottom: 10,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border,
+    minHeight: 60, textAlignVertical: 'top', marginBottom: spacing.sm,
   },
-  submitBtn: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 12, alignItems: 'center' },
+  submitBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.md, alignItems: 'center' },
   submitBtnDisabled: { opacity: 0.4 },
-  submitBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  anomalyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  anomalyBadge: { backgroundColor: 'rgba(225,112,85,0.15)', borderRadius: 6, paddingHorizontal: 10, paddingVertical: 3 },
-  anomalyBadgeText: { color: '#e17055', fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
+  submitBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.sm },
+  anomalyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
+  anomalyBadge: { backgroundColor: colors.errorMuted, borderRadius: 6, paddingHorizontal: 10, paddingVertical: 3 },
+  anomalyBadgeText: { color: colors.error, fontSize: font.xs, fontWeight: font.bold, textTransform: 'uppercase' },
   signalRow: { flexDirection: 'row', alignItems: 'flex-start' },
   sourceDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10, marginTop: 4 },
-  signalText: { fontSize: 14, color: '#fff', lineHeight: 20, marginBottom: 4 },
-  signalMeta: { fontSize: 11, color: '#8888aa' },
-  expandArrow: { color: '#8888aa', fontSize: 14, marginLeft: 8 },
-  expandLink: { color: '#6C63FF', fontSize: 13, fontWeight: '600', marginTop: 8 },
-  breakdownContainer: { marginTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)', paddingTop: 10 },
-  breakdownItem: { marginBottom: 8 },
+  signalText: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 20, marginBottom: spacing.xs },
+  signalMeta: { fontSize: font.xs, color: colors.textSecondary },
+  expandArrow: { color: colors.textSecondary, fontSize: 14, marginLeft: spacing.sm },
+  expandLink: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold, marginTop: spacing.sm },
+  breakdownContainer: { marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
+  breakdownItem: { marginBottom: spacing.sm },
   breakdownHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
-  breakdownModule: { fontSize: 13, fontWeight: '600', color: '#fff' },
-  breakdownImpact: { fontSize: 11, fontWeight: '700', textTransform: 'uppercase' },
-  breakdownRelevance: { fontSize: 12, color: '#8888aa', lineHeight: 18 },
+  breakdownModule: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary },
+  breakdownImpact: { fontSize: font.xs, fontWeight: font.bold, textTransform: 'uppercase' },
+  breakdownRelevance: { fontSize: font.xs, color: colors.textSecondary, lineHeight: 18 },
 });

@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-
-const ACCENT = '#6C63FF';
+import { colors, font, radii, spacing } from '../theme';
 
 interface EmptyStateProps {
   icon: string;
@@ -29,37 +28,37 @@ export default function EmptyState({ icon, title, description, ctaLabel, ctaActi
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    padding: 40,
+    padding: spacing['5xl'],
     paddingTop: 60,
   },
   icon: {
-    fontSize: 48,
-    marginBottom: 16,
+    fontSize: font['4xl'],
+    marginBottom: spacing.lg,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#fff',
+    fontSize: font.lg,
+    fontWeight: font.bold,
+    color: colors.textPrimary,
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   description: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: font.md,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     maxWidth: 280,
   },
   cta: {
-    backgroundColor: ACCENT,
-    borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    marginTop: 20,
+    backgroundColor: colors.accent,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing['2xl'],
+    paddingVertical: spacing.md,
+    marginTop: spacing.xl,
   },
   ctaText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.white,
+    fontSize: font.md,
+    fontWeight: font.semibold,
   },
 });

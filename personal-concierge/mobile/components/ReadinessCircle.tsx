@@ -1,21 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
+import { colors, font, getScoreColor } from '../theme';
 
 interface ReadinessCircleProps {
   score: number;
   size?: number;
 }
 
-function getScoreColor(score: number): string {
-  if (score >= 85) return '#4CAF50';
-  if (score >= 70) return '#8BC34A';
-  if (score >= 55) return '#FFC107';
-  if (score >= 40) return '#FF9800';
-  return '#F44336';
-}
-
-function getScoreLabel(score: number): string {
+function getRecoveryLabel(score: number): string {
   if (score >= 85) return 'Excellent Recovery';
   if (score >= 70) return 'Good Recovery';
   if (score >= 55) return 'Moderate Recovery';
@@ -25,7 +18,7 @@ function getScoreLabel(score: number): string {
 
 export default function ReadinessCircle({ score, size = 180 }: ReadinessCircleProps) {
   const color = getScoreColor(score);
-  const label = getScoreLabel(score);
+  const label = getRecoveryLabel(score);
   const strokeWidth = 10;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -46,7 +39,7 @@ export default function ReadinessCircle({ score, size = 180 }: ReadinessCirclePr
           cx={center}
           cy={center}
           r={radius}
-          stroke="rgba(255,255,255,0.08)"
+          stroke={colors.border}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -96,17 +89,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   score: {
-    fontSize: 48,
-    fontWeight: '700',
+    fontSize: font['4xl'],
+    fontWeight: font.bold,
   },
   outOf: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: font.sm,
+    color: colors.textSecondary,
     marginTop: -4,
   },
   label: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: font.sm,
+    fontWeight: font.semibold,
     marginTop: 4,
   },
   glow: {

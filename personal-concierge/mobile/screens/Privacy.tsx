@@ -4,12 +4,7 @@ import {
   ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { getDataSummary, exportData, deleteCategory, amnesia } from '../lib/api';
-
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
-const RED = '#FF4757';
-const GREEN = '#00C48C';
+import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 export default function Privacy() {
   const [summary, setSummary] = useState<any>(null);
@@ -78,7 +73,7 @@ export default function Privacy() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={ACCENT} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
   }
 
   const categories = summary?.categories || {};
@@ -87,7 +82,7 @@ export default function Privacy() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Privacy & Data</Text>
       <Text style={styles.subtitle}>You own all your data</Text>
@@ -158,39 +153,41 @@ export default function Privacy() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, backgroundColor: BG, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 10 },
-  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  center: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: font['3xl'], fontWeight: '800', color: colors.textPrimary, marginTop: spacing.sm },
+  subtitle: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xl },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  dangerCard: { borderColor: 'rgba(255,71,87,0.2)' },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
-  desc: { fontSize: 14, color: 'rgba(255,255,255,0.6)', lineHeight: 22, marginBottom: 12 },
+  dangerCard: { borderColor: colors.errorMuted },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
+  desc: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
   exportBtn: {
-    backgroundColor: ACCENT, borderRadius: 10, padding: 14, alignItems: 'center',
+    backgroundColor: colors.accent, borderRadius: radii.sm, padding: spacing.lg, alignItems: 'center',
+    ...shadow.glow,
   },
-  exportBtnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
-  exportResult: { color: GREEN, textAlign: 'center', marginTop: 10, fontSize: 13 },
+  exportBtnText: { color: colors.white, fontSize: font.md, fontWeight: font.semibold },
+  exportResult: { color: colors.success, textAlign: 'center', marginTop: spacing.sm, fontSize: font.sm },
   catRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    paddingVertical: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.borderSubtle,
   },
   catInfo: { flex: 1 },
-  catName: { fontSize: 15, fontWeight: '600', color: '#fff', textTransform: 'capitalize' },
-  catCount: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  catName: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, textTransform: 'capitalize' },
+  catCount: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
   deleteBtn: {
-    backgroundColor: 'rgba(255,71,87,0.1)', borderRadius: 8, paddingHorizontal: 12,
-    paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(255,71,87,0.3)',
+    backgroundColor: colors.errorMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md,
+    paddingVertical: 6, borderWidth: 1, borderColor: 'rgba(248, 113, 113, 0.3)',
   },
-  deleteBtnText: { color: RED, fontSize: 12, fontWeight: '600' },
-  amnesiaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  deleteBtnText: { color: colors.error, fontSize: font.xs, fontWeight: font.semibold },
+  amnesiaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   amnesiaBtn: {
-    backgroundColor: 'rgba(255,71,87,0.08)', borderRadius: 8, paddingHorizontal: 14,
-    paddingVertical: 8, borderWidth: 1, borderColor: 'rgba(255,71,87,0.2)',
+    backgroundColor: colors.errorMuted, borderRadius: radii.sm, paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm, borderWidth: 1, borderColor: 'rgba(248, 113, 113, 0.2)',
   },
-  amnesiaBtnText: { color: RED, fontSize: 13, fontWeight: '500', textTransform: 'capitalize' },
+  amnesiaBtnText: { color: colors.error, fontSize: font.sm, fontWeight: font.medium, textTransform: 'capitalize' },
 });

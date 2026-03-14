@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import type { MealPlan as MealPlanType, Meal } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface MealPlanProps {
   route: {
@@ -49,30 +50,30 @@ function MacroBar({
 
 const barStyles = StyleSheet.create({
   container: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   labelRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   label: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
-    fontWeight: '500',
+    fontSize: font.sm,
+    color: colors.textSecondary,
+    fontWeight: font.medium,
   },
   value: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: font.sm,
+    fontWeight: font.bold,
   },
   track: {
     height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: spacing.xs,
+    backgroundColor: colors.border,
   },
   fill: {
     height: 8,
-    borderRadius: 4,
+    borderRadius: spacing.xs,
   },
 });
 
@@ -161,108 +162,106 @@ function MealCard({ meal }: { meal: Meal }) {
 
 const mealStyles = StyleSheet.create({
   card: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 10,
+    ...cardStyle,
+    marginBottom: spacing.md - 2,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: spacing.xs + 2,
   },
   typeTag: {
-    backgroundColor: 'rgba(108,99,255,0.15)',
-    paddingHorizontal: 10,
+    backgroundColor: colors.accentMuted,
+    paddingHorizontal: spacing.md - 2,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: radii.sm,
   },
   typeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#6C63FF',
+    fontSize: font.xs,
+    fontWeight: font.bold,
+    color: colors.textAccent,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   chevron: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 16,
+    color: colors.textTertiary,
+    fontSize: font.md + 1,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-    marginBottom: 4,
+    fontSize: font.md + 1,
+    fontWeight: font.semibold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
   },
   macroSummary: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: font.sm,
+    color: colors.textSecondary,
   },
   expanded: {
-    marginTop: 14,
+    marginTop: spacing.lg - 2,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
-    paddingTop: 14,
+    borderTopColor: colors.border,
+    paddingTop: spacing.lg - 2,
   },
   description: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
+    fontSize: font.sm + 1,
+    color: colors.textSecondary,
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   ingredientsSection: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   subLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.3)',
+    fontSize: font.xs,
+    fontWeight: font.bold,
+    color: colors.textTertiary,
     letterSpacing: 0.5,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   ingredientsList: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: font.sm + 1,
+    color: colors.textSecondary,
   },
   detailsRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   detailChip: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: colors.border,
+    paddingHorizontal: spacing.md - 2,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm,
   },
   detailText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
+    fontSize: font.xs + 1,
+    color: colors.textSecondary,
   },
   macroGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   macroItem: {
     alignItems: 'center',
   },
   macroValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#fff',
+    fontSize: font.md + 1,
+    fontWeight: font.bold,
+    color: colors.textPrimary,
   },
   macroLabel: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.3)',
+    fontSize: font.xs,
+    color: colors.textTertiary,
     marginTop: 2,
   },
   notes: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: font.sm,
+    color: colors.textSecondary,
     fontStyle: 'italic',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 });
 
@@ -276,10 +275,10 @@ export default function MealPlan({ route }: MealPlanProps) {
 
       {/* Daily Summary Bars */}
       <View style={styles.summaryCard}>
-        <MacroBar label="Calories" value={targets.calories} max={3000} color="#6C63FF" unit=" kcal" />
-        <MacroBar label="Protein" value={targets.protein} max={250} color="#4CAF50" unit="g" />
-        <MacroBar label="Carbs" value={targets.carbs} max={350} color="#FFC107" unit="g" />
-        <MacroBar label="Fat" value={targets.fat} max={120} color="#FF9800" unit="g" />
+        <MacroBar label="Calories" value={targets.calories} max={3000} color={colors.accent} unit=" kcal" />
+        <MacroBar label="Protein" value={targets.protein} max={250} color={colors.success} unit="g" />
+        <MacroBar label="Carbs" value={targets.carbs} max={350} color={colors.warning} unit="g" />
+        <MacroBar label="Fat" value={targets.fat} max={120} color={colors.scorePoor} unit="g" />
       </View>
 
       {/* Hydration */}
@@ -320,73 +319,65 @@ export default function MealPlan({ route }: MealPlanProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0D0D1A',
+    backgroundColor: colors.bg,
   },
   content: {
-    padding: 20,
+    padding: spacing.xl,
   },
   title: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 20,
+    fontSize: font['3xl'] - 6,
+    fontWeight: font.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xl,
   },
   summaryCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 16,
+    ...cardStyle,
+    marginBottom: spacing.lg,
   },
   hydrationCard: {
-    backgroundColor: 'rgba(33, 150, 243, 0.1)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
+    backgroundColor: colors.infoMuted,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    marginBottom: spacing.xl,
     alignItems: 'center',
   },
   hydrationText: {
-    color: '#2196F3',
-    fontSize: 14,
-    fontWeight: '600',
+    color: colors.info,
+    fontSize: font.sm + 1,
+    fontWeight: font.semibold,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 12,
+    ...sectionLabel,
   },
   reasoningCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginTop: 12,
+    ...cardStyle,
+    marginTop: spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: '#6C63FF',
+    borderLeftColor: colors.accent,
   },
   reasoningTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: font.xs + 1,
+    fontWeight: font.bold,
+    color: colors.textTertiary,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   reasoningText: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+    fontSize: font.sm + 1,
+    color: colors.textSecondary,
     lineHeight: 20,
   },
   noteCard: {
-    backgroundColor: 'rgba(108,99,255,0.1)',
-    borderRadius: 14,
-    padding: 14,
-    marginTop: 12,
+    backgroundColor: colors.accentMuted,
+    borderRadius: radii.md + 2,
+    padding: spacing.lg - 2,
+    marginTop: spacing.md,
   },
   noteText: {
-    fontSize: 14,
-    color: '#fff',
-    fontWeight: '500',
+    fontSize: font.sm + 1,
+    color: colors.textPrimary,
+    fontWeight: font.medium,
     lineHeight: 20,
   },
 });

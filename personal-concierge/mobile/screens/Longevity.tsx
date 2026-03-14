@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, getScoreColor } from '../theme';
 
 interface LongevityData {
   chronological_age?: number;
@@ -30,8 +31,8 @@ interface LongevityData {
 function ScoreRing({ score, label, size = 60 }: { score?: number | null; label: string; size?: number }) {
   const displayScore = score != null ? Math.round(score) : '—';
   const color = score != null
-    ? score >= 75 ? '#4CAF50' : score >= 50 ? '#FFC107' : '#F44336'
-    : 'rgba(255,255,255,0.2)';
+    ? getScoreColor(score)
+    : colors.textTertiary;
 
   return (
     <View style={ringStyles.container}>
@@ -50,8 +51,8 @@ const ringStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  value: { fontSize: 18, fontWeight: '700' },
-  label: { color: 'rgba(255,255,255,0.5)', fontSize: 11, marginTop: 6, textAlign: 'center' },
+  value: { fontSize: font.xl, fontWeight: font.bold },
+  label: { color: colors.textSecondary, fontSize: font.xs, marginTop: spacing.sm, textAlign: 'center' },
 });
 
 export default function Longevity() {
@@ -79,7 +80,7 @@ export default function Longevity() {
   }, []);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator color="#6C63FF" size="large" /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
   }
 
   if (!data || data.overall_longevity_score == null) {
@@ -93,7 +94,7 @@ export default function Longevity() {
     );
   }
 
-  const deltaColor = (data.biological_age_delta ?? 0) < 0 ? '#4CAF50' : '#F44336';
+  const deltaColor = (data.biological_age_delta ?? 0) < 0 ? colors.success : colors.error;
   const deltaPrefix = (data.biological_age_delta ?? 0) < 0 ? '' : '+';
 
   return (
@@ -154,7 +155,7 @@ export default function Longevity() {
 
       {/* Assessment */}
       {data.overall_assessment && (
-        <View style={[styles.insightCard, { borderLeftWidth: 3, borderLeftColor: '#6C63FF' }]}>
+        <View style={[styles.insightCard, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
           <Text style={styles.assessmentText}>{data.overall_assessment}</Text>
         </View>
       )}
@@ -170,92 +171,84 @@ export default function Longevity() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 40, backgroundColor: '#0D0D1A' },
-  empty: { color: 'rgba(255,255,255,0.5)', fontSize: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing['5xl'], backgroundColor: colors.bg },
+  empty: { color: colors.textSecondary, fontSize: font.lg },
   heroCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 16,
-    padding: 24,
+    ...cardStyle,
+    padding: spacing['2xl'],
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
+    ...shadow.elevated,
   },
-  heroLabel: { color: 'rgba(255,255,255,0.4)', fontSize: 12, fontWeight: '700', letterSpacing: 1.2 },
-  heroValue: { color: '#6C63FF', fontSize: 52, fontWeight: '700', marginVertical: 8 },
-  heroDelta: { fontSize: 14, fontWeight: '600' },
+  heroLabel: { ...sectionLabel, marginTop: 0, marginBottom: 0 },
+  heroValue: { color: colors.accent, fontSize: font['4xl'], fontWeight: font.bold, marginVertical: spacing.sm },
+  heroDelta: { fontSize: font.md, fontWeight: font.semibold },
   overallCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 20,
+    ...cardStyle,
+    padding: spacing.xl,
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   trendBadge: {
-    marginTop: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: 'rgba(108,99,255,0.15)',
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm,
+    backgroundColor: colors.accentMuted,
   },
-  trendText: { color: '#6C63FF', fontSize: 12, fontWeight: '700', letterSpacing: 0.5 },
+  trendText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.bold, letterSpacing: 0.5 },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    marginTop: 16,
+    ...sectionLabel,
   },
   scoresGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 20,
-    gap: 16,
-    marginBottom: 8,
+    ...cardStyle,
+    padding: spacing.xl,
+    gap: spacing.lg,
+    marginBottom: spacing.sm,
   },
   insightCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 8,
+    ...cardStyle,
+    marginBottom: spacing.sm,
   },
   insightText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: font.md,
     lineHeight: 22,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   recText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    color: colors.textPrimary,
+    fontSize: font.md,
     lineHeight: 22,
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   assessmentText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 14,
+    color: colors.textPrimary,
+    fontSize: font.md,
     lineHeight: 22,
   },
   calcButton: {
-    backgroundColor: '#6C63FF',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    marginTop: 16,
+    backgroundColor: colors.accent,
+    borderRadius: radii.lg,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing['3xl'],
+    marginTop: spacing.lg,
+    ...shadow.glow,
   },
-  calcText: { color: '#fff', fontSize: 17, fontWeight: '700' },
+  calcText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
   recalcButton: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    paddingVertical: 14,
+    backgroundColor: colors.bgCard,
+    borderRadius: radii.md,
+    paddingVertical: spacing.lg,
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: spacing.lg,
     borderWidth: 1,
-    borderColor: 'rgba(108,99,255,0.3)',
+    borderColor: colors.borderAccent,
   },
-  recalcText: { color: '#6C63FF', fontSize: 15, fontWeight: '600' },
+  recalcText: { color: colors.textAccent, fontSize: font.md, fontWeight: font.semibold },
 });

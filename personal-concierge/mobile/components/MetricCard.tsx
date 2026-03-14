@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import TrendArrow from './TrendArrow';
+import { colors, font, radii, spacing, shadow } from '../theme';
 
 interface MetricCardProps {
   label: string;
@@ -27,16 +28,19 @@ export default function MetricCard({ label, value, unit, trend, color }: MetricC
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#1E1E2E',
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.bgCard,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
     flex: 1,
-    marginHorizontal: 4,
+    marginHorizontal: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
   },
   label: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.5)',
-    fontWeight: '500',
+    fontSize: font.xs,
+    color: colors.textSecondary,
+    fontWeight: font.medium,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -46,14 +50,14 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   value: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#fff',
+    fontSize: font['2xl'],
+    fontWeight: font.bold,
+    color: colors.textPrimary,
   },
   unit: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.5)',
-    marginLeft: 4,
-    fontWeight: '500',
+    fontSize: font.sm,
+    color: colors.textSecondary,
+    marginLeft: spacing.xs,
+    fontWeight: font.medium,
   },
 });

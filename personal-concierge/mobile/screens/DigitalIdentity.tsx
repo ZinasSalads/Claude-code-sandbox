@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -179,7 +180,7 @@ export default function DigitalIdentity() {
     setProfileForm(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
+  const scoreColor = (s: number) => s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
 
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading digital identity...</Text></View>;
@@ -189,7 +190,7 @@ export default function DigitalIdentity() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Digital Identity</Text>
 
@@ -203,7 +204,7 @@ export default function DigitalIdentity() {
               value={draftBrand}
               onChangeText={setDraftBrand}
               placeholder="Define your personal brand..."
-              placeholderTextColor="#555577"
+              placeholderTextColor={colors.textTertiary}
             />
             <View style={styles.btnRow}>
               <TouchableOpacity style={styles.secondaryBtn} onPress={() => setEditingBrand(false)}>
@@ -244,7 +245,7 @@ export default function DigitalIdentity() {
                   value={profileForm[key]}
                   onChangeText={(v) => updateFormField(key, v)}
                   placeholder={label}
-                  placeholderTextColor="#555577"
+                  placeholderTextColor={colors.textTertiary}
                 />
               </View>
             ))}
@@ -314,12 +315,12 @@ export default function DigitalIdentity() {
       {platforms.map((p, i) => (
         <View key={i} style={styles.card}>
           <View style={styles.platformRow}>
-            <View style={[styles.statusDot, { backgroundColor: p.active ? '#00b894' : '#e17055' }]} />
+            <View style={[styles.statusDot, { backgroundColor: p.active ? colors.success : colors.error }]} />
             <View style={{ flex: 1 }}>
               <Text style={styles.platformName}>{p.name}</Text>
               <Text style={styles.dimText}>Updated: {p.last_updated}</Text>
             </View>
-            <Text style={[styles.statusLabel, { color: p.active ? '#00b894' : '#e17055' }]}>
+            <Text style={[styles.statusLabel, { color: p.active ? colors.success : colors.error }]}>
               {p.active ? 'Active' : 'Inactive'}
             </Text>
           </View>
@@ -364,7 +365,7 @@ export default function DigitalIdentity() {
                     <Text key={i} style={styles.historyDetail}>+ {s}</Text>
                   ))}
                   {(audit.improvements || []).map((s, i) => (
-                    <Text key={i} style={[styles.historyDetail, { color: '#fdcb6e' }]}>- {s}</Text>
+                    <Text key={i} style={[styles.historyDetail, { color: colors.warning }]}>- {s}</Text>
                   ))}
                 </View>
               )}
@@ -377,50 +378,50 @@ export default function DigitalIdentity() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 10 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#8888aa', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
-  dimText: { fontSize: 13, color: '#8888aa' },
-  brandText: { fontSize: 15, color: '#fff', lineHeight: 22 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
+  sectionTitle: { ...sectionLabel },
+  dimText: { fontSize: font.sm, color: colors.textSecondary },
+  brandText: { fontSize: font.md, color: colors.textPrimary, lineHeight: 22 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#fff', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  btnRow: { flexDirection: 'row', gap: 8 },
-  primaryBtn: { flex: 1, backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  secondaryBtn: { flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 14, alignItems: 'center' },
-  secondaryBtnText: { color: '#8888aa', fontWeight: '600', fontSize: 15 },
-  auditHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
-  runBtn: { backgroundColor: 'rgba(108,99,255,0.15)', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-  runBtnText: { color: '#6C63FF', fontSize: 13, fontWeight: '600' },
-  auditScoreRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: 12 },
-  auditScore: { fontSize: 42, fontWeight: '700' },
-  auditScoreLabel: { fontSize: 18, color: '#8888aa', marginLeft: 4 },
-  subLabel: { fontSize: 11, color: '#8888aa', fontWeight: '700', textTransform: 'uppercase', marginBottom: 6 },
-  badgeGreen: { backgroundColor: 'rgba(0,184,148,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 4 },
-  badgeGreenText: { color: '#00b894', fontSize: 13, fontWeight: '500' },
-  badgeAmber: { backgroundColor: 'rgba(253,203,110,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, marginBottom: 4 },
-  badgeAmberText: { color: '#fdcb6e', fontSize: 13, fontWeight: '500' },
+  btnRow: { flexDirection: 'row', gap: spacing.sm },
+  primaryBtn: { flex: 1, backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
+  secondaryBtn: { flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  secondaryBtnText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.md },
+  auditHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
+  runBtn: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  runBtnText: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  auditScoreRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: spacing.md },
+  auditScore: { fontSize: 42, fontWeight: font.bold },
+  auditScoreLabel: { fontSize: 18, color: colors.textSecondary, marginLeft: spacing.xs },
+  subLabel: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.bold, textTransform: 'uppercase', marginBottom: 6 },
+  badgeGreen: { backgroundColor: colors.successMuted, borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 5, marginBottom: spacing.xs },
+  badgeGreenText: { color: colors.success, fontSize: font.sm, fontWeight: font.medium },
+  badgeAmber: { backgroundColor: colors.warningMuted, borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 5, marginBottom: spacing.xs },
+  badgeAmberText: { color: colors.warning, fontSize: font.sm, fontWeight: font.medium },
   platformRow: { flexDirection: 'row', alignItems: 'center' },
-  statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: 12 },
-  platformName: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  statusLabel: { fontSize: 12, fontWeight: '600' },
-  contentTitle: { fontSize: 15, fontWeight: '600', color: '#fff', marginBottom: 6 },
+  statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: spacing.md },
+  platformName: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  statusLabel: { fontSize: font.xs, fontWeight: font.semibold },
+  contentTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: 6 },
   contentMeta: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-  metaChip: { backgroundColor: 'rgba(108,99,255,0.12)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 },
-  metaChipText: { color: '#6C63FF', fontSize: 11, fontWeight: '600' },
+  metaChip: { backgroundColor: colors.accentMuted, borderRadius: 6, paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  metaChipText: { color: colors.accent, fontSize: font.xs, fontWeight: font.semibold },
   historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  historyDate: { fontSize: 14, color: '#fff' },
-  historyScore: { fontSize: 16, fontWeight: '700' },
-  historyDetail: { fontSize: 13, color: '#00b894', lineHeight: 20 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: '#8888aa', marginBottom: 4 },
-  fieldValue: { fontSize: 14, color: '#fff', lineHeight: 20 },
+  historyDate: { fontSize: font.sm, color: colors.textPrimary },
+  historyScore: { fontSize: font.lg, fontWeight: font.bold },
+  historyDetail: { fontSize: font.sm, color: colors.success, lineHeight: 20 },
+  fieldLabel: { fontSize: font.xs, fontWeight: font.semibold, color: colors.textSecondary, marginBottom: spacing.xs },
+  fieldValue: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 20 },
 });

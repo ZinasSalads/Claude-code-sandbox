@@ -8,16 +8,12 @@ import {
   generateHomeRecommendations, completeHomeRecommendation,
   getHomeCorrelations,
 } from '../lib/api';
-
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
-const GREEN = '#00C48C';
+import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 const EFFORT_COLORS: Record<string, string> = {
-  quick_win: GREEN,
-  moderate: '#FFB547',
-  investment: '#FF6B6B',
+  quick_win: colors.success,
+  moderate: colors.warning,
+  investment: colors.error,
 };
 
 export default function HomeEnvironment() {
@@ -70,7 +66,7 @@ export default function HomeEnvironment() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={ACCENT} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
   }
 
   const totalRecs = recs.length + completedRecs.length;
@@ -93,7 +89,7 @@ export default function HomeEnvironment() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Home Environment</Text>
       <Text style={styles.subtitle}>Your home as a health variable</Text>
@@ -128,8 +124,8 @@ export default function HomeEnvironment() {
             <Switch
               value={profile?.[f.key] || false}
               onValueChange={v => toggleField(f.key, v)}
-              trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(108,99,255,0.4)' }}
-              thumbColor={profile?.[f.key] ? ACCENT : '#666'}
+              trackColor={{ false: colors.border, true: colors.accentBorder }}
+              thumbColor={profile?.[f.key] ? colors.accent : colors.textTertiary}
             />
           </View>
         ))}
@@ -148,7 +144,7 @@ export default function HomeEnvironment() {
           <View key={r.id || i} style={styles.recRow}>
             <View style={styles.recContent}>
               <View style={styles.recBadges}>
-                <Text style={[styles.badge, { backgroundColor: EFFORT_COLORS[r.effort] || '#666' }]}>
+                <Text style={[styles.badge, { backgroundColor: EFFORT_COLORS[r.effort] || colors.textTertiary }]}>
                   {(r.effort || '').replace('_', ' ')}
                 </Text>
                 <Text style={styles.priorityText}>{r.priority} priority</Text>
@@ -171,41 +167,42 @@ export default function HomeEnvironment() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, backgroundColor: BG, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 10 },
-  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  center: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: font['3xl'], fontWeight: '800', color: colors.textPrimary, marginTop: spacing.sm },
+  subtitle: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xl },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
-  editBtn: { color: ACCENT, fontSize: 14, fontWeight: '600' },
-  progressBar: { height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, marginBottom: 8 },
-  progressFill: { height: 6, backgroundColor: GREEN, borderRadius: 3 },
-  progressText: { fontSize: 13, color: 'rgba(255,255,255,0.5)' },
-  corrText: { fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 22, marginBottom: 8 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
+  editBtn: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  progressBar: { height: 6, backgroundColor: colors.border, borderRadius: 3, marginBottom: spacing.sm },
+  progressFill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
+  progressText: { fontSize: font.sm, color: colors.textSecondary },
+  corrText: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.sm },
   switchRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.borderSubtle,
   },
-  switchLabel: { fontSize: 14, color: 'rgba(255,255,255,0.7)' },
+  switchLabel: { fontSize: font.sm, color: colors.textSecondary },
   recRow: {
-    flexDirection: 'row', marginBottom: 16, paddingBottom: 16,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    flexDirection: 'row', marginBottom: spacing.lg, paddingBottom: spacing.lg,
+    borderBottomWidth: 1, borderBottomColor: colors.borderSubtle,
   },
   recContent: { flex: 1 },
-  recBadges: { flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: 8 },
-  badge: { fontSize: 10, color: '#000', fontWeight: '700', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, textTransform: 'capitalize', overflow: 'hidden' },
-  priorityText: { fontSize: 11, color: 'rgba(255,255,255,0.4)', textTransform: 'capitalize' },
-  recText: { fontSize: 14, color: '#fff', lineHeight: 20 },
-  impactText: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 },
+  recBadges: { flexDirection: 'row', alignItems: 'center', marginBottom: 6, gap: spacing.sm },
+  badge: { fontSize: 10, color: colors.black, fontWeight: font.bold, paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: 4, textTransform: 'capitalize', overflow: 'hidden' },
+  priorityText: { fontSize: font.xs, color: colors.textTertiary, textTransform: 'capitalize' },
+  recText: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 20 },
+  impactText: { fontSize: font.xs, color: colors.textTertiary, marginTop: spacing.xs },
   checkBtn: {
-    backgroundColor: 'rgba(0,196,140,0.15)', borderRadius: 8, paddingHorizontal: 12,
-    paddingVertical: 6, alignSelf: 'center', marginLeft: 8,
+    backgroundColor: colors.successMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md,
+    paddingVertical: 6, alignSelf: 'center', marginLeft: spacing.sm,
   },
-  checkText: { color: GREEN, fontSize: 12, fontWeight: '600' },
-  emptyText: { fontSize: 14, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' },
+  checkText: { color: colors.success, fontSize: font.xs, fontWeight: font.semibold },
+  emptyText: { fontSize: font.sm, color: colors.textSecondary, fontStyle: 'italic' },
 });

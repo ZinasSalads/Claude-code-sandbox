@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -109,7 +110,7 @@ export default function FinancialPlanning() {
     fetchData();
   }, [stressLevel, fetchData]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
+  const scoreColor = (s: number) => s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
   const goalTypes = ['savings', 'investment', 'debt-payoff', 'emergency', 'retirement', 'other'];
 
   const formatCurrency = (n: number) => {
@@ -126,12 +127,12 @@ export default function FinancialPlanning() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Financial Planning</Text>
 
       {annualReview?.due && (
-        <View style={[styles.card, { borderColor: 'rgba(108,99,255,0.4)' }]}>
+        <View style={[styles.card, { borderColor: colors.borderAccent }]}>
           <Text style={styles.cardTitle}>Annual Review Due</Text>
           <Text style={styles.dimText}>
             Last review: {annualReview.last_review_date || 'Never'}
@@ -187,7 +188,7 @@ export default function FinancialPlanning() {
                 <TextInput
                   style={styles.input}
                   placeholder="Current amount"
-                  placeholderTextColor="#555577"
+                  placeholderTextColor={colors.textTertiary}
                   keyboardType="numeric"
                   value={updateAmount}
                   onChangeText={setUpdateAmount}
@@ -207,7 +208,7 @@ export default function FinancialPlanning() {
 
       {showAddGoal && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Goal name" placeholderTextColor="#555577" value={newGoalName} onChangeText={setNewGoalName} />
+          <TextInput style={styles.input} placeholder="Goal name" placeholderTextColor={colors.textTertiary} value={newGoalName} onChangeText={setNewGoalName} />
           <Text style={styles.formLabel}>Type</Text>
           <View style={styles.typeRow}>
             {goalTypes.map((t) => (
@@ -216,8 +217,8 @@ export default function FinancialPlanning() {
               </TouchableOpacity>
             ))}
           </View>
-          <TextInput style={styles.input} placeholder="Target amount" placeholderTextColor="#555577" keyboardType="numeric" value={newGoalTarget} onChangeText={setNewGoalTarget} />
-          <TextInput style={styles.input} placeholder="Target date (YYYY-MM-DD)" placeholderTextColor="#555577" value={newGoalDate} onChangeText={setNewGoalDate} />
+          <TextInput style={styles.input} placeholder="Target amount" placeholderTextColor={colors.textTertiary} keyboardType="numeric" value={newGoalTarget} onChangeText={setNewGoalTarget} />
+          <TextInput style={styles.input} placeholder="Target date (YYYY-MM-DD)" placeholderTextColor={colors.textTertiary} value={newGoalDate} onChangeText={setNewGoalDate} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAddGoal}>
             <Text style={styles.primaryBtnText}>Create Goal</Text>
           </TouchableOpacity>
@@ -230,7 +231,7 @@ export default function FinancialPlanning() {
         <View style={styles.sliderRow}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) => (
             <TouchableOpacity key={v} style={[styles.sliderDot, stressLevel === v && styles.sliderDotActive]} onPress={() => setStressLevel(v)}>
-              <Text style={[styles.sliderDotText, stressLevel === v && { color: '#fff' }]}>{v}</Text>
+              <Text style={[styles.sliderDotText, stressLevel === v && { color: colors.white }]}>{v}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -243,7 +244,7 @@ export default function FinancialPlanning() {
             {stressLogs.slice(0, 4).map((log, i) => (
               <View key={i} style={styles.stressRow}>
                 <Text style={styles.dimText}>{log.week}</Text>
-                <Text style={[styles.stressVal, { color: log.level <= 3 ? '#00b894' : log.level <= 6 ? '#fdcb6e' : '#e17055' }]}>{log.level}/10</Text>
+                <Text style={[styles.stressVal, { color: log.level <= 3 ? colors.success : log.level <= 6 ? colors.warning : colors.error }]}>{log.level}/10</Text>
               </View>
             ))}
           </View>
@@ -254,53 +255,53 @@ export default function FinancialPlanning() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 10 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#8888aa', letterSpacing: 1 },
-  dimText: { fontSize: 13, color: '#8888aa' },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, marginTop: 8 },
-  toggleLink: { color: '#6C63FF', fontSize: 13, fontWeight: '600' },
-  goalHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  goalName: { fontSize: 16, fontWeight: '600', color: '#fff' },
-  goalType: { fontSize: 12, color: '#8888aa', marginTop: 2 },
-  goalPct: { fontSize: 22, fontWeight: '700' },
-  alignmentBox: { backgroundColor: 'rgba(108,99,255,0.08)', borderRadius: 8, padding: 10, marginBottom: 10 },
-  alignmentText: { color: '#6C63FF', fontSize: 13 },
-  progressBarBg: { height: 6, backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 3, overflow: 'hidden', marginBottom: 6 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
+  sectionTitle: { ...sectionLabel, marginBottom: 0, marginTop: 0 },
+  dimText: { fontSize: font.sm, color: colors.textSecondary },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm, marginTop: spacing.sm },
+  toggleLink: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  goalHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+  goalName: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  goalType: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
+  goalPct: { fontSize: 22, fontWeight: font.bold },
+  alignmentBox: { backgroundColor: colors.accentGlow, borderRadius: radii.sm, padding: spacing.sm, marginBottom: spacing.sm },
+  alignmentText: { color: colors.accent, fontSize: font.sm },
+  progressBarBg: { height: 6, backgroundColor: colors.border, borderRadius: 3, overflow: 'hidden', marginBottom: 6 },
   progressBarFill: { height: 6, borderRadius: 3 },
   amountRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  amountText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  updateBtn: { marginTop: 8, alignSelf: 'flex-start', backgroundColor: 'rgba(108,99,255,0.12)', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
-  updateBtnText: { color: '#6C63FF', fontSize: 12, fontWeight: '600' },
-  updateForm: { marginTop: 10 },
+  amountText: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary },
+  updateBtn: { marginTop: spacing.sm, alignSelf: 'flex-start', backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  updateBtnText: { color: colors.accent, fontSize: font.xs, fontWeight: font.semibold },
+  updateForm: { marginTop: spacing.sm },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#fff', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6C63FF', fontWeight: '600', fontSize: 15 },
-  formLabel: { fontSize: 12, color: '#8888aa', fontWeight: '600', marginBottom: 6, marginTop: 4 },
-  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  typeChip: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: 'rgba(108,99,255,0.2)' },
-  typeChipText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
-  typeChipTextActive: { color: '#6C63FF' },
-  sliderRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 12 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  formLabel: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: 6, marginTop: spacing.xs },
+  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: spacing.md },
+  typeChip: { backgroundColor: colors.bgInput, borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 6 },
+  typeChipActive: { backgroundColor: colors.accentMuted },
+  typeChipText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
+  typeChipTextActive: { color: colors.accent },
+  sliderRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: spacing.md },
   sliderDot: {
-    width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 28, height: 28, borderRadius: 14, backgroundColor: colors.bgInput,
     alignItems: 'center', justifyContent: 'center',
   },
-  sliderDotActive: { backgroundColor: '#6C63FF' },
-  sliderDotText: { color: '#8888aa', fontSize: 11, fontWeight: '600' },
-  stressRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
-  stressVal: { fontSize: 14, fontWeight: '600' },
+  sliderDotActive: { backgroundColor: colors.accent },
+  sliderDotText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
+  stressRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs },
+  stressVal: { fontSize: font.sm, fontWeight: font.semibold },
 });

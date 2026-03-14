@@ -9,6 +9,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 async function api<T>(path: string): Promise<T | null> {
   try {
@@ -151,7 +152,7 @@ export default function Skincare() {
     setShowProfileEditor(true);
   }, [profile]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
+  const scoreColor = (s: number) => s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
 
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading skincare data...</Text></View>;
@@ -187,7 +188,7 @@ export default function Skincare() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Skincare</Text>
 
@@ -196,7 +197,7 @@ export default function Skincare() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.cardTitle}>Skin Profile</Text>
             <TouchableOpacity onPress={openProfileEditor}>
-              <Text style={{ color: '#6C63FF', fontSize: 13, fontWeight: '600' }}>Edit</Text>
+              <Text style={{ color: colors.textAccent, fontSize: font.sm, fontWeight: font.semibold }}>Edit</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.profileRow}>
@@ -238,16 +239,16 @@ export default function Skincare() {
       {showProfileEditor && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Edit Skin Profile</Text>
-          <TextInput style={styles.input} placeholder="Skin type (oily, dry, combination, normal, sensitive)" placeholderTextColor="#555577" value={editSkinType} onChangeText={setEditSkinType} />
-          <TextInput style={styles.input} placeholder="Sensitivity level (low, medium, high)" placeholderTextColor="#555577" value={editSensitivity} onChangeText={setEditSensitivity} />
-          <TextInput style={styles.input} placeholder="Concerns (comma-separated)" placeholderTextColor="#555577" value={editConcerns} onChangeText={setEditConcerns} />
-          <TextInput style={styles.input} placeholder="Allergies (comma-separated)" placeholderTextColor="#555577" value={editAllergies} onChangeText={setEditAllergies} />
-          <TextInput style={styles.input} placeholder="Climate (humid, dry, temperate, tropical)" placeholderTextColor="#555577" value={editClimate} onChangeText={setEditClimate} />
-          <TextInput style={styles.input} placeholder="Age range (20s, 30s, 40s, 50s+)" placeholderTextColor="#555577" value={editAgeRange} onChangeText={setEditAgeRange} />
-          <TextInput style={styles.input} placeholder="Goals (comma-separated)" placeholderTextColor="#555577" value={editGoals} onChangeText={setEditGoals} />
-          <TextInput style={styles.input} placeholder="Notes" placeholderTextColor="#555577" value={editNotes} onChangeText={setEditNotes} multiline />
+          <TextInput style={styles.input} placeholder="Skin type (oily, dry, combination, normal, sensitive)" placeholderTextColor={colors.textTertiary} value={editSkinType} onChangeText={setEditSkinType} />
+          <TextInput style={styles.input} placeholder="Sensitivity level (low, medium, high)" placeholderTextColor={colors.textTertiary} value={editSensitivity} onChangeText={setEditSensitivity} />
+          <TextInput style={styles.input} placeholder="Concerns (comma-separated)" placeholderTextColor={colors.textTertiary} value={editConcerns} onChangeText={setEditConcerns} />
+          <TextInput style={styles.input} placeholder="Allergies (comma-separated)" placeholderTextColor={colors.textTertiary} value={editAllergies} onChangeText={setEditAllergies} />
+          <TextInput style={styles.input} placeholder="Climate (humid, dry, temperate, tropical)" placeholderTextColor={colors.textTertiary} value={editClimate} onChangeText={setEditClimate} />
+          <TextInput style={styles.input} placeholder="Age range (20s, 30s, 40s, 50s+)" placeholderTextColor={colors.textTertiary} value={editAgeRange} onChangeText={setEditAgeRange} />
+          <TextInput style={styles.input} placeholder="Goals (comma-separated)" placeholderTextColor={colors.textTertiary} value={editGoals} onChangeText={setEditGoals} />
+          <TextInput style={styles.input} placeholder="Notes" placeholderTextColor={colors.textTertiary} value={editNotes} onChangeText={setEditNotes} multiline />
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: 'rgba(255,255,255,0.1)' }]} onPress={() => setShowProfileEditor(false)}>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: colors.bgElevated }]} onPress={() => setShowProfileEditor(false)}>
               <Text style={styles.primaryBtnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.primaryBtn, { flex: 1 }]} onPress={handleSaveProfile}>
@@ -277,7 +278,7 @@ export default function Skincare() {
         <TextInput
           style={styles.input}
           placeholder="Notes (optional)"
-          placeholderTextColor="#555577"
+          placeholderTextColor={colors.textTertiary}
           value={checkInNote}
           onChangeText={setCheckInNote}
         />
@@ -297,7 +298,7 @@ export default function Skincare() {
               <Text style={styles.metricLabel}>Avg Condition</Text>
             </View>
             <View style={styles.metricItem}>
-              <Text style={[styles.metricVal, { color: weeklyTrend.breakout_days > 2 ? '#e17055' : '#00b894' }]}>
+              <Text style={[styles.metricVal, { color: weeklyTrend.breakout_days > 2 ? colors.error : colors.success }]}>
                 {weeklyTrend.breakout_days}
               </Text>
               <Text style={styles.metricLabel}>Breakout Days</Text>
@@ -315,7 +316,7 @@ export default function Skincare() {
           <Text style={styles.cardTitle}>Health Correlations</Text>
           {correlations.map((c, i) => (
             <View key={i} style={styles.correlationItem}>
-              <View style={[styles.impactDot, { backgroundColor: c.impact === 'positive' ? '#00b894' : c.impact === 'negative' ? '#e17055' : '#fdcb6e' }]} />
+              <View style={[styles.impactDot, { backgroundColor: c.impact === 'positive' ? colors.success : c.impact === 'negative' ? colors.error : colors.warning }]} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.correlationFactor}>{c.factor}</Text>
                 <Text style={styles.dimText}>{c.detail}</Text>
@@ -331,8 +332,8 @@ export default function Skincare() {
 
       {showAddProduct && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Product name" placeholderTextColor="#555577" value={newProductName} onChangeText={setNewProductName} />
-          <TextInput style={styles.input} placeholder="Brand" placeholderTextColor="#555577" value={newProductBrand} onChangeText={setNewProductBrand} />
+          <TextInput style={styles.input} placeholder="Product name" placeholderTextColor={colors.textTertiary} value={newProductName} onChangeText={setNewProductName} />
+          <TextInput style={styles.input} placeholder="Brand" placeholderTextColor={colors.textTertiary} value={newProductBrand} onChangeText={setNewProductBrand} />
           <Text style={styles.formLabel}>Product Type</Text>
           <View style={styles.typeRow}>
             {['cleanser', 'toner', 'serum', 'moisturizer', 'sunscreen', 'treatment', 'mask', 'eye cream'].map((t) => (
@@ -341,7 +342,7 @@ export default function Skincare() {
               </TouchableOpacity>
             ))}
           </View>
-          <TextInput style={styles.input} placeholder="Active ingredients (comma-separated)" placeholderTextColor="#555577" value={newProductIngredients} onChangeText={setNewProductIngredients} />
+          <TextInput style={styles.input} placeholder="Active ingredients (comma-separated)" placeholderTextColor={colors.textTertiary} value={newProductIngredients} onChangeText={setNewProductIngredients} />
           <View style={styles.toggleRow}>
             <TouchableOpacity
               style={[styles.toggleBtn, newProductRoutine === 'morning' && styles.toggleBtnActive]}
@@ -356,7 +357,7 @@ export default function Skincare() {
               <Text style={[styles.toggleText, newProductRoutine === 'evening' && styles.toggleTextActive]}>Evening</Text>
             </TouchableOpacity>
           </View>
-          <TextInput style={styles.input} placeholder="Application order" placeholderTextColor="#555577" keyboardType="numeric" value={newProductOrder} onChangeText={setNewProductOrder} />
+          <TextInput style={styles.input} placeholder="Application order" placeholderTextColor={colors.textTertiary} keyboardType="numeric" value={newProductOrder} onChangeText={setNewProductOrder} />
           <Text style={styles.formLabel}>Frequency</Text>
           <View style={styles.typeRow}>
             {['daily', 'twice-daily', 'weekly', 'as-needed'].map((f) => (
@@ -375,66 +376,67 @@ export default function Skincare() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#fff', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 12 },
-  dimText: { fontSize: 13, color: '#8888aa', marginBottom: 4 },
-  profileRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-  profileLabel: { fontSize: 13, color: '#8888aa', marginBottom: 6 },
-  profileValue: { fontSize: 14, color: '#fff', fontWeight: '600' },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  tag: { backgroundColor: 'rgba(108,99,255,0.15)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 },
-  tagText: { color: '#6C63FF', fontSize: 12, fontWeight: '600' },
-  productRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
+  dimText: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xs },
+  profileRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
+  profileLabel: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.sm },
+  profileValue: { fontSize: font.md, color: colors.textPrimary, fontWeight: font.semibold },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  tag: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  tagText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.semibold },
+  productRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
   stepBadge: {
-    width: 28, height: 28, borderRadius: 14, backgroundColor: 'rgba(108,99,255,0.2)',
-    alignItems: 'center', justifyContent: 'center', marginRight: 12,
+    width: 28, height: 28, borderRadius: radii.full, backgroundColor: colors.accentMuted,
+    alignItems: 'center', justifyContent: 'center', marginRight: spacing.md,
   },
-  stepText: { color: '#6C63FF', fontSize: 13, fontWeight: '700' },
-  productName: { fontSize: 14, color: '#fff', fontWeight: '500' },
-  conflictRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 4, gap: 4 },
-  conflictBadge: { backgroundColor: 'rgba(253,203,110,0.15)', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 },
-  conflictText: { color: '#fdcb6e', fontSize: 11, fontWeight: '600' },
-  sliderRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: 12 },
+  stepText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.bold },
+  productName: { fontSize: font.md, color: colors.textPrimary, fontWeight: font.medium },
+  conflictRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: spacing.xs, gap: spacing.xs },
+  conflictBadge: { backgroundColor: colors.warningMuted, borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 2 },
+  conflictText: { color: colors.warning, fontSize: font.xs, fontWeight: font.semibold },
+  sliderRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: spacing.md },
   sliderDot: {
-    width: 30, height: 30, borderRadius: 15, backgroundColor: 'rgba(255,255,255,0.05)',
+    width: 30, height: 30, borderRadius: radii.full, backgroundColor: colors.bgElevated,
     alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: colors.border,
   },
-  sliderDotActive: { backgroundColor: '#6C63FF' },
-  sliderDotText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
+  sliderDotActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  sliderDotText: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold },
   metricsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   metricItem: { alignItems: 'center' },
-  metricVal: { fontSize: 24, fontWeight: '700', color: '#fff' },
-  metricLabel: { fontSize: 11, color: '#8888aa', marginTop: 2, textTransform: 'uppercase' },
-  correlationItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  impactDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
-  correlationFactor: { fontSize: 14, fontWeight: '600', color: '#fff' },
+  metricVal: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary },
+  metricLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2, textTransform: 'uppercase' },
+  correlationItem: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
+  impactDot: { width: 10, height: 10, borderRadius: radii.full, marginRight: spacing.md },
+  correlationFactor: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#fff', fontSize: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6C63FF', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  formLabel: { fontSize: 12, color: '#8888aa', fontWeight: '600', marginBottom: 6, marginTop: 4 },
-  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  typeChip: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: 'rgba(108,99,255,0.2)' },
-  typeChipText: { color: '#8888aa', fontSize: 12, fontWeight: '600' },
-  typeChipTextActive: { color: '#6C63FF' },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6C63FF', fontWeight: '600', fontSize: 15 },
-  toggleRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', ...shadow.glow },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
+  formLabel: { fontSize: font.sm, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: spacing.sm, marginTop: spacing.xs },
+  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
+  typeChip: { backgroundColor: colors.bgElevated, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderWidth: 1, borderColor: colors.border },
+  typeChipActive: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  typeChipText: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold },
+  typeChipTextActive: { color: colors.textAccent },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.md },
+  toggleRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   toggleBtn: {
-    flex: 1, padding: 10, borderRadius: 10, alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    flex: 1, padding: spacing.md, borderRadius: radii.sm, alignItems: 'center',
+    backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border,
   },
-  toggleBtnActive: { backgroundColor: 'rgba(108,99,255,0.2)', borderColor: '#6C63FF' },
-  toggleText: { color: '#8888aa', fontWeight: '600', fontSize: 13 },
-  toggleTextActive: { color: '#6C63FF' },
+  toggleBtnActive: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  toggleText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.sm },
+  toggleTextActive: { color: colors.textAccent },
 });

@@ -8,11 +8,7 @@ import {
   addLearningBook, getLearningCourses, addLearningCourse,
   logLearningSession, getLearningWeekly,
 } from '../lib/api';
-
-const ACCENT = '#6C63FF';
-const BG = '#0D0D1A';
-const CARD = '#1A1A2E';
-const GREEN = '#00C48C';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 export default function Learning() {
   const [profile, setProfile] = useState<any>(null);
@@ -90,14 +86,14 @@ export default function Learning() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={ACCENT} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
   }
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Learning</Text>
       <Text style={styles.subtitle}>Books, courses, languages & growth</Text>
@@ -139,7 +135,7 @@ export default function Learning() {
             style={styles.logInput}
             keyboardType="numeric"
             placeholder="Minutes"
-            placeholderTextColor="rgba(255,255,255,0.3)"
+            placeholderTextColor={colors.textTertiary}
             value={logMinutes}
             onChangeText={setLogMinutes}
           />
@@ -160,8 +156,8 @@ export default function Learning() {
 
         {addingBook && (
           <View style={styles.addForm}>
-            <TextInput style={styles.input} placeholder="Title" placeholderTextColor="rgba(255,255,255,0.3)" value={bookTitle} onChangeText={setBookTitle} />
-            <TextInput style={styles.input} placeholder="Author" placeholderTextColor="rgba(255,255,255,0.3)" value={bookAuthor} onChangeText={setBookAuthor} />
+            <TextInput style={styles.input} placeholder="Title" placeholderTextColor={colors.textTertiary} value={bookTitle} onChangeText={setBookTitle} />
+            <TextInput style={styles.input} placeholder="Author" placeholderTextColor={colors.textTertiary} value={bookAuthor} onChangeText={setBookAuthor} />
             <TouchableOpacity style={styles.saveBtn} onPress={handleAddBook} disabled={saving}>
               <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Add Book'}</Text>
             </TouchableOpacity>
@@ -197,8 +193,8 @@ export default function Learning() {
 
         {addingCourse && (
           <View style={styles.addForm}>
-            <TextInput style={styles.input} placeholder="Course title" placeholderTextColor="rgba(255,255,255,0.3)" value={courseTitle} onChangeText={setCourseTitle} />
-            <TextInput style={styles.input} placeholder="Provider (Coursera, Udemy...)" placeholderTextColor="rgba(255,255,255,0.3)" value={courseProvider} onChangeText={setCourseProvider} />
+            <TextInput style={styles.input} placeholder="Course title" placeholderTextColor={colors.textTertiary} value={courseTitle} onChangeText={setCourseTitle} />
+            <TextInput style={styles.input} placeholder="Provider (Coursera, Udemy...)" placeholderTextColor={colors.textTertiary} value={courseProvider} onChangeText={setCourseProvider} />
             <TouchableOpacity style={styles.saveBtn} onPress={handleAddCourse} disabled={saving}>
               <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Add Course'}</Text>
             </TouchableOpacity>
@@ -231,54 +227,55 @@ export default function Learning() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  content: { padding: 20, paddingBottom: 40 },
-  center: { flex: 1, backgroundColor: BG, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 28, fontWeight: '800', color: '#fff', marginTop: 10 },
-  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  center: { flex: 1, backgroundColor: colors.bg, justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: font['3xl'], fontWeight: font.bold, color: colors.textPrimary, marginTop: spacing.sm },
+  subtitle: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xl },
   card: {
-    backgroundColor: CARD, borderRadius: 16, padding: 20, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    ...cardStyle,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
   },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#fff', marginBottom: 8 },
-  addBtn: { color: ACCENT, fontSize: 14, fontWeight: '600' },
-  todayCard: { borderColor: 'rgba(108,99,255,0.3)', backgroundColor: 'rgba(108,99,255,0.08)' },
-  todayLabel: { fontSize: 12, color: ACCENT, fontWeight: '600', marginBottom: 6 },
-  todayText: { fontSize: 16, color: '#fff', fontWeight: '600' },
-  formatText: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 6 },
-  statsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
+  addBtn: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  todayCard: { borderColor: colors.accentBorder, backgroundColor: colors.accentGlow },
+  todayLabel: { fontSize: font.xs, color: colors.accent, fontWeight: font.semibold, marginBottom: 6 },
+  todayText: { fontSize: font.lg, color: colors.textPrimary, fontWeight: font.semibold },
+  formatText: { fontSize: font.xs, color: colors.textTertiary, marginTop: 6 },
+  statsRow: { flexDirection: 'row', gap: 10, marginBottom: spacing.lg },
   statBox: {
-    flex: 1, backgroundColor: CARD, borderRadius: 12, padding: 16, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    flex: 1, backgroundColor: colors.bgCard, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
+    borderWidth: 1, borderColor: colors.border, ...shadow.card,
   },
-  statNum: { fontSize: 24, fontWeight: '800', color: '#fff' },
-  statLabel: { fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 },
-  logRow: { flexDirection: 'row', gap: 8 },
+  statNum: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary },
+  statLabel: { ...sectionLabel, marginBottom: 0, marginTop: spacing.xs },
+  logRow: { flexDirection: 'row', gap: spacing.sm },
   logInput: {
-    flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 12,
-    color: '#fff', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+    flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border,
   },
-  logBtn: { backgroundColor: ACCENT, borderRadius: 10, paddingHorizontal: 20, justifyContent: 'center' },
-  logBtnText: { color: '#fff', fontWeight: '600' },
-  addForm: { marginBottom: 16 },
+  logBtn: { backgroundColor: colors.accent, borderRadius: radii.md, paddingHorizontal: spacing.xl, justifyContent: 'center' },
+  logBtnText: { color: colors.white, fontWeight: font.semibold },
+  addForm: { marginBottom: spacing.lg },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 10, padding: 12,
-    color: '#fff', fontSize: 15, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
-    marginBottom: 8,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border,
+    marginBottom: spacing.sm,
   },
-  saveBtn: { backgroundColor: ACCENT, borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 4 },
-  saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '600' },
+  saveBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.md, alignItems: 'center', marginTop: spacing.xs },
+  saveBtnText: { color: colors.white, fontSize: font.sm, fontWeight: font.semibold },
   itemRow: {
-    flexDirection: 'row', paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+    flexDirection: 'row', paddingVertical: spacing.md,
+    borderBottomWidth: 1, borderBottomColor: colors.borderSubtle,
   },
   itemContent: { flex: 1 },
-  itemTitle: { fontSize: 15, fontWeight: '600', color: '#fff' },
-  itemMeta: { fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2, textTransform: 'capitalize' },
-  pageBar: { height: 4, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 2, marginTop: 6 },
-  pageFill: { height: 4, backgroundColor: GREEN, borderRadius: 2 },
-  rating: { color: '#FFB547', fontSize: 14, alignSelf: 'center' },
-  emptyText: { fontSize: 14, color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' },
-  insightText: { fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 22, fontStyle: 'italic' },
+  itemTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  itemMeta: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2, textTransform: 'capitalize' },
+  pageBar: { height: 4, backgroundColor: colors.border, borderRadius: 2, marginTop: 6 },
+  pageFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  rating: { color: colors.warning, fontSize: font.sm, alignSelf: 'center' },
+  emptyText: { fontSize: font.sm, color: colors.textTertiary, fontStyle: 'italic' },
+  insightText: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, fontStyle: 'italic' },
 });

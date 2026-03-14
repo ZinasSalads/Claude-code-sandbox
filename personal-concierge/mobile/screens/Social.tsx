@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { getSocialCircle, getSocialScore, addSocialContact, logSocialConnection } from '../lib/api';
 import type { SocialContact, SocialScore } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, getScoreColor } from '../theme';
 
 export default function Social() {
   const [contacts, setContacts] = useState<SocialContact[]>([]);
@@ -48,8 +49,6 @@ export default function Social() {
     fetchData();
   }, [fetchData]);
 
-  const scoreColor = (s: number) => s >= 70 ? '#00b894' : s >= 40 ? '#fdcb6e' : '#e17055';
-
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading social data...</Text></View>;
   }
@@ -60,14 +59,14 @@ export default function Social() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Social Health</Text>
 
       {score && (
         <View style={styles.card}>
           <View style={styles.scoreRow}>
-            <Text style={[styles.scoreNum, { color: scoreColor(score.score) }]}>{score.score}</Text>
+            <Text style={[styles.scoreNum, { color: getScoreColor(score.score) }]}>{score.score}</Text>
             <Text style={styles.scoreLabel}>/ 100</Text>
           </View>
           <View style={styles.breakdownRow}>
@@ -95,7 +94,7 @@ export default function Social() {
         <>
           <Text style={styles.sectionTitle}>CONNECT SOON</Text>
           {overdue.slice(0, 5).map((c) => (
-            <View key={c.id} style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#e17055' }]}>
+            <View key={c.id} style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.error }]}>
               <View style={styles.contactRow}>
                 <View>
                   <Text style={styles.contactName}>{c.name}</Text>
@@ -136,8 +135,8 @@ export default function Social() {
 
       {showForm && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Name" placeholderTextColor="#555577" value={name} onChangeText={setName} />
-          <TextInput style={styles.input} placeholder="Relationship (friend, family, etc.)" placeholderTextColor="#555577" value={relType} onChangeText={setRelType} />
+          <TextInput style={styles.input} placeholder="Name" placeholderTextColor={colors.textTertiary} value={name} onChangeText={setName} />
+          <TextInput style={styles.input} placeholder="Relationship (friend, family, etc.)" placeholderTextColor={colors.textTertiary} value={relType} onChangeText={setRelType} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAdd}>
             <Text style={styles.primaryBtnText}>Add Contact</Text>
           </TouchableOpacity>
@@ -148,36 +147,36 @@ export default function Social() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  scoreRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: 16 },
-  scoreNum: { fontSize: 48, fontWeight: '700' },
-  scoreLabel: { fontSize: 18, color: '#555577', marginLeft: 4 },
+  scoreRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: spacing.lg },
+  scoreNum: { fontSize: 48, fontWeight: font.bold },
+  scoreLabel: { fontSize: font.lg, color: colors.textTertiary, marginLeft: spacing.xs },
   breakdownRow: { flexDirection: 'row', justifyContent: 'space-around' },
   breakdownItem: { alignItems: 'center' },
-  breakdownVal: { fontSize: 18, fontWeight: '600', color: '#f0f0f5' },
-  breakdownLabel: { fontSize: 10, color: '#555577', textTransform: 'uppercase', marginTop: 2 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#555577', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
+  breakdownVal: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  breakdownLabel: { ...sectionLabel, marginBottom: 0, marginTop: 2 },
+  sectionTitle: { ...sectionLabel },
   contactRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  contactName: { fontSize: 16, fontWeight: '600', color: '#f0f0f5' },
-  contactMeta: { fontSize: 12, color: '#8888aa', marginTop: 2 },
+  contactName: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  contactMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
   logBtn: {
-    backgroundColor: 'rgba(108,92,231,0.2)', paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 8,
+    backgroundColor: colors.accentMuted, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm,
+    borderRadius: radii.sm,
   },
-  logBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 13 },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6c5ce7', fontWeight: '600', fontSize: 15 },
+  logBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

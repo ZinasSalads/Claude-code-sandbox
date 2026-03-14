@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { getSubscriptions, getSubscriptionAudit, addSubscription } from '../lib/api';
 import type { Subscription, SubscriptionAudit } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 export default function Financial() {
   const [subs, setSubs] = useState<Subscription[]>([]);
@@ -63,7 +64,7 @@ export default function Financial() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Financial</Text>
 
@@ -78,7 +79,7 @@ export default function Financial() {
       </TouchableOpacity>
 
       {audit && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#fdcb6e' }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.warning }]}>
           <Text style={styles.cardTitle}>Audit Results</Text>
           <Text style={styles.auditText}>
             Potential savings: ${audit.monthly_savings_potential.toFixed(2)}/mo
@@ -121,9 +122,9 @@ export default function Financial() {
 
       {showAdd && (
         <View style={styles.card}>
-          <TextInput style={styles.input} placeholder="Service name" placeholderTextColor="#555577" value={newName} onChangeText={setNewName} />
-          <TextInput style={styles.input} placeholder="Monthly cost" placeholderTextColor="#555577" value={newCost} onChangeText={setNewCost} keyboardType="decimal-pad" />
-          <TextInput style={styles.input} placeholder="Category (health/fitness/entertainment)" placeholderTextColor="#555577" value={newCategory} onChangeText={setNewCategory} />
+          <TextInput style={styles.input} placeholder="Service name" placeholderTextColor={colors.textTertiary} value={newName} onChangeText={setNewName} />
+          <TextInput style={styles.input} placeholder="Monthly cost" placeholderTextColor={colors.textTertiary} value={newCost} onChangeText={setNewCost} keyboardType="decimal-pad" />
+          <TextInput style={styles.input} placeholder="Category (health/fitness/entertainment)" placeholderTextColor={colors.textTertiary} value={newCategory} onChangeText={setNewCategory} />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleAdd}>
             <Text style={styles.primaryBtnText}>Add Subscription</Text>
           </TouchableOpacity>
@@ -134,37 +135,37 @@ export default function Financial() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#f0f0f5', marginBottom: 8 },
-  totalLabel: { fontSize: 12, color: '#8888aa', textTransform: 'uppercase', letterSpacing: 1 },
-  totalAmount: { fontSize: 36, fontWeight: '700', color: '#f0f0f5', marginTop: 4 },
-  totalSubs: { fontSize: 13, color: '#555577', marginTop: 4 },
+  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.sm },
+  totalLabel: { ...sectionLabel, marginBottom: 0, marginTop: 0 },
+  totalAmount: { fontSize: font['4xl'], fontWeight: font.bold, color: colors.textPrimary, marginTop: spacing.xs },
+  totalSubs: { fontSize: font.sm, color: colors.textTertiary, marginTop: spacing.xs },
   auditBtn: {
-    backgroundColor: 'rgba(108,92,231,0.15)', borderRadius: 12, padding: 14,
-    alignItems: 'center', marginBottom: 16,
+    backgroundColor: colors.accentMuted, borderRadius: radii.md, padding: spacing.lg,
+    alignItems: 'center', marginBottom: spacing.lg,
   },
-  auditBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 14 },
-  auditText: { fontSize: 14, color: '#fdcb6e', marginBottom: 8 },
-  auditSubtitle: { fontSize: 12, fontWeight: '600', color: '#8888aa', marginTop: 8, marginBottom: 4 },
-  auditItem: { fontSize: 13, color: '#e17055', marginBottom: 2 },
-  sectionTitle: { fontSize: 12, fontWeight: '700', color: '#555577', letterSpacing: 1, marginBottom: 8, marginTop: 8 },
+  auditBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
+  auditText: { fontSize: font.sm, color: colors.warning, marginBottom: spacing.sm },
+  auditSubtitle: { fontSize: font.xs, fontWeight: font.semibold, color: colors.textSecondary, marginTop: spacing.sm, marginBottom: spacing.xs },
+  auditItem: { fontSize: font.sm, color: colors.error, marginBottom: 2 },
+  sectionTitle: { ...sectionLabel },
   subRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  subName: { fontSize: 15, fontWeight: '600', color: '#f0f0f5' },
-  subMeta: { fontSize: 12, color: '#8888aa', marginTop: 2 },
-  subCost: { fontSize: 18, fontWeight: '700', color: '#f0f0f5' },
-  addBtn: { alignItems: 'center', padding: 14, marginBottom: 16 },
-  addBtnText: { color: '#6c5ce7', fontWeight: '600', fontSize: 15 },
+  subName: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  subMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
+  subCost: { fontSize: 18, fontWeight: font.bold, color: colors.textPrimary },
+  addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
+  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

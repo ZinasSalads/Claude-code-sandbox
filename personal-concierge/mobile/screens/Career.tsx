@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { getCareerProfile, getBurnoutRisk, getCareerCoaching, logCareerReflection, updateCareerProfile } from '../lib/api';
 import type { CareerProfile, BurnoutRisk } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 export default function Career() {
   const [profile, setProfile] = useState<CareerProfile | null>(null);
@@ -94,10 +95,10 @@ export default function Career() {
 
   const riskColor = (level: string) => {
     switch (level) {
-      case 'high': return '#e17055';
-      case 'elevated': return '#fdcb6e';
-      case 'moderate': return '#ffeaa7';
-      default: return '#00b894';
+      case 'high': return colors.error;
+      case 'elevated': return colors.warning;
+      case 'moderate': return colors.scoreFair;
+      default: return colors.success;
     }
   };
 
@@ -109,7 +110,7 @@ export default function Career() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6c5ce7" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       <Text style={styles.title}>Career & Development</Text>
 
@@ -138,7 +139,7 @@ export default function Career() {
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Text style={styles.cardTitle}>Profile</Text>
             <TouchableOpacity onPress={openProfileEditor}>
-              <Text style={{ color: '#a29bfe', fontSize: 13, fontWeight: '600' }}>Edit</Text>
+              <Text style={{ color: colors.textAccent, fontSize: font.sm, fontWeight: font.semibold }}>Edit</Text>
             </TouchableOpacity>
           </View>
           {profile.role_title && (
@@ -164,16 +165,16 @@ export default function Career() {
       {showProfileEditor && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Edit Career Profile</Text>
-          <TextInput style={styles.input} placeholder="Role / Title" placeholderTextColor="#555577" value={editRole} onChangeText={setEditRole} />
-          <TextInput style={styles.input} placeholder="Industry" placeholderTextColor="#555577" value={editIndustry} onChangeText={setEditIndustry} />
-          <TextInput style={styles.input} placeholder="Years of experience" placeholderTextColor="#555577" keyboardType="numeric" value={editYears} onChangeText={setEditYears} />
-          <TextInput style={styles.input} placeholder="Career goals (comma-separated)" placeholderTextColor="#555577" value={editGoals} onChangeText={setEditGoals} />
-          <TextInput style={styles.input} placeholder="Skills to develop (comma-separated)" placeholderTextColor="#555577" value={editSkillsDev} onChangeText={setEditSkillsDev} />
-          <TextInput style={styles.input} placeholder="Strong skills (comma-separated)" placeholderTextColor="#555577" value={editSkillsStrong} onChangeText={setEditSkillsStrong} />
-          <TextInput style={styles.input} placeholder="Satisfaction (1-10)" placeholderTextColor="#555577" keyboardType="numeric" value={editSatisfaction} onChangeText={setEditSatisfaction} />
-          <TextInput style={styles.input} placeholder="Next milestone" placeholderTextColor="#555577" value={editMilestone} onChangeText={setEditMilestone} />
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: 'rgba(255,255,255,0.1)' }]} onPress={() => setShowProfileEditor(false)}>
+          <TextInput style={styles.input} placeholder="Role / Title" placeholderTextColor={colors.textTertiary} value={editRole} onChangeText={setEditRole} />
+          <TextInput style={styles.input} placeholder="Industry" placeholderTextColor={colors.textTertiary} value={editIndustry} onChangeText={setEditIndustry} />
+          <TextInput style={styles.input} placeholder="Years of experience" placeholderTextColor={colors.textTertiary} keyboardType="numeric" value={editYears} onChangeText={setEditYears} />
+          <TextInput style={styles.input} placeholder="Career goals (comma-separated)" placeholderTextColor={colors.textTertiary} value={editGoals} onChangeText={setEditGoals} />
+          <TextInput style={styles.input} placeholder="Skills to develop (comma-separated)" placeholderTextColor={colors.textTertiary} value={editSkillsDev} onChangeText={setEditSkillsDev} />
+          <TextInput style={styles.input} placeholder="Strong skills (comma-separated)" placeholderTextColor={colors.textTertiary} value={editSkillsStrong} onChangeText={setEditSkillsStrong} />
+          <TextInput style={styles.input} placeholder="Satisfaction (1-10)" placeholderTextColor={colors.textTertiary} keyboardType="numeric" value={editSatisfaction} onChangeText={setEditSatisfaction} />
+          <TextInput style={styles.input} placeholder="Next milestone" placeholderTextColor={colors.textTertiary} value={editMilestone} onChangeText={setEditMilestone} />
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <TouchableOpacity style={[styles.primaryBtn, { flex: 1, backgroundColor: colors.bgElevated }]} onPress={() => setShowProfileEditor(false)}>
               <Text style={styles.primaryBtnText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.primaryBtn, { flex: 1 }]} onPress={handleSaveProfile}>
@@ -193,7 +194,7 @@ export default function Career() {
       </View>
 
       {coaching ? (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: '#6c5ce7' }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
           <Text style={styles.cardTitle}>Career Coaching</Text>
           <Text style={styles.coachingText}>{coaching}</Text>
         </View>
@@ -202,9 +203,9 @@ export default function Career() {
       {showReflection && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Weekly Reflection</Text>
-          <TextInput style={styles.input} placeholder="Wins (comma-separated)" placeholderTextColor="#555577" value={wins} onChangeText={setWins} />
-          <TextInput style={styles.input} placeholder="Challenges (comma-separated)" placeholderTextColor="#555577" value={challenges} onChangeText={setChallenges} />
-          <TextInput style={styles.input} placeholder="Productivity (1-10)" placeholderTextColor="#555577" value={productivity} onChangeText={setProductivity} keyboardType="numeric" />
+          <TextInput style={styles.input} placeholder="Wins (comma-separated)" placeholderTextColor={colors.textTertiary} value={wins} onChangeText={setWins} />
+          <TextInput style={styles.input} placeholder="Challenges (comma-separated)" placeholderTextColor={colors.textTertiary} value={challenges} onChangeText={setChallenges} />
+          <TextInput style={styles.input} placeholder="Productivity (1-10)" placeholderTextColor={colors.textTertiary} value={productivity} onChangeText={setProductivity} keyboardType="numeric" />
           <TouchableOpacity style={styles.primaryBtn} onPress={handleReflection}>
             <Text style={styles.primaryBtnText}>Submit Reflection</Text>
           </TouchableOpacity>
@@ -215,38 +216,38 @@ export default function Career() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0a0a0f' },
-  content: { padding: 20, paddingBottom: 40 },
-  loading: { color: '#8888aa', textAlign: 'center', marginTop: 40 },
-  title: { fontSize: 24, fontWeight: '700', color: '#f0f0f5', marginBottom: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  loading: { color: colors.textSecondary, textAlign: 'center', marginTop: spacing['5xl'] },
+  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.lg },
   card: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
-  cardTitle: { fontSize: 15, fontWeight: '600', color: '#f0f0f5', marginBottom: 8 },
-  burnoutLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: '#8888aa', marginBottom: 4 },
-  burnoutRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8, marginBottom: 8 },
-  burnoutScore: { fontSize: 36, fontWeight: '700' },
-  burnoutLevel: { fontSize: 14, fontWeight: '600' },
-  factorText: { fontSize: 13, color: '#8888aa', marginBottom: 2 },
-  recText: { fontSize: 13, color: '#a29bfe', marginTop: 4 },
-  profileText: { fontSize: 16, color: '#f0f0f5', marginBottom: 8 },
-  metricRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  metricLabel: { fontSize: 13, color: '#8888aa' },
-  metricVal: { fontSize: 15, fontWeight: '600', color: '#f0f0f5' },
-  milestone: { fontSize: 13, color: '#a29bfe', marginTop: 8, fontStyle: 'italic' },
-  emptyText: { fontSize: 13, color: '#555577' },
-  actionRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.sm },
+  burnoutLabel: { ...sectionLabel, marginTop: 0 },
+  burnoutRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginBottom: spacing.sm },
+  burnoutScore: { fontSize: 36, fontWeight: font.bold },
+  burnoutLevel: { fontSize: font.sm, fontWeight: font.semibold },
+  factorText: { fontSize: font.sm, color: colors.textSecondary, marginBottom: 2 },
+  recText: { fontSize: font.sm, color: colors.textAccent, marginTop: spacing.xs },
+  profileText: { fontSize: font.lg, color: colors.textPrimary, marginBottom: spacing.sm },
+  metricRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.xs },
+  metricLabel: { fontSize: font.sm, color: colors.textSecondary },
+  metricVal: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  milestone: { fontSize: font.sm, color: colors.textAccent, marginTop: spacing.sm, fontStyle: 'italic' },
+  emptyText: { fontSize: font.sm, color: colors.textTertiary },
+  actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   actionBtn: {
-    flex: 1, backgroundColor: 'rgba(108,92,231,0.15)', borderRadius: 12,
-    padding: 12, alignItems: 'center',
+    flex: 1, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    padding: spacing.md, alignItems: 'center',
   },
-  actionBtnText: { color: '#a29bfe', fontWeight: '600', fontSize: 13 },
-  coachingText: { fontSize: 14, color: '#a29bfe', lineHeight: 22 },
+  actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
+  coachingText: { fontSize: font.sm, color: colors.textAccent, lineHeight: 22 },
   input: {
-    backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 12, padding: 12,
-    color: '#f0f0f5', fontSize: 14, borderWidth: 1, borderColor: '#1e1e30', marginBottom: 12,
+    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
+    color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: '#6c5ce7', borderRadius: 12, padding: 14, alignItems: 'center' },
-  primaryBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

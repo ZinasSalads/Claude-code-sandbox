@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { getTodayHealth, getFlaggedBiomarkers } from '../lib/api';
 import type { HealthData, Biomarker } from '../lib/api';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
 interface Props {
   navigation: {
@@ -49,7 +50,7 @@ export default function HealthDashboard({ navigation }: Props) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6C63FF" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
     >
       {/* Today's vitals summary */}
       {health && (
@@ -128,90 +129,83 @@ function VitalPill({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
-  content: { padding: 16 },
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.lg },
   vitalsCard: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 12,
+    ...cardStyle,
+    marginBottom: spacing.md,
   },
   vitalsTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 14,
+    ...sectionLabel,
+    marginTop: 0,
+    marginBottom: spacing.md,
   },
   vitalsRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   vitalPill: {
     flex: 1,
-    backgroundColor: 'rgba(108,99,255,0.1)',
-    borderRadius: 10,
-    padding: 10,
+    backgroundColor: colors.accentGlow,
+    borderRadius: radii.sm,
+    padding: spacing.md,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.accentBorder,
   },
   vitalLabel: {
-    fontSize: 11,
-    color: 'rgba(255,255,255,0.4)',
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: font.xs,
+    color: colors.textTertiary,
+    fontWeight: font.semibold,
+    marginBottom: spacing.xs,
   },
   vitalValue: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '700',
+    fontSize: font.lg,
+    color: colors.textPrimary,
+    fontWeight: font.bold,
   },
   emptyText: {
-    color: 'rgba(255,255,255,0.4)',
-    fontSize: 14,
+    color: colors.textSecondary,
+    fontSize: font.md,
     lineHeight: 20,
   },
   alertCard: {
-    backgroundColor: '#2E1A1A',
-    borderRadius: 14,
-    padding: 14,
+    backgroundColor: colors.errorMuted,
+    borderRadius: radii.md,
+    padding: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: '#F44336',
+    borderLeftColor: colors.error,
+    borderWidth: 1,
+    borderColor: colors.errorMuted,
   },
-  alertEmoji: { fontSize: 22, marginRight: 12 },
-  alertTitle: { color: '#F44336', fontSize: 15, fontWeight: '600' },
-  alertSub: { color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 2 },
+  alertEmoji: { fontSize: 22, marginRight: spacing.md },
+  alertTitle: { color: colors.error, fontSize: font.md, fontWeight: font.semibold },
+  alertSub: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.4)',
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    marginTop: 8,
+    ...sectionLabel,
   },
   moduleRow: {
-    backgroundColor: '#1A1A2E',
-    borderRadius: 14,
-    padding: 16,
+    ...cardStyle,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
-  moduleEmoji: { fontSize: 26, marginRight: 14 },
-  moduleTitle: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  moduleDesc: { color: 'rgba(255,255,255,0.4)', fontSize: 13, marginTop: 2 },
+  moduleEmoji: { fontSize: 26, marginRight: spacing.lg },
+  moduleTitle: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.semibold },
+  moduleDesc: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
   badge: {
-    backgroundColor: '#F44336',
-    borderRadius: 10,
+    backgroundColor: colors.error,
+    borderRadius: radii.full,
     width: 22,
     height: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
-  badgeText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  chevron: { color: 'rgba(255,255,255,0.3)', fontSize: 22, fontWeight: '300' },
+  badgeText: { color: colors.white, fontSize: font.xs, fontWeight: font.bold },
+  chevron: { color: colors.textTertiary, fontSize: 22, fontWeight: '300' },
 });

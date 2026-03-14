@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { API_URL } from '../lib/api';
+import { colors, spacing, radii, font, shadow } from '../theme';
 
 async function apiPost<T>(path: string, body: any): Promise<T | null> {
   try {
@@ -140,7 +141,7 @@ export default function Conversation() {
         <TextInput
           style={styles.textInput}
           placeholder="Type a message..."
-          placeholderTextColor="#555577"
+          placeholderTextColor={colors.textTertiary}
           value={inputText}
           onChangeText={setInputText}
           multiline
@@ -162,51 +163,52 @@ export default function Conversation() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0D0D1A' },
+  container: { flex: 1, backgroundColor: colors.bg },
   messageList: { flex: 1 },
-  messageContent: { padding: 16, paddingBottom: 8 },
-  starterContainer: { alignItems: 'center', paddingVertical: 40 },
-  starterTitle: { fontSize: 26, fontWeight: '700', color: '#fff', marginBottom: 8 },
-  starterSubtitle: { fontSize: 15, color: '#8888aa', marginBottom: 28 },
+  messageContent: { padding: spacing.lg, paddingBottom: spacing.sm },
+  starterContainer: { alignItems: 'center', paddingVertical: spacing['5xl'] - 8 },
+  starterTitle: { fontSize: font['3xl'] - 6, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
+  starterSubtitle: { fontSize: font.md, color: colors.textSecondary, marginBottom: spacing['3xl'] - 4 },
   starterGrid: { width: '100%' },
   starterCard: {
-    backgroundColor: '#141420', borderRadius: 16, padding: 16,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 10,
+    backgroundColor: colors.bgCard, borderRadius: radii.lg, padding: spacing.lg,
+    borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md - 2,
+    ...shadow.card,
   },
-  starterText: { color: '#6C63FF', fontSize: 15, fontWeight: '500', textAlign: 'center' },
+  starterText: { color: colors.textAccent, fontSize: font.md, fontWeight: font.medium, textAlign: 'center' },
   messageBubble: {
-    maxWidth: '80%', borderRadius: 16, padding: 12, marginBottom: 8,
+    maxWidth: '80%', borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.sm,
   },
   userBubble: {
-    backgroundColor: '#6C63FF', alignSelf: 'flex-end',
-    borderBottomRightRadius: 4,
+    backgroundColor: colors.accent, alignSelf: 'flex-end',
+    borderBottomRightRadius: spacing.xs,
   },
   assistantBubble: {
-    backgroundColor: '#141420', alignSelf: 'flex-start',
-    borderBottomLeftRadius: 4,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: colors.bgCard, alignSelf: 'flex-start',
+    borderBottomLeftRadius: spacing.xs,
+    borderWidth: 1, borderColor: colors.border,
   },
-  messageText: { fontSize: 15, lineHeight: 21 },
-  userText: { color: '#fff' },
-  assistantText: { color: '#fff' },
-  messageTime: { fontSize: 10, marginTop: 4 },
+  messageText: { fontSize: font.md, lineHeight: 21 },
+  userText: { color: colors.white },
+  assistantText: { color: colors.textPrimary },
+  messageTime: { fontSize: 10, marginTop: spacing.xs },
   userTime: { color: 'rgba(255,255,255,0.6)', textAlign: 'right' },
-  assistantTime: { color: '#8888aa' },
-  typingText: { color: '#8888aa', fontSize: 14, fontStyle: 'italic' },
+  assistantTime: { color: colors.textTertiary },
+  typingText: { color: colors.textSecondary, fontSize: font.sm + 1, fontStyle: 'italic' },
   inputBar: {
-    flexDirection: 'row', alignItems: 'flex-end', padding: 12,
-    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.06)',
-    backgroundColor: '#0D0D1A',
+    flexDirection: 'row', alignItems: 'flex-end', padding: spacing.md,
+    borderTopWidth: 1, borderTopColor: colors.border,
+    backgroundColor: colors.bg,
   },
   textInput: {
-    flex: 1, backgroundColor: '#141420', borderRadius: 20, paddingHorizontal: 16,
-    paddingVertical: 10, color: '#fff', fontSize: 15, maxHeight: 100,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginRight: 8,
+    flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.full, paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md - 2, color: colors.textPrimary, fontSize: font.md, maxHeight: 100,
+    borderWidth: 1, borderColor: colors.border, marginRight: spacing.sm,
   },
   sendBtn: {
-    backgroundColor: '#6C63FF', borderRadius: 20, paddingHorizontal: 20,
-    paddingVertical: 10, justifyContent: 'center',
+    backgroundColor: colors.accent, borderRadius: radii.full, paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md - 2, justifyContent: 'center',
   },
   sendBtnDisabled: { opacity: 0.4 },
-  sendBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+  sendBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

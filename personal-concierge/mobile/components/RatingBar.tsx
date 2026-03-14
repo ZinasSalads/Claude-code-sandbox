@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { submitRating } from '../lib/api';
-
-const ACCENT = '#6C63FF';
+import { colors, font, radii, spacing } from '../theme';
 
 interface RatingBarProps {
   category: string;
@@ -64,45 +63,45 @@ export default function RatingBar({ category, itemId, itemDescription, onRated }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
   label: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: font.xs,
+    color: colors.textTertiary,
     marginBottom: 6,
   },
   row: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   btn: {
     flex: 1,
-    backgroundColor: 'rgba(108,99,255,0.15)',
-    borderRadius: 8,
-    paddingVertical: 8,
+    backgroundColor: colors.accentMuted,
+    borderRadius: radii.sm,
+    paddingVertical: spacing.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(108,99,255,0.3)',
+    borderColor: colors.accentBorder,
   },
   btnNeg: {
-    backgroundColor: 'rgba(255,71,87,0.1)',
-    borderColor: 'rgba(255,71,87,0.3)',
+    backgroundColor: colors.errorMuted,
+    borderColor: 'rgba(248, 113, 113, 0.3)',
   },
   btnText: {
-    fontSize: 13,
-    color: ACCENT,
-    fontWeight: '600',
+    fontSize: font.sm,
+    color: colors.textAccent,
+    fontWeight: font.semibold,
   },
   btnTextNeg: {
-    fontSize: 13,
-    color: '#FF4757',
-    fontWeight: '600',
+    fontSize: font.sm,
+    color: colors.error,
+    fontWeight: font.semibold,
   },
   thanks: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.4)',
+    fontSize: font.sm,
+    color: colors.textTertiary,
     textAlign: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
 });
