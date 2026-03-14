@@ -373,7 +373,13 @@ class EnvironmentService:
                 .limit(1)
                 .execute()
             )
-            return result.data[0] if result.data else None
+            if result.data:
+                cached = result.data[0]
+                # Re-fetch if AQI or conditions are missing (stale cache)
+                if cached.get("aqi") is None and cached.get("conditions") is None:
+                    return None
+                return cached
+            return None
         except Exception as e:
             logger.error(f"Cache read error: {e}")
             return None
