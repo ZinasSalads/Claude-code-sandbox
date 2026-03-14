@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Health Concierge</title>
 <style>
 :root {
@@ -26,13 +26,15 @@ body {
 }
 .nav {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px; border-bottom: 1px solid var(--card-border);
+  padding: 16px 20px; padding-top: calc(16px + env(safe-area-inset-top));
+  border-bottom: 1px solid var(--card-border);
   position: sticky; top: 0; background: var(--bg); z-index: 100;
 }
 .nav h1 { font-size: 18px; font-weight: 700; }
 .nav .status { width: 8px; height: 8px; border-radius: 50%; }
 .tabs {
   display: flex; overflow-x: auto; gap: 4px; padding: 12px 20px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
   border-bottom: 1px solid var(--card-border);
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
@@ -43,7 +45,7 @@ body {
   border: 1px solid var(--card-border); color: var(--text-dim); transition: all 0.2s;
 }
 .tab.active { background: var(--accent); border-color: var(--accent); color: white; }
-.content { padding: 20px; max-width: 600px; margin: 0 auto; }
+.content { padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); max-width: 600px; margin: 0 auto; }
 .card {
   background: var(--card); border: 1px solid var(--card-border);
   border-radius: 16px; padding: 20px; margin-bottom: 16px;
@@ -115,7 +117,7 @@ textarea { resize: vertical; min-height: 60px; }
 .empty { text-align: center; padding: 40px 20px; color: var(--text-dim); }
 .empty .icon { font-size: 40px; margin-bottom: 12px; }
 .toast {
-  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(100px);
+  position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(100px);
   background: var(--green); color: white; padding: 12px 24px; border-radius: 12px;
   font-size: 14px; font-weight: 500; opacity: 0; transition: all 0.3s ease; z-index: 500;
 }
@@ -185,7 +187,7 @@ textarea { resize: vertical; min-height: 60px; }
 }
 .toggle-switch:checked::after { transform: translateX(20px); }
 .add-btn {
-  position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px;
+  position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 56px; height: 56px;
   border-radius: 28px; background: var(--accent); color: white;
   font-size: 28px; border: none; cursor: pointer; z-index: 200;
   box-shadow: 0 4px 20px rgba(108,92,231,0.4); display: none;
