@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, getScore
 interface Props {
   navigation: {
     navigate: (screen: string, params?: Record<string, unknown>) => void;
+    addListener: (event: string, callback: () => void) => () => void;
   };
 }
 
@@ -59,7 +60,13 @@ export default function LifeDashboard({ navigation }: Props) {
     if (Array.isArray(trips)) setActiveTrips(trips.filter((t: any) => t.status === 'active').length);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const unsubscribe = navigation.addListener('focus', () => {
+      load();
+    });
+    return unsubscribe;
+  }, [load, navigation]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

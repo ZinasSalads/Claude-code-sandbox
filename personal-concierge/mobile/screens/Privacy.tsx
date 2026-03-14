@@ -45,9 +45,23 @@ export default function Privacy() {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: async () => {
-            await deleteCategory(category, true);
-            await load();
+          onPress: () => {
+            // Second confirmation
+            Alert.alert(
+              'Are you sure?',
+              `All "${category}" data will be permanently erased. There is no way to recover it.`,
+              [
+                { text: 'Go Back', style: 'cancel' },
+                {
+                  text: 'Yes, Delete Permanently',
+                  style: 'destructive',
+                  onPress: async () => {
+                    await deleteCategory(category, true);
+                    await load();
+                  },
+                },
+              ],
+            );
           },
         },
       ],
@@ -63,9 +77,23 @@ export default function Privacy() {
         {
           text: 'Forget Everything',
           style: 'destructive',
-          onPress: async () => {
-            await amnesia(category, true);
-            await load();
+          onPress: () => {
+            // Second confirmation
+            Alert.alert(
+              'Final Warning',
+              `This will delete ALL "${category}" data AND stop future collection. You will lose everything permanently.`,
+              [
+                { text: 'Go Back', style: 'cancel' },
+                {
+                  text: 'Yes, Forget Everything',
+                  style: 'destructive',
+                  onPress: async () => {
+                    await amnesia(category, true);
+                    await load();
+                  },
+                },
+              ],
+            );
           },
         },
       ],

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '.
 interface Props {
   navigation: {
     navigate: (screen: string, params?: Record<string, unknown>) => void;
+    addListener: (event: string, callback: () => void) => () => void;
   };
 }
 
@@ -46,7 +47,14 @@ export default function ProfileDashboard({ navigation }: Props) {
     setDataSummary(ds);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  // Reload data on mount and every time the screen comes into focus
+  useEffect(() => {
+    load();
+    const unsubscribe = navigation.addListener('focus', () => {
+      load();
+    });
+    return unsubscribe;
+  }, [load, navigation]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

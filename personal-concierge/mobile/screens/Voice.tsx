@@ -5,98 +5,138 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { getMorningBriefing, getEveningWindDown, processVoiceCommand } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
-const SESSION_TYPES = ['Morning', 'Workout', 'Evening', 'Command'] as const;
+interface BriefingCard {
+  key: string;
+  title: string;
+  emoji: string;
+  desc: string;
+  sessionType: string;
+}
+
+const BRIEFINGS: BriefingCard[] = [
+  {
+    key: 'morning',
+    title: 'Morning Briefing',
+    emoji: '☀️',
+    desc: 'Get a personalized rundown of your day — schedule, health insights, priorities, and weather.',
+    sessionType: 'morning',
+  },
+  {
+    key: 'workout',
+    title: 'Pre-Workout Brief',
+    emoji: '🏋️',
+    desc: 'Your workout plan, energy level assessment, and any adjustments based on today\'s readiness.',
+    sessionType: 'workout',
+  },
+  {
+    key: 'evening',
+    title: 'Evening Wind-Down',
+    emoji: '🌙',
+    desc: 'Reflect on your day — what you accomplished, tomorrow\'s preview, and sleep optimization tips.',
+    sessionType: 'evening',
+  },
+];
 
 export default function Voice() {
-  const [sessionType, setSessionType] = useState<string>('Command');
-  const [transcript, setTranscript] = useState('');
-  const [response, setResponse] = useState('');
+  const [activeBriefing, setActiveBriefing] = useState<string | null>(null);
+  const [response, setResponse] = useState<string | null>(null);
+  const [responseBriefing, setResponseBriefing] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleBriefing = useCallback(async () => {
+  const handleBriefing = useCallback(async (briefing: BriefingCard) => {
     setLoading(true);
-    setResponse('');
-    const result = await getMorningBriefing();
-    setResponse(result?.text || 'Unable to generate briefing.');
+    setActiveBriefing(briefing.key);
+    setResponse(null);
+    setResponseBriefing(null);
+
+    let result: any = null;
+    if (briefing.key === 'morning') {
+      result = await getMorningBriefing();
+    } else if (briefing.key === 'evening') {
+      result = await getEveningWindDown();
+    } else {
+      result = await processVoiceCommand('Generate my pre-workout briefing', briefing.sessionType);
+    }
+
+    const text = result?.text || result?.response_text || 'Unable to generate briefing right now. Please try again.';
+    setResponse(text);
+    setResponseBriefing(briefing.key);
     setLoading(false);
+    setActiveBriefing(null);
   }, []);
 
-  const handleWindDown = useCallback(async () => {
-    setLoading(true);
-    setResponse('');
-    const result = await getEveningWindDown();
-    setResponse(result?.text || 'Unable to generate wind-down.');
-    setLoading(false);
+  const dismissResponse = useCallback(() => {
+    setResponse(null);
+    setResponseBriefing(null);
   }, []);
-
-  const handleCommand = useCallback(async () => {
-    if (!transcript.trim()) return;
-    setLoading(true);
-    setResponse('');
-    const result = await processVoiceCommand(transcript, sessionType.toLowerCase());
-    setResponse(result?.response_text || 'No response.');
-    setLoading(false);
-  }, [transcript, sessionType]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Voice Interface</Text>
-      <Text style={styles.subtitle}>AI-powered voice commands and briefings</Text>
+      <Text style={styles.title}>Daily Briefings</Text>
+      <Text style={styles.subtitle}>
+        Tap a briefing to get a personalized AI summary based on your latest data.
+      </Text>
 
-      <View style={styles.typeRow}>
-        {SESSION_TYPES.map((t) => (
-          <TouchableOpacity
-            key={t}
-            style={[styles.typeBtn, sessionType === t && styles.typeBtnActive]}
-            onPress={() => setSessionType(t)}
-          >
-            <Text style={[styles.typeBtnText, sessionType === t && styles.typeBtnTextActive]}>
-              {t}
-            </Text>
-          </TouchableOpacity>
-        ))}
+      {BRIEFINGS.map((briefing) => {
+        const isLoading = loading && activeBriefing === briefing.key;
+        const showResponse = responseBriefing === briefing.key && response;
+
+        return (
+          <View key={briefing.key}>
+            <TouchableOpacity
+              style={[styles.briefingCard, isLoading && styles.briefingCardLoading]}
+              onPress={() => handleBriefing(briefing)}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <View style={styles.briefingHeader}>
+                <Text style={styles.briefingEmoji}>{briefing.emoji}</Text>
+                <View style={styles.briefingInfo}>
+                  <Text style={styles.briefingTitle}>{briefing.title}</Text>
+                  <Text style={styles.briefingDesc}>{briefing.desc}</Text>
+                </View>
+              </View>
+              {isLoading ? (
+                <View style={styles.loadingRow}>
+                  <ActivityIndicator size="small" color={colors.primary} />
+                  <Text style={styles.loadingText}>Generating...</Text>
+                </View>
+              ) : (
+                <View style={styles.generateRow}>
+                  <Text style={styles.generateText}>Generate</Text>
+                  <Text style={styles.generateArrow}>→</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {showResponse && (
+              <View style={styles.responseCard}>
+                <View style={styles.responseHeader}>
+                  <Text style={styles.responseTitle}>{briefing.emoji} {briefing.title}</Text>
+                  <TouchableOpacity onPress={dismissResponse}>
+                    <Text style={styles.dismissBtn}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.responseText}>{response}</Text>
+              </View>
+            )}
+          </View>
+        );
+      })}
+
+      <View style={styles.tipCard}>
+        <Text style={styles.tipTitle}>💡 Tip</Text>
+        <Text style={styles.tipText}>
+          For open-ended questions or conversation, use the chat button in the bottom-right corner of any screen.
+        </Text>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Quick Actions</Text>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleBriefing}>
-          <Text style={styles.actionBtnText}>Morning Briefing</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionBtn, { marginTop: 8 }]} onPress={handleWindDown}>
-          <Text style={styles.actionBtnText}>Evening Wind-Down</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Text Command</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Type a command..."
-          placeholderTextColor={colors.textTertiary}
-          value={transcript}
-          onChangeText={setTranscript}
-          multiline
-        />
-        <TouchableOpacity
-          style={[styles.primaryBtn, loading && styles.disabled]}
-          onPress={handleCommand}
-          disabled={loading}
-        >
-          <Text style={styles.primaryBtnText}>{loading ? 'Processing...' : 'Send Command'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {response ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Response</Text>
-          <Text style={styles.responseText}>{response}</Text>
-        </View>
-      ) : null}
+      <View style={{ height: spacing['3xl'] }} />
     </ScrollView>
   );
 }
@@ -104,36 +144,103 @@ export default function Voice() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.xl },
-  title: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.xs },
-  subtitle: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xl },
-  typeRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
-  typeBtn: {
-    paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full,
-    backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border,
+  title: {
+    fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary,
+    marginBottom: spacing.xs, marginTop: spacing.sm,
   },
-  typeBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  typeBtnText: { fontSize: font.sm, fontWeight: font.medium, color: colors.textSecondary },
-  typeBtnTextActive: { color: colors.textPrimary },
-  card: {
+  subtitle: {
+    fontSize: font.sm, color: colors.textSecondary, lineHeight: 20,
+    marginBottom: spacing.xl,
+  },
+  // Briefing cards
+  briefingCard: {
     ...cardStyle,
     padding: spacing.xl,
+    marginBottom: spacing.md,
+  },
+  briefingCardLoading: {
+    borderColor: colors.primaryBorder,
+  },
+  briefingHeader: {
+    flexDirection: 'row',
     marginBottom: spacing.lg,
   },
-  cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.md },
-  actionBtn: {
-    backgroundColor: colors.primaryMuted, borderRadius: radii.md, padding: spacing.lg,
+  briefingEmoji: {
+    fontSize: 32,
+    marginRight: spacing.lg,
+    marginTop: 2,
+  },
+  briefingInfo: {
+    flex: 1,
+  },
+  briefingTitle: {
+    fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  briefingDesc: {
+    fontSize: font.sm, color: colors.textSecondary, lineHeight: 20,
+  },
+  generateRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing.xs,
   },
-  actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
-  input: {
-    backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
-    color: colors.textPrimary, fontSize: font.sm, minHeight: 60, borderWidth: 1, borderColor: colors.border,
-    marginBottom: spacing.md, textAlignVertical: 'top',
+  generateText: {
+    fontSize: font.sm, fontWeight: font.semibold, color: colors.primary,
   },
-  primaryBtn: {
-    backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
+  generateArrow: {
+    fontSize: font.md, color: colors.primary,
   },
-  primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
-  disabled: { opacity: 0.5 },
-  responseText: { fontSize: font.sm, color: colors.textAccent, lineHeight: 22 },
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  loadingText: {
+    fontSize: font.sm, color: colors.textTertiary,
+  },
+  // Response
+  responseCard: {
+    backgroundColor: colors.primaryMuted,
+    borderRadius: radii.lg,
+    padding: spacing.xl,
+    marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.primaryBorder,
+  },
+  responseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  responseTitle: {
+    fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary,
+  },
+  dismissBtn: {
+    fontSize: font.md, color: colors.textTertiary, padding: spacing.xs,
+  },
+  responseText: {
+    fontSize: font.sm, color: colors.textAccent, lineHeight: 22,
+  },
+  // Tip
+  tipCard: {
+    backgroundColor: colors.bgCard,
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginTop: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderStyle: 'dashed',
+  },
+  tipTitle: {
+    fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  tipText: {
+    fontSize: font.sm, color: colors.textTertiary, lineHeight: 20,
+  },
 });
