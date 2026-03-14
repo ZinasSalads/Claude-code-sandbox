@@ -83,10 +83,10 @@ export default function Skincare() {
       api<HealthCorrelation[]>('/skincare/correlations'),
     ]);
     setProfile(p);
-    setMorningRoutine(m || []);
-    setEveningRoutine(e || []);
+    setMorningRoutine(Array.isArray(m) ? m : []);
+    setEveningRoutine(Array.isArray(e) ? e : []);
     setWeeklyTrend(w);
-    setCorrelations(c || []);
+    setCorrelations(Array.isArray(c) ? c : []);
     setLoading(false);
   }, []);
 
