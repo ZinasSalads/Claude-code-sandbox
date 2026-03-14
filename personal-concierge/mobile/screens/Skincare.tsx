@@ -152,7 +152,10 @@ export default function Skincare() {
     setShowProfileEditor(true);
   }, [profile]);
 
-  const scoreColor = (s: number) => s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
+  const scoreColor = (s: number | null | undefined) => {
+    if (s == null) return colors.textTertiary;
+    return s >= 70 ? colors.success : s >= 40 ? colors.warning : colors.error;
+  };
 
   if (loading) {
     return <View style={styles.container}><Text style={styles.loading}>Loading skincare data...</Text></View>;
@@ -161,7 +164,7 @@ export default function Skincare() {
   const renderRoutine = (title: string, products: Product[]) => (
     <View style={styles.card}>
       <Text style={styles.cardTitle}>{title}</Text>
-      {[...(products || [])].sort((a, b) => a.application_order - b.application_order).map((p) => (
+      {[...(products || [])].sort((a, b) => (a.application_order ?? 0) - (b.application_order ?? 0)).map((p) => (
         <View key={p.id} style={styles.productRow}>
           <View style={styles.stepBadge}>
             <Text style={styles.stepText}>{p.application_order}</Text>
@@ -202,11 +205,11 @@ export default function Skincare() {
           </View>
           <View style={styles.profileRow}>
             <Text style={styles.profileLabel}>Type</Text>
-            <Text style={styles.profileValue}>{profile.skin_type}</Text>
+            <Text style={styles.profileValue}>{profile.skin_type || '--'}</Text>
           </View>
           <View style={styles.profileRow}>
             <Text style={styles.profileLabel}>Sensitivity</Text>
-            <Text style={styles.profileValue}>{profile.sensitivity_level}</Text>
+            <Text style={styles.profileValue}>{profile.sensitivity_level || '--'}</Text>
           </View>
           {profile.climate ? <View style={styles.profileRow}><Text style={styles.profileLabel}>Climate</Text><Text style={styles.profileValue}>{profile.climate}</Text></View> : null}
           {profile.age_range ? <View style={styles.profileRow}><Text style={styles.profileLabel}>Age Range</Text><Text style={styles.profileValue}>{profile.age_range}</Text></View> : null}
@@ -292,14 +295,14 @@ export default function Skincare() {
           <Text style={styles.cardTitle}>Weekly Skin Trend</Text>
           <View style={styles.metricsRow}>
             <View style={styles.metricItem}>
-              <Text style={[styles.metricVal, { color: scoreColor(weeklyTrend.avg_condition * 10) }]}>
-                {weeklyTrend.avg_condition.toFixed(1)}
+              <Text style={[styles.metricVal, { color: scoreColor(weeklyTrend.avg_condition != null ? weeklyTrend.avg_condition * 10 : null) }]}>
+                {weeklyTrend.avg_condition != null ? weeklyTrend.avg_condition.toFixed(1) : '--'}
               </Text>
               <Text style={styles.metricLabel}>Avg Condition</Text>
             </View>
             <View style={styles.metricItem}>
-              <Text style={[styles.metricVal, { color: weeklyTrend.breakout_days > 2 ? colors.error : colors.success }]}>
-                {weeklyTrend.breakout_days}
+              <Text style={[styles.metricVal, { color: (weeklyTrend.breakout_days ?? 0) > 2 ? colors.error : colors.success }]}>
+                {weeklyTrend.breakout_days ?? '--'}
               </Text>
               <Text style={styles.metricLabel}>Breakout Days</Text>
             </View>
@@ -316,10 +319,10 @@ export default function Skincare() {
           <Text style={styles.cardTitle}>Health Correlations</Text>
           {correlations.map((c, i) => (
             <View key={i} style={styles.correlationItem}>
-              <View style={[styles.impactDot, { backgroundColor: c.impact === 'positive' ? colors.success : c.impact === 'negative' ? colors.error : colors.warning }]} />
+              <View style={[styles.impactDot, { backgroundColor: c?.impact === 'positive' ? colors.success : c?.impact === 'negative' ? colors.error : colors.warning }]} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.correlationFactor}>{c.factor}</Text>
-                <Text style={styles.dimText}>{c.detail}</Text>
+                <Text style={styles.correlationFactor}>{c?.factor || 'Unknown'}</Text>
+                <Text style={styles.dimText}>{c?.detail || ''}</Text>
               </View>
             </View>
           ))}
