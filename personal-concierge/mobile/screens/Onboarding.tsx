@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, ActivityIndicator, RefreshControl,
+  TextInput, ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { getOnboardingStatus, getStepContent, completeOnboardingStep, skipOnboardingStep } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
@@ -39,13 +39,13 @@ export default function Onboarding({ navigation }: any) {
     if (!step) return;
     setSubmitting(true);
     const result = await completeOnboardingStep(step.step_name, formData);
-    if (result?.next_step) {
-      const content = await getStepContent(result.next_step);
-      setStep(content);
-      setFormData({});
+    if (!result || result.error) {
+      Alert.alert('Error', result?.error || 'Failed to save. Check your connection and try again.');
+      setSubmitting(false);
+      return;
     }
-    const s = await getOnboardingStatus();
-    setStatus(s);
+    setFormData({});
+    await loadStatus();
     setSubmitting(false);
   };
 
@@ -53,13 +53,13 @@ export default function Onboarding({ navigation }: any) {
     if (!step) return;
     setSubmitting(true);
     const result = await skipOnboardingStep(step.step_name);
-    if (result?.next_step) {
-      const content = await getStepContent(result.next_step);
-      setStep(content);
-      setFormData({});
+    if (!result || result.error) {
+      Alert.alert('Error', result?.error || 'Failed to skip. Check your connection and try again.');
+      setSubmitting(false);
+      return;
     }
-    const s = await getOnboardingStatus();
-    setStatus(s);
+    setFormData({});
+    await loadStatus();
     setSubmitting(false);
   };
 
@@ -192,10 +192,22 @@ export default function Onboarding({ navigation }: any) {
               );
             }
             if (field.type === 'action') {
+              // Only map to screens within the Profile stack
+              const actionScreens: Record<string, string> = {
+                personality: 'Personality',
+              };
+              const targetScreen = step?.step_name ? actionScreens[step.step_name] : null;
               return (
-                <View key={idx} style={styles.fieldRow}>
-                  <Text style={styles.desc}>{field.label} — complete this in the relevant app section.</Text>
-                </View>
+                <TouchableOpacity
+                  key={idx}
+                  style={styles.actionBtn}
+                  onPress={() => targetScreen && navigation?.navigate?.(targetScreen)}
+                  disabled={!targetScreen}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.actionBtnText}>{field.label}</Text>
+                  {targetScreen && <Text style={styles.actionChevron}>›</Text>}
+                </TouchableOpacity>
               );
             }
             return null;
@@ -257,6 +269,12 @@ const styles = StyleSheet.create({
   chipSelected: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },
   chipText: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize' },
   chipTextSelected: { color: colors.textPrimary },
+  actionBtn: {
+    backgroundColor: colors.primaryMuted, borderRadius: radii.md, padding: spacing.lg, flexDirection: 'row',
+    alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderColor: colors.primary,
+  },
+  actionBtnText: { color: colors.textAccent, fontSize: font.md, fontWeight: font.semibold },
+  actionChevron: { color: colors.textAccent, fontSize: 22, fontWeight: '300' },
   primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm, ...shadow.glow },
   primaryBtnDisabled: { opacity: 0.5 },
   primaryBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },

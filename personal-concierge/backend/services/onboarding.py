@@ -376,6 +376,19 @@ class OnboardingService:
                 else:
                     supabase.table("financial_context").insert(fin_data).execute()
 
+            elif step_name == "supplement_stack":
+                raw = data.get("supplements", "")
+                if raw:
+                    lines = [s.strip() for s in raw.split("\n") if s.strip()]
+                    for name in lines:
+                        existing = supabase.table("supplements").select("id").eq("name", name).limit(1).execute()
+                        if not existing.data:
+                            supabase.table("supplements").insert({
+                                "name": name,
+                                "active": True,
+                                "timing": "morning",
+                            }).execute()
+
         except Exception as e:
             logger.error(f"Failed to seed data from {step_name}: {e}")
 

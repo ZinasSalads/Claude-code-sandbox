@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import { getTodayHealth, getFlaggedBiomarkers } from '../lib/api';
+import { getTodayHealth, getHealthHistory, getFlaggedBiomarkers, syncOura } from '../lib/api';
 import type { HealthData, Biomarker } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
@@ -29,12 +29,14 @@ const modules = [
 
 export default function HealthDashboard({ navigation }: Props) {
   const [health, setHealth] = useState<HealthData | null>(null);
+  const [history, setHistory] = useState<HealthData[]>([]);
   const [flagged, setFlagged] = useState<Biomarker[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
-    const [h, f] = await Promise.all([getTodayHealth(), getFlaggedBiomarkers()]);
+    const [h, hist, f] = await Promise.all([getTodayHealth(), getHealthHistory(), getFlaggedBiomarkers()]);
     setHealth(h);
+    setHistory(hist || []);
     setFlagged(f || []);
   }, []);
 
@@ -42,6 +44,7 @@ export default function HealthDashboard({ navigation }: Props) {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    await syncOura();
     await load();
     setRefreshing(false);
   }, [load]);
@@ -114,8 +117,37 @@ export default function HealthDashboard({ navigation }: Props) {
         </TouchableOpacity>
       ))}
 
+      {/* Recent history */}
+      {history.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>RECENT HISTORY</Text>
+          {history.slice(0, 7).map((day) => (
+            <View key={day.date} style={styles.historyRow}>
+              <Text style={styles.historyDate}>
+                {new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+              </Text>
+              <View style={styles.historyStats}>
+                <MiniStat label="HRV" value={day.hrv != null ? `${day.hrv}` : '—'} />
+                <MiniStat label="Sleep" value={day.sleep_score != null ? `${day.sleep_score}` : '—'} />
+                <MiniStat label="Ready" value={day.readiness_score != null ? `${day.readiness_score}` : '—'} />
+                <MiniStat label="Active" value={day.activity_score != null ? `${day.activity_score}` : '—'} />
+              </View>
+            </View>
+          ))}
+        </>
+      )}
+
       <View style={{ height: 32 }} />
     </ScrollView>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.miniStat}>
+      <Text style={styles.miniLabel}>{label}</Text>
+      <Text style={styles.miniValue}>{value}</Text>
+    </View>
   );
 }
 
@@ -208,4 +240,36 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: colors.white, fontSize: font.xs, fontWeight: font.bold },
   chevron: { color: colors.textTertiary, fontSize: 22, fontWeight: '300' },
+  historyRow: {
+    ...cardStyle,
+    marginBottom: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  historyDate: {
+    color: colors.textSecondary,
+    fontSize: font.sm,
+    fontWeight: font.semibold,
+    width: 70,
+  },
+  historyStats: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  miniStat: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  miniLabel: {
+    color: colors.textTertiary,
+    fontSize: 10,
+    fontWeight: font.semibold,
+    marginBottom: 2,
+  },
+  miniValue: {
+    color: colors.textPrimary,
+    fontSize: font.md,
+    fontWeight: font.bold,
+  },
 });
