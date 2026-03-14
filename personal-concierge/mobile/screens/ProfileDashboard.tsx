@@ -20,6 +20,8 @@ const modules = [
   { key: 'CheckIn', title: 'Daily Check-In', emoji: '📋', desc: 'Energy, mood, stress & soreness' },
   { key: 'Personality', title: 'Personality Profile', emoji: '🧠', desc: 'MBTI assessment & coaching style' },
   { key: 'Onboarding', title: 'Onboarding & Setup', emoji: '🚀', desc: 'Configure your concierge' },
+  { key: 'VoiceCommands', title: 'Voice & Briefings', emoji: '🎙️', desc: 'Morning briefing & commands' },
+  { key: 'ContextualIntel', title: 'Contextual Intelligence', emoji: '🧩', desc: 'Signals & anomaly detection' },
   { key: 'HomeEnv', title: 'Home Environment', emoji: '🏠', desc: 'Optimization & correlations' },
   { key: 'Financial', title: 'Financial', emoji: '💳', desc: 'Subscriptions & budget audit' },
   { key: 'DigitalIdentity', title: 'Digital Identity', emoji: '🌐', desc: 'Online brand & presence' },
@@ -59,7 +61,11 @@ export default function ProfileDashboard({ navigation }: Props) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       {/* Profile summary card */}
-      <View style={styles.summaryCard}>
+      <TouchableOpacity
+        style={styles.summaryCard}
+        onPress={() => navigation.navigate('Personality')}
+        activeOpacity={0.7}
+      >
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarText}>👤</Text>
         </View>
@@ -72,11 +78,12 @@ export default function ProfileDashboard({ navigation }: Props) {
           ) : (
             <>
               <Text style={styles.mbtiType}>Not assessed</Text>
-              <Text style={styles.mbtiLabel}>Take the personality test to personalize your experience</Text>
+              <Text style={styles.mbtiLabel}>Tap to take the personality test</Text>
             </>
           )}
         </View>
-      </View>
+        <Text style={styles.chevron}>›</Text>
+      </TouchableOpacity>
 
       {/* Onboarding progress */}
       {onboarding && !onboarding.is_complete && (

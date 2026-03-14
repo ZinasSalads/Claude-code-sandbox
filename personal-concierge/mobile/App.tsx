@@ -10,13 +10,14 @@ import { colors, font, shadow } from './theme';
 // Dashboard / hub screens (landing pages for each tab)
 import HealthDashboard from './screens/HealthDashboard';
 import LifeDashboard from './screens/LifeDashboard';
-import VoiceDashboard from './screens/VoiceDashboard';
 import ProfileDashboard from './screens/ProfileDashboard';
 
 // Home tab screens
 import CommandCenter from './screens/CommandCenter';
 import WorkoutDetail from './screens/WorkoutDetail';
 import MealPlan from './screens/MealPlan';
+
+// Conversation (root-level modal)
 import Conversation from './screens/Conversation';
 
 // Health tab screens
@@ -38,11 +39,7 @@ import WardrobeScreen from './screens/Wardrobe';
 import Hobbies from './screens/Hobbies';
 import Learning from './screens/Learning';
 import Legacy from './screens/Legacy';
-
-// Voice / Intelligence tab screens
-import Voice from './screens/Voice';
 import Reviews from './screens/Reviews';
-import ContextualIntelligence from './screens/ContextualIntelligence';
 
 // Profile tab screens
 import CheckIn from './screens/CheckIn';
@@ -53,6 +50,8 @@ import Financial from './screens/Financial';
 import DigitalIdentity from './screens/DigitalIdentity';
 import FinancialPlanning from './screens/FinancialPlanning';
 import Privacy from './screens/Privacy';
+import Voice from './screens/Voice';
+import ContextualIntelligence from './screens/ContextualIntelligence';
 
 // Dark theme
 const DarkTheme = {
@@ -112,34 +111,6 @@ function LifeIcon({ color, size }: { color: string; size: number }) {
   );
 }
 
-function InsightsIcon({ color, size }: { color: string; size: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-function MicIcon({ color, size }: { color: string; size: number }) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zM19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
 function UserIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
@@ -183,12 +154,11 @@ function HomeStackScreen() {
       <HomeStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
       <HomeStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
       <HomeStack.Screen name="MealPlan" component={MealPlan} options={{ title: 'Meal Plan' }} />
-      <HomeStack.Screen name="Conversation" component={Conversation} options={{ title: 'AI Chat' }} />
     </HomeStack.Navigator>
   );
 }
 
-// Health stack — HealthDashboard is the hub, sub-modules push on top
+// Health stack
 const HealthStack = createNativeStackNavigator();
 function HealthStackScreen() {
   return (
@@ -205,7 +175,7 @@ function HealthStackScreen() {
   );
 }
 
-// Life stack — LifeDashboard is the hub
+// Life stack — absorbs Reviews from old Voice tab
 const LifeStack = createNativeStackNavigator();
 function LifeStackScreen() {
   return (
@@ -220,24 +190,12 @@ function LifeStackScreen() {
       <LifeStack.Screen name="Hobbies" component={Hobbies} options={{ title: 'Hobbies' }} />
       <LifeStack.Screen name="Learning" component={Learning} options={{ title: 'Learning' }} />
       <LifeStack.Screen name="Legacy" component={Legacy} options={{ title: 'Legacy & Vision' }} />
+      <LifeStack.Screen name="Reviews" component={Reviews} options={{ title: 'Reviews' }} />
     </LifeStack.Navigator>
   );
 }
 
-// Voice & Intelligence stack — VoiceDashboard is the hub
-const VoiceStack = createNativeStackNavigator();
-function VoiceStackScreen() {
-  return (
-    <VoiceStack.Navigator screenOptions={stackScreenOptions}>
-      <VoiceStack.Screen name="VoiceHub" component={VoiceDashboard} options={{ title: 'Intelligence' }} />
-      <VoiceStack.Screen name="VoiceMain" component={Voice} options={{ title: 'Voice Commands' }} />
-      <VoiceStack.Screen name="Reviews" component={Reviews} options={{ title: 'Reviews' }} />
-      <VoiceStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
-    </VoiceStack.Navigator>
-  );
-}
-
-// Profile stack — ProfileDashboard is the hub
+// Profile stack — absorbs Voice Commands and Contextual Intelligence
 const ProfileStack = createNativeStackNavigator();
 function ProfileStackScreen() {
   return (
@@ -251,71 +209,94 @@ function ProfileStackScreen() {
       <ProfileStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
       <ProfileStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
       <ProfileStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
+      <ProfileStack.Screen name="VoiceCommands" component={Voice} options={{ title: 'Voice & Briefings' }} />
+      <ProfileStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
     </ProfileStack.Navigator>
   );
 }
 
-// Bottom tab navigator — 5 tabs
+// Root stack wraps tabs + Conversation modal
+const RootStack = createNativeStackNavigator();
+
+// Bottom tab navigator — 4 tabs
 const Tab = createBottomTabNavigator();
+
+function TabsScreen() {
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = 56 + insets.bottom;
+
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        tabBarStyle: {
+          backgroundColor: colors.tabBar,
+          borderTopColor: colors.tabBarBorder,
+          borderTopWidth: 1,
+          paddingBottom: insets.bottom + 4,
+          paddingTop: 8,
+          height: tabBarHeight,
+        },
+        tabBarActiveTintColor: colors.tabActive,
+        tabBarInactiveTintColor: colors.tabInactive,
+        tabBarLabelStyle: { fontSize: 10, fontWeight: font.semibold },
+        headerShown: false,
+      }}
+    >
+      <Tab.Screen
+        name="Home"
+        component={HomeStackScreen}
+        options={{ tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }}
+      />
+      <Tab.Screen
+        name="Health"
+        component={HealthStackScreen}
+        options={{ tabBarIcon: ({ color, size }) => <HeartIcon color={color} size={size} /> }}
+      />
+      <Tab.Screen
+        name="Life"
+        component={LifeStackScreen}
+        options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={ProfileStackScreen}
+        options={{ tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} /> }}
+      />
+    </Tab.Navigator>
+  );
+}
 
 function AppContent() {
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
   const insets = useSafeAreaInsets();
-
-  const tabBarHeight = 60 + insets.bottom;
+  const tabBarHeight = 56 + insets.bottom;
 
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <NavigationContainer theme={DarkTheme} ref={navigationRef}>
         <View style={{ flex: 1 }}>
-          <Tab.Navigator
-            screenOptions={{
-              tabBarStyle: {
-                backgroundColor: colors.tabBar,
-                borderTopColor: colors.tabBarBorder,
-                borderTopWidth: 1,
-                paddingBottom: insets.bottom + 4,
-                paddingTop: 8,
-                height: tabBarHeight,
-              },
-              tabBarActiveTintColor: colors.tabActive,
-              tabBarInactiveTintColor: colors.tabInactive,
-              tabBarLabelStyle: { fontSize: 10, fontWeight: font.semibold },
-              headerShown: false,
-            }}
-          >
-            <Tab.Screen
-              name="Home"
-              component={HomeStackScreen}
-              options={{ tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }}
+          <RootStack.Navigator screenOptions={{ headerShown: false }}>
+            <RootStack.Screen name="Tabs" component={TabsScreen} />
+            <RootStack.Screen
+              name="Conversation"
+              component={Conversation}
+              options={{
+                presentation: 'modal',
+                headerShown: true,
+                headerStyle: { backgroundColor: colors.bg },
+                headerTintColor: colors.textPrimary,
+                headerTitleStyle: { fontWeight: font.semibold },
+                headerShadowVisible: false,
+                title: 'AI Chat',
+              }}
             />
-            <Tab.Screen
-              name="Health"
-              component={HealthStackScreen}
-              options={{ tabBarIcon: ({ color, size }) => <HeartIcon color={color} size={size} /> }}
-            />
-            <Tab.Screen
-              name="Life"
-              component={LifeStackScreen}
-              options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
-            />
-            <Tab.Screen
-              name="Voice"
-              component={VoiceStackScreen}
-              options={{ tabBarIcon: ({ color, size }) => <MicIcon color={color} size={size} /> }}
-            />
-            <Tab.Screen
-              name="Profile"
-              component={ProfileStackScreen}
-              options={{ tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} /> }}
-            />
-          </Tab.Navigator>
+          </RootStack.Navigator>
 
           {/* Floating chat button */}
           <TouchableOpacity
             style={[fabStyles.fab, { bottom: tabBarHeight + 16 }]}
-            onPress={() => navigationRef.current?.navigate('Home', { screen: 'Conversation' })}
+            onPress={() => navigationRef.current?.navigate('Conversation' as never)}
             activeOpacity={0.8}
           >
             <ChatIcon />

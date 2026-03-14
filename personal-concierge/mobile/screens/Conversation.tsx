@@ -6,10 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  RefreshControl,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { API_URL } from '../lib/api';
 import { colors, spacing, radii, font, shadow } from '../theme';
 
@@ -32,17 +33,53 @@ interface Message {
 }
 
 const STARTERS = [
-  'What should I focus on today?',
-  'How am I doing this week?',
-  'Plan my weekend',
-  'I need motivation',
+  { text: 'What should I focus on today?', icon: '🎯' },
+  { text: 'How am I doing this week?', icon: '📊' },
+  { text: 'Plan my weekend', icon: '📅' },
+  { text: 'I need motivation', icon: '💪' },
+  { text: 'Review my supplements', icon: '💊' },
+  { text: 'Analyze my sleep', icon: '😴' },
 ];
+
+// Animated typing dots
+function TypingIndicator() {
+  const dot1 = useRef(new Animated.Value(0.3)).current;
+  const dot2 = useRef(new Animated.Value(0.3)).current;
+  const dot3 = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    const animate = (dot: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(dot, { toValue: 1, duration: 400, useNativeDriver: true }),
+          Animated.timing(dot, { toValue: 0.3, duration: 400, useNativeDriver: true }),
+        ]),
+      );
+    const a1 = animate(dot1, 0);
+    const a2 = animate(dot2, 200);
+    const a3 = animate(dot3, 400);
+    a1.start(); a2.start(); a3.start();
+    return () => { a1.stop(); a2.stop(); a3.stop(); };
+  }, [dot1, dot2, dot3]);
+
+  return (
+    <View style={[styles.messageBubble, styles.assistantBubble, styles.typingBubble]}>
+      <View style={styles.dotsRow}>
+        <Animated.View style={[styles.dot, { opacity: dot1 }]} />
+        <Animated.View style={[styles.dot, { opacity: dot2 }]} />
+        <Animated.View style={[styles.dot, { opacity: dot3 }]} />
+      </View>
+    </View>
+  );
+}
 
 export default function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+  const insets = useSafeAreaInsets();
 
   const scrollToEnd = useCallback(() => {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -81,10 +118,6 @@ export default function Conversation() {
     sendMessage(inputText);
   }, [inputText, sendMessage]);
 
-  const handleStarter = useCallback((text: string) => {
-    sendMessage(text);
-  }, [sendMessage]);
-
   const showStarters = messages.length === 0;
 
   return (
@@ -101,12 +134,23 @@ export default function Conversation() {
       >
         {showStarters && (
           <View style={styles.starterContainer}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>AI</Text>
+            </View>
             <Text style={styles.starterTitle}>Personal Concierge</Text>
-            <Text style={styles.starterSubtitle}>How can I help you today?</Text>
+            <Text style={styles.starterSubtitle}>
+              Ask me anything about your health, fitness, schedule, or goals.
+            </Text>
             <View style={styles.starterGrid}>
               {STARTERS.map((s, i) => (
-                <TouchableOpacity key={i} style={styles.starterCard} onPress={() => handleStarter(s)}>
-                  <Text style={styles.starterText}>{s}</Text>
+                <TouchableOpacity
+                  key={i}
+                  style={styles.starterCard}
+                  onPress={() => sendMessage(s.text)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.starterIcon}>{s.icon}</Text>
+                  <Text style={styles.starterText}>{s.text}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -130,17 +174,13 @@ export default function Conversation() {
           </View>
         ))}
 
-        {sending && (
-          <View style={[styles.messageBubble, styles.assistantBubble]}>
-            <Text style={styles.typingText}>Thinking...</Text>
-          </View>
-        )}
+        {sending && <TypingIndicator />}
       </ScrollView>
 
-      <View style={styles.inputBar}>
+      <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}>
         <TextInput
           style={styles.textInput}
-          placeholder="Type a message..."
+          placeholder="Ask your concierge..."
           placeholderTextColor={colors.textTertiary}
           value={inputText}
           onChangeText={setInputText}
@@ -155,7 +195,7 @@ export default function Conversation() {
           onPress={handleSend}
           disabled={!inputText.trim() || sending}
         >
-          <Text style={styles.sendBtnText}>Send</Text>
+          <Text style={styles.sendIcon}>↑</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -166,18 +206,40 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   messageList: { flex: 1 },
   messageContent: { padding: spacing.lg, paddingBottom: spacing.sm },
-  starterContainer: { alignItems: 'center', paddingVertical: spacing['5xl'] - 8 },
-  starterTitle: { fontSize: font['3xl'] - 6, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
-  starterSubtitle: { fontSize: font.md, color: colors.textSecondary, marginBottom: spacing['3xl'] - 4 },
-  starterGrid: { width: '100%' },
+  // Empty state
+  starterContainer: { alignItems: 'center', paddingTop: spacing['4xl'] },
+  logoCircle: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: colors.primaryMuted,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: spacing.lg,
+    borderWidth: 1, borderColor: colors.primaryBorder,
+  },
+  logoText: { color: colors.primary, fontSize: font.xl, fontWeight: font.bold },
+  starterTitle: {
+    fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm,
+  },
+  starterSubtitle: {
+    fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing['3xl'],
+    textAlign: 'center', lineHeight: 20, paddingHorizontal: spacing['2xl'],
+  },
+  starterGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
   starterCard: {
+    width: '48%',
     backgroundColor: colors.bgCard, borderRadius: radii.lg, padding: spacing.lg,
-    borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md - 2,
+    borderWidth: 1, borderColor: colors.border,
     ...shadow.card,
   },
-  starterText: { color: colors.textAccent, fontSize: font.md, fontWeight: font.medium, textAlign: 'center' },
+  starterIcon: { fontSize: 20, marginBottom: spacing.sm },
+  starterText: { color: colors.textPrimary, fontSize: font.sm, fontWeight: font.medium, lineHeight: 18 },
+  // Messages
   messageBubble: {
-    maxWidth: '80%', borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.sm,
+    maxWidth: '82%', borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.sm,
   },
   userBubble: {
     backgroundColor: colors.primary, alignSelf: 'flex-end',
@@ -188,13 +250,20 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: spacing.xs,
     borderWidth: 1, borderColor: colors.border,
   },
-  messageText: { fontSize: font.md, lineHeight: 21 },
+  messageText: { fontSize: font.md, lineHeight: 22 },
   userText: { color: colors.white },
   assistantText: { color: colors.textPrimary },
   messageTime: { fontSize: 10, marginTop: spacing.xs },
   userTime: { color: 'rgba(255,255,255,0.6)', textAlign: 'right' },
   assistantTime: { color: colors.textTertiary },
-  typingText: { color: colors.textSecondary, fontSize: font.sm + 1, fontStyle: 'italic' },
+  // Typing indicator
+  typingBubble: { paddingVertical: spacing.lg, paddingHorizontal: spacing.xl },
+  dotsRow: { flexDirection: 'row', gap: 6 },
+  dot: {
+    width: 8, height: 8, borderRadius: 4,
+    backgroundColor: colors.textSecondary,
+  },
+  // Input bar
   inputBar: {
     flexDirection: 'row', alignItems: 'flex-end', padding: spacing.md,
     borderTopWidth: 1, borderTopColor: colors.border,
@@ -206,9 +275,10 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border, marginRight: spacing.sm,
   },
   sendBtn: {
-    backgroundColor: colors.primary, borderRadius: radii.full, paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md - 2, justifyContent: 'center',
+    backgroundColor: colors.primary, borderRadius: radii.full,
+    width: 36, height: 36,
+    justifyContent: 'center', alignItems: 'center',
   },
-  sendBtnDisabled: { opacity: 0.4 },
-  sendBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
+  sendBtnDisabled: { opacity: 0.3 },
+  sendIcon: { color: colors.white, fontWeight: font.bold, fontSize: font.lg },
 });
