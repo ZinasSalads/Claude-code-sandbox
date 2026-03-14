@@ -1631,7 +1631,22 @@ async function submitPersonalityQuiz() {
     clearQuizProgress();
     closeModal('personalityModal');
     showToast('Personality assessment complete!');
-    loaded.personality = false; loadPersonalityData();
+    // Force refresh personality page with the result directly
+    const el = document.getElementById('personalityContent');
+    if (result && result.mbti_type) {
+      const dims = result.mbti_dimensions || {};
+      el.innerHTML = `<div class="card"><div class="card-title">Personality Profile</div>
+        <div style="font-size:36px;font-weight:800;color:var(--accent);margin:12px 0">${result.mbti_type}</div>
+        <div class="card-subtitle">${result.mbti_label || ''}</div>
+        <div style="margin-top:16px">
+          <div class="card-subtitle">E/I: ${(dims.EI||0.5).toFixed(2)} &#183; S/N: ${(dims.SN||0.5).toFixed(2)} &#183; T/F: ${(dims.TF||0.5).toFixed(2)} &#183; J/P: ${(dims.JP||0.5).toFixed(2)}</div>
+          <div style="margin-top:8px;color:var(--text-dim)">Energy: ${result.energy_source || '---'} &#183; Decision: ${result.decision_style || '---'} &#183; Structure: ${result.structure_preference || '---'}</div>
+        </div></div>
+        <button class="btn btn-secondary" style="margin-top:8px" onclick="startPersonalityQuiz(true)">Retake Assessment</button>`;
+    } else {
+      // Fallback: re-fetch from API
+      loaded.personality = false; loadPersonalityData();
+    }
   } catch(e) { closeModal('personalityModal'); showToast('Error: ' + e.message, true); }
 }
 
