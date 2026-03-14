@@ -1,4 +1,4 @@
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://claude-code-sandbox-production.up.railway.app';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://claude-code-sandbox-production.up.railway.app';
 
 interface HealthData {
   date: string;

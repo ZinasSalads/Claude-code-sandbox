@@ -6,43 +6,51 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
-// Session 1-2 screens
+// Dashboard / hub screens (landing pages for each tab)
+import HealthDashboard from './screens/HealthDashboard';
+import LifeDashboard from './screens/LifeDashboard';
+import VoiceDashboard from './screens/VoiceDashboard';
+import ProfileDashboard from './screens/ProfileDashboard';
+
+// Home tab screens
 import CommandCenter from './screens/CommandCenter';
-import CheckIn from './screens/CheckIn';
 import WorkoutDetail from './screens/WorkoutDetail';
 import MealPlan from './screens/MealPlan';
+import Conversation from './screens/Conversation';
+
+// Health tab screens
 import BloodWork from './screens/BloodWork';
 import Supplements from './screens/Supplements';
 import Longevity from './screens/Longevity';
 import Research from './screens/Research';
+import AppleHealth from './screens/AppleHealth';
+import Skincare from './screens/Skincare';
 
-// Session 4 screens
-import Voice from './screens/Voice';
-import Travel from './screens/Travel';
+// Life tab screens
 import Social from './screens/Social';
+import Relationships from './screens/Relationships';
 import Growth from './screens/Growth';
 import Career from './screens/Career';
+import Travel from './screens/Travel';
 import WardrobeScreen from './screens/Wardrobe';
 import Financial from './screens/Financial';
-
-// Session 5 screens
-import Personality from './screens/Personality';
-import Onboarding from './screens/Onboarding';
-import AppleHealth from './screens/AppleHealth';
+import Hobbies from './screens/Hobbies';
 import Legacy from './screens/Legacy';
 import HomeEnvironment from './screens/HomeEnvironment';
 import Learning from './screens/Learning';
-import Privacy from './screens/Privacy';
 
-// Session 6 screens
-import Skincare from './screens/Skincare';
-import Relationships from './screens/Relationships';
+// Voice / Intelligence tab screens
+import Voice from './screens/Voice';
+import Reviews from './screens/Reviews';
+import ContextualIntelligence from './screens/ContextualIntelligence';
+
+// Profile tab screens
+import CheckIn from './screens/CheckIn';
+import Personality from './screens/Personality';
+import Onboarding from './screens/Onboarding';
 import DigitalIdentity from './screens/DigitalIdentity';
 import FinancialPlanning from './screens/FinancialPlanning';
-import Hobbies from './screens/Hobbies';
-import ContextualIntelligence from './screens/ContextualIntelligence';
-import Conversation from './screens/Conversation';
-import Reviews from './screens/Reviews';
+import Privacy from './screens/Privacy';
 
 // Dark theme
 const DarkTheme = {
@@ -173,17 +181,17 @@ function HomeStackScreen() {
       <HomeStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
       <HomeStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
       <HomeStack.Screen name="MealPlan" component={MealPlan} options={{ title: 'Meal Plan' }} />
-      <HomeStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
       <HomeStack.Screen name="Conversation" component={Conversation} options={{ title: 'AI Chat' }} />
     </HomeStack.Navigator>
   );
 }
 
-// Health stack
+// Health stack — HealthDashboard is the hub, sub-modules push on top
 const HealthStack = createNativeStackNavigator();
 function HealthStackScreen() {
   return (
     <HealthStack.Navigator screenOptions={stackScreenOptions}>
+      <HealthStack.Screen name="HealthHub" component={HealthDashboard} options={{ title: 'Health' }} />
       <HealthStack.Screen name="BloodWork" component={BloodWork} options={{ title: 'Blood Work' }} />
       <HealthStack.Screen name="Supplements" component={Supplements} options={{ title: 'Supplements' }} />
       <HealthStack.Screen name="Longevity" component={Longevity} options={{ title: 'Longevity' }} />
@@ -194,11 +202,12 @@ function HealthStackScreen() {
   );
 }
 
-// Life stack
+// Life stack — LifeDashboard is the hub
 const LifeStack = createNativeStackNavigator();
 function LifeStackScreen() {
   return (
     <LifeStack.Navigator screenOptions={stackScreenOptions}>
+      <LifeStack.Screen name="LifeHub" component={LifeDashboard} options={{ title: 'Life' }} />
       <LifeStack.Screen name="Social" component={Social} options={{ title: 'Social Health' }} />
       <LifeStack.Screen name="Relationships" component={Relationships} options={{ title: 'Relationships' }} />
       <LifeStack.Screen name="Growth" component={Growth} options={{ title: '1% Growth' }} />
@@ -214,25 +223,28 @@ function LifeStackScreen() {
   );
 }
 
-// Voice & Intelligence stack
+// Voice & Intelligence stack — VoiceDashboard is the hub
 const VoiceStack = createNativeStackNavigator();
 function VoiceStackScreen() {
   return (
     <VoiceStack.Navigator screenOptions={stackScreenOptions}>
-      <VoiceStack.Screen name="VoiceMain" component={Voice} options={{ title: 'Voice' }} />
+      <VoiceStack.Screen name="VoiceHub" component={VoiceDashboard} options={{ title: 'Intelligence' }} />
+      <VoiceStack.Screen name="VoiceMain" component={Voice} options={{ title: 'Voice Commands' }} />
       <VoiceStack.Screen name="Reviews" component={Reviews} options={{ title: 'Reviews' }} />
       <VoiceStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
     </VoiceStack.Navigator>
   );
 }
 
-// Profile stack
+// Profile stack — ProfileDashboard is the hub
 const ProfileStack = createNativeStackNavigator();
 function ProfileStackScreen() {
   return (
     <ProfileStack.Navigator screenOptions={stackScreenOptions}>
+      <ProfileStack.Screen name="ProfileHub" component={ProfileDashboard} options={{ title: 'Profile' }} />
       <ProfileStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check In' }} />
       <ProfileStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
+      <ProfileStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
       <ProfileStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
       <ProfileStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
       <ProfileStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
