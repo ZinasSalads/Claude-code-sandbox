@@ -151,7 +151,7 @@ export async function completeWorkout(notes?: string): Promise<{ status: string 
 }
 
 export async function syncOura(): Promise<{ status: string; days_synced: number } | null> {
-  return fetchApi('/sync/oura', { method: 'POST' });
+  return fetchApi('/sync/oura');
 }
 
 export async function logMeal(mealId: string): Promise<{ status: string } | null> {
@@ -159,6 +159,32 @@ export async function logMeal(mealId: string): Promise<{ status: string } | null
     method: 'POST',
     body: JSON.stringify({ meal_id: mealId }),
   });
+}
+
+// --- Supplements ---
+
+export async function getSupplements(): Promise<any[]> {
+  return (await fetchApi<any[]>('/supplements')) || [];
+}
+
+export async function addSupplement(data: Record<string, any>): Promise<any | null> {
+  return fetchApi('/supplements', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function deleteSupplement(id: string): Promise<any | null> {
+  return fetchApi(`/supplements/${id}`, { method: 'DELETE' });
+}
+
+export async function logSupplementIntake(supplementId: string): Promise<any | null> {
+  return fetchApi('/supplements/log', { method: 'POST', body: JSON.stringify({ supplement_id: supplementId }) });
+}
+
+export async function getTodaySupplementLogs(): Promise<any[]> {
+  return (await fetchApi<any[]>('/supplements/today')) || [];
+}
+
+export async function getSupplementStats(): Promise<any | null> {
+  return fetchApi('/supplements/stats');
 }
 
 // --- Blood Work ---
@@ -427,6 +453,10 @@ interface CompoundScore {
 
 export async function getTodayHabits(): Promise<TodayHabits | null> {
   return fetchApi('/growth/today');
+}
+
+export async function getGrowthHabits(): Promise<GrowthHabit[]> {
+  return (await fetchApi<GrowthHabit[]>('/growth/habits')) || [];
 }
 
 export async function logHabitCompletion(habitId: string, completed: boolean = true): Promise<unknown> {
