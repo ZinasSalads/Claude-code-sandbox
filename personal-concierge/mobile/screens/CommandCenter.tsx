@@ -222,7 +222,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
       <View style={styles.modulesGrid}>
         <TouchableOpacity
           style={styles.moduleCard}
-          onPress={() => navigation.navigate('BloodWork')}
+          onPress={() => navigation.navigate('Health', { screen: 'BloodWork' })}
           activeOpacity={0.7}
         >
           <Text style={styles.moduleEmoji}>🩸</Text>
@@ -236,7 +236,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
 
         <TouchableOpacity
           style={styles.moduleCard}
-          onPress={() => navigation.navigate('Supplements')}
+          onPress={() => navigation.navigate('Health', { screen: 'Supplements' })}
           activeOpacity={0.7}
         >
           <Text style={styles.moduleEmoji}>💊</Text>
@@ -245,7 +245,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
 
         <TouchableOpacity
           style={styles.moduleCard}
-          onPress={() => navigation.navigate('Longevity')}
+          onPress={() => navigation.navigate('Health', { screen: 'Longevity' })}
           activeOpacity={0.7}
         >
           <Text style={styles.moduleEmoji}>🧬</Text>
@@ -254,7 +254,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
 
         <TouchableOpacity
           style={styles.moduleCard}
-          onPress={() => navigation.navigate('Research')}
+          onPress={() => navigation.navigate('Health', { screen: 'Research' })}
           activeOpacity={0.7}
         >
           <Text style={styles.moduleEmoji}>📚</Text>
@@ -266,7 +266,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
       {!loading && !checkIn && (
         <TouchableOpacity
           style={[styles.card, styles.checkInCard]}
-          onPress={() => navigation.navigate('CheckIn')}
+          onPress={() => navigation.navigate('Profile', { screen: 'CheckIn' })}
           activeOpacity={0.7}
         >
           <Text style={styles.checkInTitle}>📋 Morning Check-In</Text>
