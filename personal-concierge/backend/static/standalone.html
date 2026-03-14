@@ -379,7 +379,19 @@ textarea { resize: vertical; min-height: 60px; }
   <div class="page" id="page-bloodwork">
     <div id="bwLoading" class="loading"><div class="spinner"></div>Loading biomarkers...</div>
     <div id="bwContent" style="display:none"></div>
-    <div id="bwEmpty" class="empty" style="display:none"><div class="icon">&#129656;</div><p>No blood work uploaded yet.</p></div>
+    <div id="bwEmpty" class="empty" style="display:none">
+      <div class="icon">&#129656;</div><p>No blood work uploaded yet.</p>
+      <label class="btn btn-primary" style="margin-top:12px;cursor:pointer">
+        Upload Blood Work PDF
+        <input type="file" accept=".pdf" style="display:none" onchange="uploadBloodwork(this)">
+      </label>
+    </div>
+    <div id="bwUploadRow" style="display:none;margin-bottom:12px">
+      <label class="btn btn-secondary" style="cursor:pointer">
+        Upload New Panel
+        <input type="file" accept=".pdf" style="display:none" onchange="uploadBloodwork(this)">
+      </label>
+    </div>
   </div>
 
   <!-- SKINCARE -->
@@ -1146,6 +1158,7 @@ async function loadBloodwork() {
     const data = await sb('biomarkers', 'order=test_date.desc,marker_category,marker_name');
     document.getElementById('bwLoading').style.display = 'none';
     if (!data || !data.length) { document.getElementById('bwEmpty').style.display = 'block'; return; }
+    document.getElementById('bwUploadRow').style.display = 'block';
     const el = document.getElementById('bwContent'); el.style.display = 'block';
     el.innerHTML = data.map(m => {
       const st = m.status || 'normal';
@@ -1159,6 +1172,22 @@ async function loadBloodwork() {
     }).join('');
   } catch(e) { document.getElementById('bwLoading').style.display = 'none'; document.getElementById('bwEmpty').style.display = 'block'; }
 }
+async function uploadBloodwork(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (!file.name.toLowerCase().endsWith('.pdf')) { showToast('Only PDF files are accepted', true); return; }
+  if (file.size > 10 * 1024 * 1024) { showToast('File too large (max 10MB)', true); return; }
+  showToast('Uploading & analyzing...');
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_URL}/bloodwork/upload`, { method: 'POST', body: formData });
+    if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Upload failed'); }
+    showToast('Blood work uploaded & analyzed!');
+    loaded.bloodwork = false; loadBloodwork();
+  } catch(e) { showToast('Error: ' + e.message, true); }
+  input.value = '';
+}
 
 // --- Daily Plan ---
 async function generateDailyPlan() {
@@ -1169,11 +1198,24 @@ async function generateDailyPlan() {
     document.getElementById('planLoading').style.display = 'none';
     const el = document.getElementById('planContent'); el.style.display = 'block';
     let html = '';
+    const renderSection = (title, value, style) => {
+      if (!value) return '';
+      const content = Array.isArray(value) ? '<ul style="margin:8px 0;padding-left:20px">' + value.map(v => `<li style="margin:4px 0">${v}</li>`).join('') + '</ul>'
+        : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+      return `<div class="card"${style ? ' style="'+style+'"' : ''}><div class="card-title">${title}</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${content}</div></div>`;
+    };
     if (plan.greeting) html += `<div class="card coaching-note">${plan.greeting}</div>`;
-    if (plan.workout_summary || plan.workout) { const w = plan.workout_summary || plan.workout; html += `<div class="card"><div class="card-title">Workout</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof w === 'string' ? w : JSON.stringify(w, null, 2)}</div></div>`; }
-    if (plan.nutrition_summary || plan.nutrition) { const n = plan.nutrition_summary || plan.nutrition; html += `<div class="card"><div class="card-title">Nutrition</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof n === 'string' ? n : JSON.stringify(n, null, 2)}</div></div>`; }
-    if (plan.supplement_reminders || plan.supplements) { const s = plan.supplement_reminders || plan.supplements; html += `<div class="card"><div class="card-title">Supplements</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${typeof s === 'string' ? s : JSON.stringify(s, null, 2)}</div></div>`; }
-    if (plan.coaching_notes || plan.insights) { const c = plan.coaching_notes || plan.insights; html += `<div class="card"><div class="card-title">Coaching Notes</div><div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`; }
+    html += renderSection('Today\'s Summary', plan.today_summary);
+    html += renderSection('Priority Actions', plan.priority_actions);
+    html += renderSection('Workout', plan.fitness_adjustments || plan.workout_summary || plan.workout);
+    html += renderSection('Nutrition', plan.nutrition_focus || plan.nutrition_summary || plan.nutrition);
+    html += renderSection('Supplements', plan.supplement_reminders || plan.supplements);
+    html += renderSection('Environment', plan.environment_advisory);
+    if (plan.coaching_message || plan.coaching_notes || plan.insights) {
+      const c = plan.coaching_message || plan.coaching_notes || plan.insights;
+      html += `<div class="card"><div class="card-title">Coaching</div><div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`;
+    }
+    html += renderSection('Alerts', plan.alerts);
     if (!html) html = `<div class="card"><div class="card-title">Today's Plan</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(plan, null, 2)}</div></div>`;
     el.innerHTML = html;
   } catch(e) { document.getElementById('planLoading').style.display = 'none'; document.getElementById('planStart').style.display = 'block'; showToast('Error: ' + e.message, true); }
@@ -2016,12 +2058,36 @@ const loaded = {};
 function loadPage(page) {
   if (loaded[page]) return;
   loaded[page] = true;
+  // Hide the manual "Load" button once auto-loading
+  const pageEl = document.getElementById('page-' + page);
+  if (pageEl) {
+    const loadBtn = [...pageEl.querySelectorAll('.btn-primary')].find(b => b.textContent.startsWith('Load '));
+    if (loadBtn) loadBtn.style.display = 'none';
+  }
   switch(page) {
     case 'dashboard': loadDashboard(); break;
     case 'trends': loadTrends(); break;
     case 'checkin': loadCheckin(); break;
     case 'supplements': loadSupplements(); break;
     case 'bloodwork': loadBloodwork(); break;
+    case 'skincare': loadSkincareData(); break;
+    case 'social': loadSocialData(); break;
+    case 'relationships': loadRelationshipsData(); break;
+    case 'growth': loadGrowthData(); break;
+    case 'career': loadCareerData(); break;
+    case 'hobbies': loadHobbiesData(); break;
+    case 'learning': loadLearningData(); break;
+    case 'wardrobe': loadWardrobeData(); break;
+    case 'travel': loadTravelData(); break;
+    case 'financial': loadFinancialData(); break;
+    case 'finplanning': loadFinPlanningData(); break;
+    case 'personality': loadPersonalityData(); break;
+    case 'legacy': loadLegacyData(); break;
+    case 'home': loadHomeEnvData(); break;
+    case 'digital': loadDigitalData(); break;
+    case 'onboarding': loadOnboardingData(); break;
+    case 'contextual': loadContextualData(); break;
+    case 'reviews': loadWeeklyReview(); break;
   }
 }
 loadPage('dashboard');
