@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import * as Location from 'expo-location';
 import { API_URL } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
@@ -117,7 +118,6 @@ export default function Environment() {
         setLocation({ configured: true, city: result.city, country: result.country, admin1: result.admin1 });
         setCityInput('');
         setSaveError(null);
-        // Now load env data
         await loadEnvData();
       }
     } catch {
@@ -125,6 +125,36 @@ export default function Environment() {
     }
     setSaving(false);
   }, [cityInput, loadEnvData]);
+
+  const handleUseGPS = useCallback(async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setSaveError('Location permission denied. Please enter your city manually.');
+        setSaving(false);
+        return;
+      }
+      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
+      const resp = await fetch(`${API_URL}/environment/set-location-coords`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat: pos.coords.latitude, lon: pos.coords.longitude }),
+      });
+      const result = await resp.json();
+      if (result.error) {
+        setSaveError(result.error);
+      } else if (result.success) {
+        setLocation({ configured: true, city: result.city, country: result.country, admin1: result.admin1 });
+        setSaveError(null);
+        await loadEnvData();
+      }
+    } catch {
+      setSaveError('Failed to get location. Try entering your city manually.');
+    }
+    setSaving(false);
+  }, [loadEnvData]);
 
   if (loading) {
     return <View style={styles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
@@ -139,6 +169,25 @@ export default function Environment() {
         <Text style={styles.setupDesc}>
           Enter your city to get local air quality, UV index, pollen levels, and weather data.
         </Text>
+
+        <TouchableOpacity
+          style={[styles.gpsBtn, saving && styles.setBtnDisabled]}
+          onPress={handleUseGPS}
+          disabled={saving}
+          activeOpacity={0.7}
+        >
+          {saving ? (
+            <ActivityIndicator color={colors.white} size="small" />
+          ) : (
+            <Text style={styles.gpsBtnText}>📍 Use My Location</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.dividerRow}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>or enter manually</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
         <View style={styles.inputRow}>
           <TextInput
@@ -157,11 +206,7 @@ export default function Environment() {
             onPress={handleSetLocation}
             disabled={!cityInput.trim() || saving}
           >
-            {saving ? (
-              <ActivityIndicator color={colors.white} size="small" />
-            ) : (
-              <Text style={styles.setBtnText}>Set</Text>
-            )}
+            <Text style={styles.setBtnText}>Set</Text>
           </TouchableOpacity>
         </View>
 
@@ -294,6 +339,14 @@ const styles = StyleSheet.create({
   setupEmoji: { fontSize: 56, textAlign: 'center', marginBottom: spacing.lg },
   setupTitle: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm },
   setupDesc: { fontSize: font.sm, color: colors.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: spacing['2xl'] },
+  gpsBtn: {
+    backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg,
+    alignItems: 'center', marginBottom: spacing.lg, ...shadow.glow,
+  },
+  gpsBtnText: { color: colors.white, fontWeight: font.bold, fontSize: font.md },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dividerText: { color: colors.textTertiary, fontSize: font.xs, marginHorizontal: spacing.md },
   inputRow: { flexDirection: 'row', gap: spacing.sm },
   cityInput: {
     flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, paddingHorizontal: spacing.lg,

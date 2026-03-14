@@ -18,6 +18,11 @@ class LocationUpdate(BaseModel):
     city: str
 
 
+class LocationCoordsUpdate(BaseModel):
+    lat: float
+    lon: float
+
+
 @router.get("/today")
 async def get_today(lat: Optional[float] = None, lon: Optional[float] = None):
     """Get today's environmental conditions."""
@@ -84,6 +89,63 @@ async def set_location(data: LocationUpdate):
             return {"error": "Location found but failed to save. Try again."}
 
     # Clear cached env data so next fetch uses new location
+    try:
+        from datetime import date
+        supabase.table("environmental_data").delete().eq("date", date.today().isoformat()).execute()
+    except Exception:
+        pass
+
+    return {"success": True, **location}
+
+
+@router.post("/set-location-coords")
+async def set_location_coords(data: LocationCoordsUpdate):
+    """Save location from GPS coordinates, reverse-geocode for display name."""
+    # Reverse geocode using Open-Meteo
+    city_name = f"{data.lat:.2f}, {data.lon:.2f}"
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(
+                "https://geocoding-api.open-meteo.com/v1/search",
+                params={"name": f"{data.lat},{data.lon}", "count": 1},
+            )
+            # Open-Meteo doesn't do reverse geocoding, use a different approach
+            # Use the coordinates directly with a weather call to get location name
+            weather_resp = await client.get(
+                "https://api.open-meteo.com/v1/forecast",
+                params={
+                    "latitude": data.lat,
+                    "longitude": data.lon,
+                    "current": "temperature_2m",
+                    "timezone": "auto",
+                },
+            )
+            if weather_resp.status_code == 200:
+                tz = weather_resp.json().get("timezone", "")
+                # Extract city-like name from timezone (e.g. "America/New_York" -> "New York")
+                if "/" in tz:
+                    city_name = tz.split("/")[-1].replace("_", " ")
+    except Exception as e:
+        logger.error(f"Reverse geocode error: {e}")
+
+    location = {
+        "lat": data.lat,
+        "lon": data.lon,
+        "city": city_name,
+        "country": "",
+        "admin1": "",
+    }
+
+    # Save to life_profile
+    if supabase:
+        try:
+            row = {"key": "location", "value": location}
+            supabase.table("life_profile").upsert(row, on_conflict="key").execute()
+        except Exception as e:
+            logger.error(f"Failed to save location: {e}")
+            return {"error": "Failed to save location. Try again."}
+
+    # Clear cached env data
     try:
         from datetime import date
         supabase.table("environmental_data").delete().eq("date", date.today().isoformat()).execute()
