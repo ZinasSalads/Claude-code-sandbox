@@ -188,7 +188,7 @@ export default function Skincare() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Skincare</Text>
 
@@ -390,11 +390,11 @@ const styles = StyleSheet.create({
   profileLabel: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.sm },
   profileValue: { fontSize: font.md, color: colors.textPrimary, fontWeight: font.semibold },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  tag: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  tag: { backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   tagText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.semibold },
   productRow: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md },
   stepBadge: {
-    width: 28, height: 28, borderRadius: radii.full, backgroundColor: colors.accentMuted,
+    width: 28, height: 28, borderRadius: radii.full, backgroundColor: colors.primaryMuted,
     alignItems: 'center', justifyContent: 'center', marginRight: spacing.md,
   },
   stepText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.bold },
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
     borderWidth: 1, borderColor: colors.border,
   },
-  sliderDotActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  sliderDotActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   sliderDotText: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold },
   metricsRow: { flexDirection: 'row', justifyContent: 'space-around' },
   metricItem: { alignItems: 'center' },
@@ -421,12 +421,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', ...shadow.glow },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', ...shadow.glow },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
   formLabel: { fontSize: font.sm, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: spacing.sm, marginTop: spacing.xs },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
   typeChip: { backgroundColor: colors.bgElevated, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderWidth: 1, borderColor: colors.border },
-  typeChipActive: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  typeChipActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
   typeChipText: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold },
   typeChipTextActive: { color: colors.textAccent },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     flex: 1, padding: spacing.md, borderRadius: radii.sm, alignItems: 'center',
     backgroundColor: colors.bgElevated, borderWidth: 1, borderColor: colors.border,
   },
-  toggleBtnActive: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  toggleBtnActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
   toggleText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.sm },
   toggleTextActive: { color: colors.textAccent },
 });

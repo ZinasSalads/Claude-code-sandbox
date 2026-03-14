@@ -79,7 +79,7 @@ export default function Research() {
   }, []);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
   }
 
   return (
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.xl },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.bg },
   sweepButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.lg,
     paddingVertical: spacing.lg,
     alignItems: 'center',
@@ -212,7 +212,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   domainTag: {
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
     borderRadius: radii.sm,

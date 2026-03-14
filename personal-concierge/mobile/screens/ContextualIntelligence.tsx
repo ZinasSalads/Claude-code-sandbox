@@ -77,7 +77,7 @@ export default function ContextualIntelligence() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Contextual Intelligence</Text>
 
@@ -153,7 +153,7 @@ export default function ContextualIntelligence() {
         >
           <View style={styles.signalRow}>
             <View style={[styles.sourceDot, {
-              backgroundColor: signal.source === 'manual' ? colors.accent : signal.source === 'health' ? colors.success : colors.warning,
+              backgroundColor: signal.source === 'manual' ? colors.primary : signal.source === 'health' ? colors.success : colors.warning,
             }]} />
             <View style={{ flex: 1 }}>
               <Text style={styles.signalText}>{signal.text}</Text>
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border,
     minHeight: 60, textAlignVertical: 'top', marginBottom: spacing.sm,
   },
-  submitBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.md, alignItems: 'center' },
+  submitBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md, alignItems: 'center' },
   submitBtnDisabled: { opacity: 0.4 },
   submitBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.sm },
   anomalyHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   signalText: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 20, marginBottom: spacing.xs },
   signalMeta: { fontSize: font.xs, color: colors.textSecondary },
   expandArrow: { color: colors.textSecondary, fontSize: 14, marginLeft: spacing.sm },
-  expandLink: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold, marginTop: spacing.sm },
+  expandLink: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold, marginTop: spacing.sm },
   breakdownContainer: { marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
   breakdownItem: { marginBottom: spacing.sm },
   breakdownHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },

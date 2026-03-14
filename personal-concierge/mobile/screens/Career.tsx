@@ -110,7 +110,7 @@ export default function Career() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Career & Development</Text>
 
@@ -194,7 +194,7 @@ export default function Career() {
       </View>
 
       {coaching ? (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
           <Text style={styles.cardTitle}>Career Coaching</Text>
           <Text style={styles.coachingText}>{coaching}</Text>
         </View>
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: font.sm, color: colors.textTertiary },
   actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   actionBtn: {
-    flex: 1, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    flex: 1, backgroundColor: colors.primaryMuted, borderRadius: radii.md,
     padding: spacing.md, alignItems: 'center',
   },
   actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
@@ -248,6 +248,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

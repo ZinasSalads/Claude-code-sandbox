@@ -120,7 +120,7 @@ function DashboardTab() {
   if (loading) {
     return (
       <View style={tabStyles.center}>
-        <ActivityIndicator color={colors.accent} size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
@@ -140,7 +140,7 @@ function DashboardTab() {
     <ScrollView
       style={tabStyles.scroll}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.accent} />
+        <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.primary} />
       }
     >
       {flagged.length > 0 && (
@@ -280,7 +280,7 @@ function UploadTab() {
 
 const uploadStyles = StyleSheet.create({
   button: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',
@@ -354,7 +354,7 @@ function TrendsTab() {
   if (loading) {
     return (
       <View style={tabStyles.center}>
-        <ActivityIndicator color={colors.accent} size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
@@ -413,7 +413,7 @@ function DeltaTab() {
   if (loading) {
     return (
       <View style={tabStyles.center}>
-        <ActivityIndicator color={colors.accent} size="large" />
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
@@ -607,8 +607,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: colors.accent,
-    backgroundColor: colors.accentGlow,
+    borderBottomColor: colors.primary,
+    backgroundColor: colors.primaryGlow,
   },
   tabText: {
     color: colors.textTertiary,

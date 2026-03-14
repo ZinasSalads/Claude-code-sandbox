@@ -87,7 +87,7 @@ function TodayTab() {
     load();
   }, [load]);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
+  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
 
   if (logs.length === 0) {
     return (
@@ -104,7 +104,7 @@ function TodayTab() {
   return (
     <ScrollView
       style={tabStyles.scroll}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.primary} />}
     >
       {/* Progress */}
       <View style={todayStyles.progressCard}>
@@ -230,7 +230,7 @@ function StackTab() {
     ]);
   }, []);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
+  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
 
   return (
     <ScrollView style={tabStyles.scroll}>
@@ -418,8 +418,8 @@ const addStyles = StyleSheet.create({
     borderColor: colors.border,
   },
   timingActive: {
-    backgroundColor: colors.accentMuted,
-    borderColor: colors.accent,
+    backgroundColor: colors.primaryMuted,
+    borderColor: colors.primary,
   },
   timingText: {
     color: colors.textSecondary,
@@ -430,7 +430,7 @@ const addStyles = StyleSheet.create({
     color: colors.textAccent,
   },
   addBtn: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',
@@ -456,7 +456,7 @@ function StatsTab() {
     });
   }, []);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
+  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
   if (!stats || !stats.total_logs) {
     return (
       <View style={tabStyles.center}>
@@ -602,8 +602,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   activeTab: {
-    borderBottomColor: colors.accent,
-    backgroundColor: colors.accentGlow,
+    borderBottomColor: colors.primary,
+    backgroundColor: colors.primaryGlow,
   },
   tabText: { color: colors.textTertiary, fontSize: font.sm, fontWeight: font.semibold },
   activeTabText: { color: colors.textAccent },

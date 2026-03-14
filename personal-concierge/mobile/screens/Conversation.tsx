@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     maxWidth: '80%', borderRadius: radii.lg, padding: spacing.md, marginBottom: spacing.sm,
   },
   userBubble: {
-    backgroundColor: colors.accent, alignSelf: 'flex-end',
+    backgroundColor: colors.primary, alignSelf: 'flex-end',
     borderBottomRightRadius: spacing.xs,
   },
   assistantBubble: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border, marginRight: spacing.sm,
   },
   sendBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.full, paddingHorizontal: spacing.xl,
+    backgroundColor: colors.primary, borderRadius: radii.full, paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md - 2, justifyContent: 'center',
   },
   sendBtnDisabled: { opacity: 0.4 },

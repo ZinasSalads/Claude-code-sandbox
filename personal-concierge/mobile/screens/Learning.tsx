@@ -86,14 +86,14 @@ export default function Learning() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Learning</Text>
       <Text style={styles.subtitle}>Books, courses, languages & growth</Text>
@@ -239,9 +239,9 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
   cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
-  addBtn: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
-  todayCard: { borderColor: colors.accentBorder, backgroundColor: colors.accentGlow },
-  todayLabel: { fontSize: font.xs, color: colors.accent, fontWeight: font.semibold, marginBottom: 6 },
+  addBtn: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold },
+  todayCard: { borderColor: colors.primaryBorder, backgroundColor: colors.primaryGlow },
+  todayLabel: { fontSize: font.xs, color: colors.primary, fontWeight: font.semibold, marginBottom: 6 },
   todayText: { fontSize: font.lg, color: colors.textPrimary, fontWeight: font.semibold },
   formatText: { fontSize: font.xs, color: colors.textTertiary, marginTop: 6 },
   statsRow: { flexDirection: 'row', gap: 10, marginBottom: spacing.lg },
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border,
   },
-  logBtn: { backgroundColor: colors.accent, borderRadius: radii.md, paddingHorizontal: spacing.xl, justifyContent: 'center' },
+  logBtn: { backgroundColor: colors.primary, borderRadius: radii.md, paddingHorizontal: spacing.xl, justifyContent: 'center' },
   logBtnText: { color: colors.white, fontWeight: font.semibold },
   addForm: { marginBottom: spacing.lg },
   input: {
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary, fontSize: font.md, borderWidth: 1, borderColor: colors.border,
     marginBottom: spacing.sm,
   },
-  saveBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.md, alignItems: 'center', marginTop: spacing.xs },
+  saveBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md, alignItems: 'center', marginTop: spacing.xs },
   saveBtnText: { color: colors.white, fontSize: font.sm, fontWeight: font.semibold },
   itemRow: {
     flexDirection: 'row', paddingVertical: spacing.md,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   itemTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
   itemMeta: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2, textTransform: 'capitalize' },
   pageBar: { height: 4, backgroundColor: colors.border, borderRadius: 2, marginTop: 6 },
-  pageFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  pageFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2 },
   rating: { color: colors.warning, fontSize: font.sm, alignSelf: 'center' },
   emptyText: { fontSize: font.sm, color: colors.textTertiary, fontStyle: 'italic' },
   insightText: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, fontStyle: 'italic' },

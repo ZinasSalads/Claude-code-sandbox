@@ -59,7 +59,7 @@ export default function Social() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Social Health</Text>
 
@@ -167,16 +167,16 @@ const styles = StyleSheet.create({
   contactName: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
   contactMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
   logBtn: {
-    backgroundColor: colors.accentMuted, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm,
+    backgroundColor: colors.primaryMuted, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm,
     borderRadius: radii.sm,
   },
   logBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
-  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  addBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

@@ -100,7 +100,7 @@ export default function Reviews() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Reviews</Text>
 
@@ -277,10 +277,10 @@ const styles = StyleSheet.create({
     flex: 1, padding: spacing.md, borderRadius: radii.md, alignItems: 'center',
     backgroundColor: colors.bgInput, borderWidth: 1, borderColor: colors.border,
   },
-  toggleBtnActive: { backgroundColor: colors.accentMuted, borderColor: colors.accent },
+  toggleBtnActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
   toggleText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.md },
-  toggleTextActive: { color: colors.accent },
-  periodLabel: { fontSize: font.sm, color: colors.accent, fontWeight: font.bold, marginBottom: spacing.sm, textTransform: 'uppercase' },
+  toggleTextActive: { color: colors.primary },
+  periodLabel: { fontSize: font.sm, color: colors.primary, fontWeight: font.bold, marginBottom: spacing.sm, textTransform: 'uppercase' },
   narrative: { fontSize: font.md, color: colors.textPrimary, lineHeight: 22 },
   winBadge: { backgroundColor: colors.successMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, marginBottom: 6 },
   winText: { color: colors.success, fontSize: font.sm, fontWeight: font.medium },
@@ -296,19 +296,19 @@ const styles = StyleSheet.create({
   metricChange: { fontSize: font.xs, fontWeight: font.semibold, marginTop: 2 },
   metricLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: spacing.xs, textTransform: 'uppercase', textAlign: 'center' },
   coachText: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 21, fontStyle: 'italic' },
-  coachBox: { backgroundColor: colors.accentGlow, borderRadius: radii.sm, padding: spacing.md },
+  coachBox: { backgroundColor: colors.primaryGlow, borderRadius: radii.sm, padding: spacing.md },
   intentionText: { fontSize: font.md, color: colors.textPrimary, lineHeight: 22 },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
   btnRow: { flexDirection: 'row', gap: spacing.sm },
-  primaryBtn: { flex: 1, backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { flex: 1, backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
   secondaryBtn: { flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   secondaryBtnText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.md },
   generateBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.lg, padding: spacing.lg, alignItems: 'center', marginVertical: spacing.md,
+    backgroundColor: colors.primary, borderRadius: radii.lg, padding: spacing.lg, alignItems: 'center', marginVertical: spacing.md,
     ...shadow.glow,
   },
   generateBtnText: { color: colors.white, fontWeight: font.bold, fontSize: font.lg },

@@ -77,12 +77,12 @@ const styles = StyleSheet.create({
   },
   btn: {
     flex: 1,
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     borderRadius: radii.sm,
     paddingVertical: spacing.sm,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.accentBorder,
+    borderColor: colors.primaryBorder,
   },
   btnNeg: {
     backgroundColor: colors.errorMuted,

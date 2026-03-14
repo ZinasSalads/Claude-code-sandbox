@@ -127,7 +127,7 @@ export default function FinancialPlanning() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Financial Planning</Text>
 
@@ -267,40 +267,40 @@ const styles = StyleSheet.create({
   sectionTitle: { ...sectionLabel, marginBottom: 0, marginTop: 0 },
   dimText: { fontSize: font.sm, color: colors.textSecondary },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm, marginTop: spacing.sm },
-  toggleLink: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  toggleLink: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold },
   goalHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
   goalName: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
   goalType: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
   goalPct: { fontSize: 22, fontWeight: font.bold },
-  alignmentBox: { backgroundColor: colors.accentGlow, borderRadius: radii.sm, padding: spacing.sm, marginBottom: spacing.sm },
-  alignmentText: { color: colors.accent, fontSize: font.sm },
+  alignmentBox: { backgroundColor: colors.primaryGlow, borderRadius: radii.sm, padding: spacing.sm, marginBottom: spacing.sm },
+  alignmentText: { color: colors.primary, fontSize: font.sm },
   progressBarBg: { height: 6, backgroundColor: colors.border, borderRadius: 3, overflow: 'hidden', marginBottom: 6 },
   progressBarFill: { height: 6, borderRadius: 3 },
   amountRow: { flexDirection: 'row', justifyContent: 'space-between' },
   amountText: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary },
-  updateBtn: { marginTop: spacing.sm, alignSelf: 'flex-start', backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
-  updateBtnText: { color: colors.accent, fontSize: font.xs, fontWeight: font.semibold },
+  updateBtn: { marginTop: spacing.sm, alignSelf: 'flex-start', backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  updateBtnText: { color: colors.primary, fontSize: font.xs, fontWeight: font.semibold },
   updateForm: { marginTop: spacing.sm },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
-  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  addBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
   formLabel: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: 6, marginTop: spacing.xs },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: spacing.md },
   typeChip: { backgroundColor: colors.bgInput, borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: colors.accentMuted },
+  typeChipActive: { backgroundColor: colors.primaryMuted },
   typeChipText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
-  typeChipTextActive: { color: colors.accent },
+  typeChipTextActive: { color: colors.primary },
   sliderRow: { flexDirection: 'row', justifyContent: 'space-between', marginVertical: spacing.md },
   sliderDot: {
     width: 28, height: 28, borderRadius: 14, backgroundColor: colors.bgInput,
     alignItems: 'center', justifyContent: 'center',
   },
-  sliderDotActive: { backgroundColor: colors.accent },
+  sliderDotActive: { backgroundColor: colors.primary },
   sliderDotText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
   stressRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.xs },
   stressVal: { fontSize: font.sm, fontWeight: font.semibold },

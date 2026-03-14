@@ -190,7 +190,7 @@ export default function DigitalIdentity() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Digital Identity</Text>
 
@@ -395,13 +395,13 @@ const styles = StyleSheet.create({
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
   btnRow: { flexDirection: 'row', gap: spacing.sm },
-  primaryBtn: { flex: 1, backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { flex: 1, backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
   secondaryBtn: { flex: 1, backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   secondaryBtnText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.md },
   auditHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  runBtn: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  runBtnText: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  runBtn: { backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+  runBtnText: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold },
   auditScoreRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', marginBottom: spacing.md },
   auditScore: { fontSize: 42, fontWeight: font.bold },
   auditScoreLabel: { fontSize: 18, color: colors.textSecondary, marginLeft: spacing.xs },
@@ -416,8 +416,8 @@ const styles = StyleSheet.create({
   statusLabel: { fontSize: font.xs, fontWeight: font.semibold },
   contentTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: 6 },
   contentMeta: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-  metaChip: { backgroundColor: colors.accentMuted, borderRadius: 6, paddingHorizontal: spacing.sm, paddingVertical: 3 },
-  metaChipText: { color: colors.accent, fontSize: font.xs, fontWeight: font.semibold },
+  metaChip: { backgroundColor: colors.primaryMuted, borderRadius: 6, paddingHorizontal: spacing.sm, paddingVertical: 3 },
+  metaChipText: { color: colors.primary, fontSize: font.xs, fontWeight: font.semibold },
   historyRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   historyDate: { fontSize: font.sm, color: colors.textPrimary },
   historyScore: { fontSize: font.lg, fontWeight: font.bold },

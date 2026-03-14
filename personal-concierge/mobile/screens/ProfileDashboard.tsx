@@ -56,7 +56,7 @@ export default function ProfileDashboard({ navigation }: Props) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       {/* Profile summary card */}
       <View style={styles.summaryCard}>
@@ -141,18 +141,18 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: { fontSize: 28 },
-  mbtiType: { color: colors.accent, fontSize: font.xl, fontWeight: font.bold },
+  mbtiType: { color: colors.primary, fontSize: font.xl, fontWeight: font.bold },
   mbtiLabel: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
   onboardingCard: {
     ...cardStyle,
     marginBottom: spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: colors.accent,
+    borderLeftColor: colors.primary,
   },
   onboardingHeader: {
     flexDirection: 'row',
@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   onboardingTitle: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold },
-  onboardingPct: { color: colors.accent, fontSize: font.md, fontWeight: font.bold },
+  onboardingPct: { color: colors.primary, fontSize: font.md, fontWeight: font.bold },
   progressBar: {
     height: 6,
     backgroundColor: colors.border,
@@ -170,7 +170,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: 6,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   onboardingSub: { color: colors.textSecondary, fontSize: font.xs },
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   moduleTitle: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.semibold },
   moduleDesc: { color: colors.textSecondary, fontSize: font.sm, marginTop: 2 },
   badge: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: 10,
     width: 22,
     height: 22,

@@ -80,7 +80,7 @@ export default function Longevity() {
   }, []);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
   }
 
   if (!data || data.overall_longevity_score == null) {
@@ -155,7 +155,7 @@ export default function Longevity() {
 
       {/* Assessment */}
       {data.overall_assessment && (
-        <View style={[styles.insightCard, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
+        <View style={[styles.insightCard, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
           <Text style={styles.assessmentText}>{data.overall_assessment}</Text>
         </View>
       )}
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     ...shadow.elevated,
   },
   heroLabel: { ...sectionLabel, marginTop: 0, marginBottom: 0 },
-  heroValue: { color: colors.accent, fontSize: font['4xl'], fontWeight: font.bold, marginVertical: spacing.sm },
+  heroValue: { color: colors.primary, fontSize: font['4xl'], fontWeight: font.bold, marginVertical: spacing.sm },
   heroDelta: { fontSize: font.md, fontWeight: font.semibold },
   overallCard: {
     ...cardStyle,
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.sm,
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
   },
   trendText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.bold, letterSpacing: 0.5 },
   sectionTitle: {
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   calcButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.lg,
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing['3xl'],

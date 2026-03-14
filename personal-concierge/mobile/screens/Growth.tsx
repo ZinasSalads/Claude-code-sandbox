@@ -63,7 +63,7 @@ export default function Growth() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>1% Growth Engine</Text>
 
@@ -147,7 +147,7 @@ export default function Growth() {
       </View>
 
       {suggestion && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
           <Text style={styles.cardTitle}>Suggested: {(suggestion as Record<string, string>).name}</Text>
           <Text style={styles.suggestText}>{(suggestion as Record<string, string>).description}</Text>
           <Text style={styles.suggestWhy}>{(suggestion as Record<string, string>).why_now}</Text>
@@ -185,9 +185,9 @@ const styles = StyleSheet.create({
   domainVal: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
   domainLabel: { ...sectionLabel, marginBottom: 0, marginTop: 2 },
   progressRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
-  progressText: { fontSize: font.md, fontWeight: font.semibold, color: colors.accent },
+  progressText: { fontSize: font.md, fontWeight: font.semibold, color: colors.primary },
   progressBar: { height: 6, backgroundColor: colors.border, borderRadius: 3 },
-  progressFill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
+  progressFill: { height: 6, backgroundColor: colors.primary, borderRadius: 3 },
   habitRow: { flexDirection: 'row', alignItems: 'center' },
   checkbox: {
     width: 28, height: 28, borderRadius: radii.sm, borderWidth: 2, borderColor: colors.border,
@@ -199,12 +199,12 @@ const styles = StyleSheet.create({
   habitName: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
   habitDone: { textDecorationLine: 'line-through', color: colors.textSecondary },
   habitMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
-  streakNum: { fontSize: font.xl, fontWeight: font.bold, color: colors.accent },
+  streakNum: { fontSize: font.xl, fontWeight: font.bold, color: colors.primary },
   riskTitle: { fontSize: font.sm, fontWeight: font.semibold, color: colors.warning, marginBottom: spacing.xs },
   riskText: { fontSize: font.sm, color: colors.textSecondary },
   actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   actionBtn: {
-    flex: 1, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    flex: 1, backgroundColor: colors.primaryMuted, borderRadius: radii.md,
     padding: spacing.md, alignItems: 'center',
   },
   actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
@@ -214,6 +214,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

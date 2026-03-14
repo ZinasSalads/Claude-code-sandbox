@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   retryBtn: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.sm,
     paddingHorizontal: spacing.xl,
     paddingVertical: 10,

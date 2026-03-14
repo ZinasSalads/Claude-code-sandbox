@@ -105,7 +105,7 @@ export default function Personality() {
   if (phase === 'loading') {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -186,7 +186,7 @@ export default function Personality() {
   if (phase === 'scoring') {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.scoringText}>Analyzing your responses...</Text>
       </View>
     );
@@ -208,7 +208,7 @@ export default function Personality() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.bigTitle}>{profile?.mbti_type || '—'}</Text>
       <Text style={styles.subtitle}>{profile?.mbti_label || ''}</Text>
@@ -295,19 +295,19 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
   desc: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22 },
   primaryBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
+    backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
     ...shadow.glow,
   },
   primaryBtnDisabled: { opacity: 0.4 },
   primaryBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
   secondaryBtn: {
-    borderColor: colors.accent, borderWidth: 1, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
+    borderColor: colors.primary, borderWidth: 1, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
   },
-  secondaryBtnText: { color: colors.accent, fontSize: font.md, fontWeight: font.semibold },
+  secondaryBtnText: { color: colors.primary, fontSize: font.md, fontWeight: font.semibold },
   progressBar: {
     height: 4, backgroundColor: colors.border, borderRadius: 2, marginBottom: spacing.sm,
   },
-  progressFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  progressFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2 },
   progressText: { color: colors.textSecondary, fontSize: font.xs, textAlign: 'center', marginBottom: spacing['2xl'] },
   questionText: { fontSize: font.xl, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing['2xl'], lineHeight: 28 },
   optionBtn: {
@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: colors.border,
     ...shadow.card,
   },
-  optionBtnSelected: { borderColor: colors.accent, backgroundColor: colors.accentMuted },
+  optionBtnSelected: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },
   optionText: { fontSize: font.md, color: colors.textSecondary, lineHeight: 22 },
   optionTextSelected: { color: colors.textPrimary },
   scoringText: { color: colors.textSecondary, marginTop: spacing.lg, fontSize: font.lg },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
   dimThumb: {
     position: 'absolute', top: -5, width: 16, height: 16, borderRadius: 8,
-    backgroundColor: colors.accent, marginLeft: -8,
+    backgroundColor: colors.primary, marginLeft: -8,
   },
   valueRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   valueLabel: { fontSize: font.sm, color: colors.textSecondary },

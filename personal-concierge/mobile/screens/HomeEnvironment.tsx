@@ -66,7 +66,7 @@ export default function HomeEnvironment() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   const totalRecs = recs.length + completedRecs.length;
@@ -89,7 +89,7 @@ export default function HomeEnvironment() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Home Environment</Text>
       <Text style={styles.subtitle}>Your home as a health variable</Text>
@@ -124,8 +124,8 @@ export default function HomeEnvironment() {
             <Switch
               value={profile?.[f.key] || false}
               onValueChange={v => toggleField(f.key, v)}
-              trackColor={{ false: colors.border, true: colors.accentBorder }}
-              thumbColor={profile?.[f.key] ? colors.accent : colors.textTertiary}
+              trackColor={{ false: colors.border, true: colors.primaryBorder }}
+              thumbColor={profile?.[f.key] ? colors.primary : colors.textTertiary}
             />
           </View>
         ))}
@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
   cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
-  editBtn: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
+  editBtn: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold },
   progressBar: { height: 6, backgroundColor: colors.border, borderRadius: 3, marginBottom: spacing.sm },
-  progressFill: { height: 6, backgroundColor: colors.accent, borderRadius: 3 },
+  progressFill: { height: 6, backgroundColor: colors.primary, borderRadius: 3 },
   progressText: { fontSize: font.sm, color: colors.textSecondary },
   corrText: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.sm },
   switchRow: {

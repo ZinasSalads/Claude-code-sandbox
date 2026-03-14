@@ -24,7 +24,7 @@ function IntensityBadge({ intensity }: { intensity: string }) {
     moderate: colors.warning,
     high: colors.error,
   };
-  const bg = intensityColors[intensity] || colors.accent;
+  const bg = intensityColors[intensity] || colors.primary;
 
   return (
     <View style={[badgeStyles.badge, { backgroundColor: bg + '20' }]}>
@@ -96,13 +96,13 @@ const exerciseStyles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.md - 2,
   },
   number: {
-    color: colors.accent,
+    color: colors.primary,
     fontWeight: font.bold,
     fontSize: font.sm,
   },
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
     ...cardStyle,
     marginBottom: spacing.xl,
     borderLeftWidth: 3,
-    borderLeftColor: colors.accent,
+    borderLeftColor: colors.primary,
   },
   reasoningTitle: {
     fontSize: font.xs + 1,
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   coachingCard: {
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     borderRadius: radii.md + 2,
     padding: spacing.lg - 2,
     marginBottom: spacing.xl,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   completeButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',

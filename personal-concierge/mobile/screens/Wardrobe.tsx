@@ -74,7 +74,7 @@ export default function WardrobeScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Wardrobe</Text>
 
@@ -88,7 +88,7 @@ export default function WardrobeScreen() {
       </View>
 
       {outfit && (
-        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.accent }]}>
+        <View style={[styles.card, { borderLeftWidth: 3, borderLeftColor: colors.primary }]}>
           <Text style={styles.cardTitle}>Suggested Outfit</Text>
           {outfit.outfit_items?.map((item, i) => (
             <Text key={i} style={styles.outfitItem}>{item.category}: {item.name}</Text>
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.sm },
   actionRow: { flexDirection: 'row', gap: spacing.md, marginBottom: spacing.lg },
   actionBtn: {
-    flex: 1, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    flex: 1, backgroundColor: colors.primaryMuted, borderRadius: radii.md,
     padding: spacing.md, alignItems: 'center',
   },
   actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full, marginRight: spacing.sm,
     backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border,
   },
-  catBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  catBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   catText: { fontSize: font.sm, color: colors.textSecondary },
   catTextActive: { color: colors.white },
   itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
@@ -194,11 +194,11 @@ const styles = StyleSheet.create({
   condition: { fontSize: font.xs, color: colors.textTertiary, textTransform: 'capitalize' },
   emptyText: { color: colors.textTertiary, textAlign: 'center', padding: spacing.xl },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
-  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  addBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

@@ -111,7 +111,7 @@ export default function Hobbies() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Hobbies</Text>
 
@@ -143,7 +143,7 @@ export default function Hobbies() {
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <Text style={styles.dimText}>Last activity: {h.last_activity_date}</Text>
               <TouchableOpacity onPress={() => setLogHobbyId(logHobbyId === h.id ? null : h.id)}>
-                <Text style={{ color: colors.accent, fontSize: font.xs, fontWeight: font.semibold }}>Log Session</Text>
+                <Text style={{ color: colors.primary, fontSize: font.xs, fontWeight: font.semibold }}>Log Session</Text>
               </TouchableOpacity>
             </View>
             {logHobbyId === h.id && (
@@ -280,25 +280,25 @@ const styles = StyleSheet.create({
   dormantText: { color: colors.warning, fontSize: font.sm, fontWeight: font.medium },
   seasonalRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.sm },
   seasonalRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  seasonBadge: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: spacing.xs, marginRight: spacing.md },
-  seasonBadgeText: { color: colors.accent, fontSize: font.xs, fontWeight: font.bold, textTransform: 'uppercase' },
+  seasonBadge: { backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: spacing.xs, marginRight: spacing.md },
+  seasonBadgeText: { color: colors.primary, fontSize: font.xs, fontWeight: font.bold, textTransform: 'uppercase' },
   seasonalName: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary },
   conflictTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.error, marginBottom: spacing.xs },
   conflictOverlap: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.sm },
-  suggestionBox: { backgroundColor: colors.accentGlow, borderRadius: radii.sm, padding: spacing.sm },
+  suggestionBox: { backgroundColor: colors.primaryGlow, borderRadius: radii.sm, padding: spacing.sm },
   suggestionText: { color: colors.textPrimary, fontSize: font.sm },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
-  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  addBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
   formLabel: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: 6, marginTop: spacing.xs },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: spacing.md },
   typeChip: { backgroundColor: colors.bgInput, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: colors.accentMuted },
+  typeChipActive: { backgroundColor: colors.primaryMuted },
   typeChipText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
-  typeChipTextActive: { color: colors.accent },
+  typeChipTextActive: { color: colors.primary },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

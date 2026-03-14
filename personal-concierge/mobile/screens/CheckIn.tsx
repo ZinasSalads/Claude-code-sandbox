@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   doneButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.lg,
     paddingVertical: 18,
     alignItems: 'center',

@@ -72,7 +72,7 @@ export default function Travel() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Travel Intelligence</Text>
 
@@ -149,22 +149,22 @@ const styles = StyleSheet.create({
   activeLabel: { ...sectionLabel, color: colors.success, marginTop: 0, marginBottom: spacing.xs },
   tripHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   tripDest: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary },
-  countdown: { fontSize: font.xl, fontWeight: font.bold, color: colors.accent },
+  countdown: { fontSize: font.xl, fontWeight: font.bold, color: colors.primary },
   tripDates: { fontSize: font.sm, color: colors.textSecondary, marginTop: spacing.xs },
   tripMeta: { fontSize: font.xs, color: colors.textTertiary, marginTop: spacing.xs },
   prepBtn: {
-    marginTop: spacing.md, backgroundColor: colors.accentMuted, borderRadius: radii.md,
+    marginTop: spacing.md, backgroundColor: colors.primaryMuted, borderRadius: radii.md,
     padding: spacing.md, alignItems: 'center',
   },
   prepBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
   planText: { fontSize: font.xs, color: colors.textSecondary, fontFamily: 'monospace' },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
-  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  addBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
   sectionTitle: { ...sectionLabel },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

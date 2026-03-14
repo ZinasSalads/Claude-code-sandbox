@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full,
     backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border,
   },
-  typeBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
+  typeBtnActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   typeBtnText: { fontSize: font.sm, fontWeight: font.medium, color: colors.textSecondary },
   typeBtnTextActive: { color: colors.textPrimary },
   card: {
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: spacing.md },
   actionBtn: {
-    backgroundColor: colors.accentMuted, borderRadius: radii.md, padding: spacing.lg,
+    backgroundColor: colors.primaryMuted, borderRadius: radii.md, padding: spacing.lg,
     alignItems: 'center',
   },
   actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md, textAlignVertical: 'top',
   },
   primaryBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
+    backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
   },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
   disabled: { opacity: 0.5 },

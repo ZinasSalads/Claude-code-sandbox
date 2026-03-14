@@ -60,12 +60,12 @@ const DarkTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    primary: colors.accent,
+    primary: colors.primary,
     background: colors.bg,
     card: colors.bg,
     text: colors.textPrimary,
     border: colors.border,
-    notification: colors.accent,
+    notification: colors.primary,
   },
 };
 
@@ -331,7 +331,7 @@ const fabStyles = RNStyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
     ...shadow.glow,

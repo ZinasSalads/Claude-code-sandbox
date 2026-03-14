@@ -50,7 +50,7 @@ export default function HealthDashboard({ navigation }: Props) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       {/* Today's vitals summary */}
       {health && (
@@ -147,12 +147,12 @@ const styles = StyleSheet.create({
   },
   vitalPill: {
     flex: 1,
-    backgroundColor: colors.accentGlow,
+    backgroundColor: colors.primaryGlow,
     borderRadius: radii.sm,
     padding: spacing.md,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.accentBorder,
+    borderColor: colors.primaryBorder,
   },
   vitalLabel: {
     fontSize: font.xs,

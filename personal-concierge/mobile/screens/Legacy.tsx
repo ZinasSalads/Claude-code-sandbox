@@ -73,7 +73,7 @@ export default function Legacy() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   const categories = ['fitness', 'career', 'relationship', 'travel', 'health', 'personal'];
@@ -82,7 +82,7 @@ export default function Legacy() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Legacy & Vision</Text>
       <Text style={styles.subtitle}>Your 10-year horizon</Text>
@@ -201,9 +201,9 @@ const styles = StyleSheet.create({
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
   cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary },
-  editBtn: { color: colors.accent, fontSize: font.sm, fontWeight: font.semibold },
-  bridgeCard: { borderColor: colors.accentBorder, backgroundColor: colors.accentGlow },
-  bridgeLabel: { fontSize: font.xs, color: colors.accent, fontWeight: font.semibold, marginBottom: spacing.sm },
+  editBtn: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold },
+  bridgeCard: { borderColor: colors.primaryBorder, backgroundColor: colors.primaryGlow },
+  bridgeLabel: { fontSize: font.xs, color: colors.primary, fontWeight: font.semibold, marginBottom: spacing.sm },
   bridgeText: { fontSize: font.md, color: colors.textPrimary, lineHeight: 24 },
   driftCard: { borderColor: colors.warningMuted, backgroundColor: 'rgba(251, 191, 36, 0.08)' },
   driftLabel: { fontSize: font.xs, color: colors.warning, fontWeight: font.semibold, marginBottom: spacing.sm },
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     color: colors.textPrimary, fontSize: font.md, minHeight: 120, textAlignVertical: 'top',
     borderWidth: 1, borderColor: colors.border,
   },
-  saveBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.md, alignItems: 'center', marginTop: spacing.md },
+  saveBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md, alignItems: 'center', marginTop: spacing.md },
   saveBtnText: { color: colors.white, fontSize: font.sm, fontWeight: font.semibold },
   addForm: { marginBottom: spacing.lg },
   input: {
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radii.lg,
     backgroundColor: colors.bgInput, borderWidth: 1, borderColor: colors.border,
   },
-  chipSelected: { borderColor: colors.accent, backgroundColor: colors.accentMuted },
+  chipSelected: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },
   chipText: { fontSize: font.xs, color: colors.textTertiary, textTransform: 'capitalize' },
   chipTextSel: { color: colors.textPrimary },
   milestoneRow: { flexDirection: 'row', marginBottom: spacing.lg, paddingLeft: spacing.xs },

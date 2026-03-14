@@ -99,7 +99,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={colors.accent}
+          tintColor={colors.primary}
         />
       }
     >
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   },
   viewFull: {
     fontSize: font.sm,
-    color: colors.accent,
+    color: colors.primary,
     fontWeight: font.semibold,
     textAlign: 'right',
     marginTop: spacing.xs + 2,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   syncButton: {
     marginTop: spacing.md,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     paddingHorizontal: spacing['2xl'],
     paddingVertical: spacing.md - 2,
     borderRadius: radii.full,

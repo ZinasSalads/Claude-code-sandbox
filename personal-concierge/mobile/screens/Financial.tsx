@@ -64,7 +64,7 @@ export default function Financial() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Financial</Text>
 
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   totalAmount: { fontSize: font['4xl'], fontWeight: font.bold, color: colors.textPrimary, marginTop: spacing.xs },
   totalSubs: { fontSize: font.sm, color: colors.textTertiary, marginTop: spacing.xs },
   auditBtn: {
-    backgroundColor: colors.accentMuted, borderRadius: radii.md, padding: spacing.lg,
+    backgroundColor: colors.primaryMuted, borderRadius: radii.md, padding: spacing.lg,
     alignItems: 'center', marginBottom: spacing.lg,
   },
   auditBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
@@ -161,11 +161,11 @@ const styles = StyleSheet.create({
   subMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
   subCost: { fontSize: 18, fontWeight: font.bold, color: colors.textPrimary },
   addBtn: { alignItems: 'center', padding: spacing.lg, marginBottom: spacing.lg },
-  addBtnText: { color: colors.accent, fontWeight: font.semibold, fontSize: font.md },
+  addBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center' },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

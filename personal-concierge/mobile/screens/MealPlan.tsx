@@ -172,7 +172,7 @@ const mealStyles = StyleSheet.create({
     marginBottom: spacing.xs + 2,
   },
   typeTag: {
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     paddingHorizontal: spacing.md - 2,
     paddingVertical: 3,
     borderRadius: radii.sm,
@@ -275,7 +275,7 @@ export default function MealPlan({ route }: MealPlanProps) {
 
       {/* Daily Summary Bars */}
       <View style={styles.summaryCard}>
-        <MacroBar label="Calories" value={targets.calories} max={3000} color={colors.accent} unit=" kcal" />
+        <MacroBar label="Calories" value={targets.calories} max={3000} color={colors.primary} unit=" kcal" />
         <MacroBar label="Protein" value={targets.protein} max={250} color={colors.success} unit="g" />
         <MacroBar label="Carbs" value={targets.carbs} max={350} color={colors.warning} unit="g" />
         <MacroBar label="Fat" value={targets.fat} max={120} color={colors.scorePoor} unit="g" />
@@ -353,7 +353,7 @@ const styles = StyleSheet.create({
     ...cardStyle,
     marginTop: spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: colors.accent,
+    borderLeftColor: colors.primary,
   },
   reasoningTitle: {
     fontSize: font.xs + 1,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   noteCard: {
-    backgroundColor: colors.accentMuted,
+    backgroundColor: colors.primaryMuted,
     borderRadius: radii.md + 2,
     padding: spacing.lg - 2,
     marginTop: spacing.md,

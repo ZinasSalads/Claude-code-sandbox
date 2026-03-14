@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   cta: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     borderRadius: radii.sm,
     paddingHorizontal: spacing['2xl'],
     paddingVertical: spacing.md,

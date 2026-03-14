@@ -55,7 +55,7 @@ export default function Environment() {
   }, [load]);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator color={colors.accent} size="large" /></View>;
+    return <View style={styles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
   }
 
   if (error) {
@@ -92,7 +92,7 @@ export default function Environment() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       {data.location && <Text style={styles.location}>{data.location}</Text>}
 
@@ -174,6 +174,6 @@ const styles = StyleSheet.create({
   emptyTitle: { color: colors.textPrimary, fontSize: font.xl, fontWeight: font.semibold, marginBottom: spacing.sm },
   emptyDesc: { color: colors.textSecondary, fontSize: font.md, textAlign: 'center', lineHeight: 20 },
   errorText: { color: colors.textSecondary, fontSize: font.lg },
-  retryButton: { marginTop: spacing.md, paddingHorizontal: spacing['2xl'], paddingVertical: spacing.md, backgroundColor: colors.accent, borderRadius: radii.full, ...shadow.glow },
+  retryButton: { marginTop: spacing.md, paddingHorizontal: spacing['2xl'], paddingVertical: spacing.md, backgroundColor: colors.primary, borderRadius: radii.full, ...shadow.glow },
   retryText: { color: colors.white, fontWeight: font.semibold },
 });

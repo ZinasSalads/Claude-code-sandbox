@@ -88,7 +88,7 @@ export default function AppleHealth() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Apple Health</Text>
       <Text style={styles.subtitle}>Fill data gaps when Oura isn't worn</Text>
@@ -102,7 +102,7 @@ export default function AppleHealth() {
             <Text style={styles.statusText}>Not Available (iOS only)</Text>
           </View>
         ) : available === null ? (
-          <ActivityIndicator color={colors.accent} />
+          <ActivityIndicator color={colors.primary} />
         ) : available ? (
           connected ? (
             <View style={styles.statusRow}>
@@ -205,13 +205,13 @@ const styles = StyleSheet.create({
   statusDot: { width: 10, height: 10, borderRadius: radii.full, marginRight: spacing.md },
   statusText: { fontSize: font.md, color: colors.textPrimary },
   connectBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.sm, padding: spacing.md, alignItems: 'center', marginTop: spacing.md,
+    backgroundColor: colors.primary, borderRadius: radii.sm, padding: spacing.md, alignItems: 'center', marginTop: spacing.md,
     ...shadow.glow,
   },
   connectBtnText: { color: colors.white, fontSize: font.md, fontWeight: font.semibold },
   gapDate: { fontSize: font.sm, color: colors.warning, marginTop: spacing.xs, fontFamily: 'monospace' },
   syncBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm,
+    backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm,
     ...shadow.glow,
   },
   syncBtnDisabled: { opacity: 0.5 },

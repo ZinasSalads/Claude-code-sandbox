@@ -66,7 +66,7 @@ export default function Onboarding({ navigation }: any) {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.accent} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
@@ -74,7 +74,7 @@ export default function Onboarding({ navigation }: any) {
   if (!status || status.is_complete) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
         <Text style={styles.bigTitle}>All Set!</Text>
         <Text style={styles.subtitle}>Your app is fully personalized</Text>
@@ -96,7 +96,7 @@ export default function Onboarding({ navigation }: any) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       {/* Progress */}
       <View style={styles.progressBar}>
@@ -254,10 +254,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bgCard, paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, borderRadius: radii.full,
     borderWidth: 1, borderColor: colors.border, marginBottom: spacing.xs,
   },
-  chipSelected: { borderColor: colors.accent, backgroundColor: colors.accentMuted },
+  chipSelected: { borderColor: colors.primary, backgroundColor: colors.primaryMuted },
   chipText: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize' },
   chipTextSelected: { color: colors.textPrimary },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm, ...shadow.glow },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.sm, ...shadow.glow },
   primaryBtnDisabled: { opacity: 0.5 },
   primaryBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
   skipBtn: { alignItems: 'center', padding: spacing.lg, marginTop: spacing.sm },

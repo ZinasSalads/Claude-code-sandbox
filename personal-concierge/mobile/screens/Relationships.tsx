@@ -95,7 +95,7 @@ export default function Relationships() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Relationships</Text>
 
@@ -108,7 +108,7 @@ export default function Relationships() {
       </View>
 
       {briefing && (
-        <View style={[styles.card, { borderColor: colors.accentBorder }]}>
+        <View style={[styles.card, { borderColor: colors.primaryBorder }]}>
           <Text style={styles.cardTitle}>Weekly Briefing</Text>
           <Text style={styles.briefingText}>{briefing.summary}</Text>
           <Text style={styles.priorityLabel}>Top Priority</Text>
@@ -228,11 +228,11 @@ const styles = StyleSheet.create({
   attentionBadge: { backgroundColor: colors.warningMuted, borderRadius: 6, paddingHorizontal: spacing.sm, paddingVertical: 2, marginTop: spacing.xs },
   attentionText: { color: colors.warning, fontSize: 10, fontWeight: font.bold },
   relActions: { flexDirection: 'row', marginTop: spacing.sm, gap: spacing.sm },
-  actionBtn: { backgroundColor: colors.accentMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
-  actionBtnText: { color: colors.accent, fontSize: font.xs, fontWeight: font.semibold },
+  actionBtn: { backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
+  actionBtnText: { color: colors.primary, fontSize: font.xs, fontWeight: font.semibold },
   insightBtn: { backgroundColor: colors.successMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: 6 },
   insightBtnText: { color: colors.success, fontSize: font.xs, fontWeight: font.semibold },
-  insightBox: { backgroundColor: colors.accentGlow, borderRadius: radii.md, padding: spacing.md, marginTop: spacing.sm },
+  insightBox: { backgroundColor: colors.primaryGlow, borderRadius: radii.md, padding: spacing.md, marginTop: spacing.sm },
   insightText: { color: colors.textPrimary, fontSize: font.sm, lineHeight: 19 },
   logForm: { marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
   formLabel: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: 6, marginTop: spacing.sm },
@@ -241,13 +241,13 @@ const styles = StyleSheet.create({
     width: 28, height: 28, borderRadius: 14, backgroundColor: colors.bgInput,
     alignItems: 'center', justifyContent: 'center',
   },
-  sliderDotActive: { backgroundColor: colors.accent },
+  sliderDotActive: { backgroundColor: colors.primary },
   sliderDotText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   typeChip: { backgroundColor: colors.bgInput, borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 6 },
-  typeChipActive: { backgroundColor: colors.accentMuted },
+  typeChipActive: { backgroundColor: colors.primaryMuted },
   typeChipText: { color: colors.textSecondary, fontSize: font.xs, fontWeight: font.semibold },
-  typeChipTextActive: { color: colors.accent },
-  primaryBtn: { backgroundColor: colors.accent, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.md },
+  typeChipTextActive: { color: colors.primary },
+  primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.md },
   primaryBtnText: { color: colors.white, fontWeight: font.semibold, fontSize: font.md },
 });

@@ -73,7 +73,7 @@ export default function Privacy() {
   };
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color={colors.accent} /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   const categories = summary?.categories || {};
@@ -82,7 +82,7 @@ export default function Privacy() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
     >
       <Text style={styles.title}>Privacy & Data</Text>
       <Text style={styles.subtitle}>You own all your data</Text>
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.md },
   desc: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
   exportBtn: {
-    backgroundColor: colors.accent, borderRadius: radii.sm, padding: spacing.lg, alignItems: 'center',
+    backgroundColor: colors.primary, borderRadius: radii.sm, padding: spacing.lg, alignItems: 'center',
     ...shadow.glow,
   },
   exportBtnText: { color: colors.white, fontSize: font.md, fontWeight: font.semibold },
