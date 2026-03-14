@@ -59,6 +59,13 @@ async def submit_checkin(data: CheckInRequest):
         except Exception as e:
             logger.warning(f"Failed to invalidate workout cache: {e}")
 
+        # Invalidate daily plan cache so it regenerates with new check-in data
+        try:
+            from routers.daily import invalidate_daily_plan_cache
+            await invalidate_daily_plan_cache()
+        except Exception as e:
+            logger.warning(f"Failed to invalidate daily plan cache: {e}")
+
         return {
             "status": "ok",
             "message": "Check-in saved",

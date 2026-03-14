@@ -332,13 +332,22 @@ textarea { resize: vertical; min-height: 60px; }
   <!-- DAILY PLAN -->
   <div class="page" id="page-dailyplan">
     <div id="planLoading" class="loading" style="display:none"><div class="spinner"></div>Generating your daily plan...</div>
+    <div id="planHeader" style="display:none;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div class="card-title">Daily Intelligence Brief</div>
+          <div class="card-subtitle" id="planGeneratedAt"></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="planRefreshBtn" onclick="generateDailyPlan(true)">Refresh</button>
+      </div>
+    </div>
     <div id="planContent" style="display:none"></div>
     <div id="planStart">
       <div class="card">
         <div class="card-title" style="margin-bottom:4px">Daily Intelligence Brief</div>
         <div class="card-subtitle">AI-generated plan based on your biometrics, goals, and schedule.</div>
       </div>
-      <button class="btn btn-primary" onclick="generateDailyPlan()">Generate Today's Plan</button>
+      <button class="btn btn-primary" onclick="generateDailyPlan(false)">Generate Today's Plan</button>
     </div>
   </div>
 
@@ -1190,35 +1199,79 @@ async function uploadBloodwork(input) {
 }
 
 // --- Daily Plan ---
-async function generateDailyPlan() {
-  document.getElementById('planStart').style.display = 'none';
-  document.getElementById('planLoading').style.display = 'flex';
+function renderPlan(plan) {
+  const renderSection = (title, value) => {
+    if (!value) return '';
+    const content = Array.isArray(value) ? '<ul style="margin:8px 0;padding-left:20px">' + value.map(v => `<li style="margin:4px 0">${v}</li>`).join('') + '</ul>'
+      : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+    return `<div class="card"><div class="card-title">${title}</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${content}</div></div>`;
+  };
+  let html = '';
+  if (plan.greeting) html += `<div class="card coaching-note">${plan.greeting}</div>`;
+  html += renderSection('Today\'s Summary', plan.today_summary);
+  html += renderSection('Priority Actions', plan.priority_actions);
+  html += renderSection('Workout', plan.fitness_plan || plan.fitness_adjustments || plan.workout_summary || plan.workout);
+  html += renderSection('Nutrition', plan.nutrition_focus || plan.nutrition_summary || plan.nutrition);
+  html += renderSection('Supplements', plan.supplement_reminders || plan.supplements);
+  html += renderSection('Environment', plan.environment_advisory);
+  if (plan.social_recommendation) html += renderSection('Social', plan.social_recommendation);
+  if (plan.career_note) html += renderSection('Career', plan.career_note);
+  if (plan.life_balance) html += renderSection('Life Balance', plan.life_balance);
+  if (plan.coaching_message || plan.coaching_notes || plan.insights) {
+    const c = plan.coaching_message || plan.coaching_notes || plan.insights;
+    html += `<div class="card"><div class="card-title">Coaching</div><div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`;
+  }
+  html += renderSection('Alerts', plan.alerts);
+  if (plan.conflicts_resolved && plan.conflicts_resolved.length) html += renderSection('Trade-offs', plan.conflicts_resolved);
+  if (!html) html = `<div class="card"><div class="card-title">Today's Plan</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(plan, null, 2)}</div></div>`;
+  return html;
+}
+function showPlanTimestamp(plan) {
+  if (plan.generated_at) {
+    const t = new Date(plan.generated_at);
+    const time = t.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('planGeneratedAt').textContent = `Generated at ${time}` + (plan.cached ? ' (cached)' : '');
+  }
+  document.getElementById('planHeader').style.display = 'block';
+}
+async function loadDailyPlan() {
+  // Try to load cached plan instantly on tab open
   try {
     const plan = await api('/daily/plan');
+    document.getElementById('planStart').style.display = 'none';
+    document.getElementById('planLoading').style.display = 'none';
+    const el = document.getElementById('planContent');
+    el.style.display = 'block';
+    el.innerHTML = renderPlan(plan);
+    showPlanTimestamp(plan);
+  } catch(e) {
+    // No cached plan — show the generate button
+    document.getElementById('planStart').style.display = 'block';
+  }
+}
+async function generateDailyPlan(refresh) {
+  document.getElementById('planStart').style.display = 'none';
+  document.getElementById('planLoading').style.display = 'flex';
+  if (refresh) {
+    document.getElementById('planRefreshBtn').disabled = true;
+    document.getElementById('planRefreshBtn').textContent = 'Refreshing...';
+  }
+  try {
+    const plan = await api('/daily/plan' + (refresh ? '?refresh=true' : ''));
     document.getElementById('planLoading').style.display = 'none';
     const el = document.getElementById('planContent'); el.style.display = 'block';
-    let html = '';
-    const renderSection = (title, value, style) => {
-      if (!value) return '';
-      const content = Array.isArray(value) ? '<ul style="margin:8px 0;padding-left:20px">' + value.map(v => `<li style="margin:4px 0">${v}</li>`).join('') + '</ul>'
-        : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
-      return `<div class="card"${style ? ' style="'+style+'"' : ''}><div class="card-title">${title}</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${content}</div></div>`;
-    };
-    if (plan.greeting) html += `<div class="card coaching-note">${plan.greeting}</div>`;
-    html += renderSection('Today\'s Summary', plan.today_summary);
-    html += renderSection('Priority Actions', plan.priority_actions);
-    html += renderSection('Workout', plan.fitness_adjustments || plan.workout_summary || plan.workout);
-    html += renderSection('Nutrition', plan.nutrition_focus || plan.nutrition_summary || plan.nutrition);
-    html += renderSection('Supplements', plan.supplement_reminders || plan.supplements);
-    html += renderSection('Environment', plan.environment_advisory);
-    if (plan.coaching_message || plan.coaching_notes || plan.insights) {
-      const c = plan.coaching_message || plan.coaching_notes || plan.insights;
-      html += `<div class="card"><div class="card-title">Coaching</div><div class="coaching-note" style="margin-top:8px">${typeof c === 'string' ? c : JSON.stringify(c, null, 2)}</div></div>`;
-    }
-    html += renderSection('Alerts', plan.alerts);
-    if (!html) html = `<div class="card"><div class="card-title">Today's Plan</div><div style="margin-top:8px;font-size:14px;color:var(--text-dim);white-space:pre-wrap">${JSON.stringify(plan, null, 2)}</div></div>`;
-    el.innerHTML = html;
-  } catch(e) { document.getElementById('planLoading').style.display = 'none'; document.getElementById('planStart').style.display = 'block'; showToast('Error: ' + e.message, true); }
+    el.innerHTML = renderPlan(plan);
+    showPlanTimestamp(plan);
+    if (refresh) showToast('Plan refreshed!');
+  } catch(e) {
+    document.getElementById('planLoading').style.display = 'none';
+    document.getElementById('planStart').style.display = 'block';
+    showToast('Error: ' + e.message, true);
+  }
+  if (refresh) {
+    document.getElementById('planRefreshBtn').disabled = false;
+    document.getElementById('planRefreshBtn').textContent = 'Refresh';
+  }
 }
 
 // --- Workout ---
@@ -2068,6 +2121,7 @@ function loadPage(page) {
     case 'dashboard': loadDashboard(); break;
     case 'trends': loadTrends(); break;
     case 'checkin': loadCheckin(); break;
+    case 'dailyplan': loadDailyPlan(); break;
     case 'supplements': loadSupplements(); break;
     case 'bloodwork': loadBloodwork(); break;
     case 'skincare': loadSkincareData(); break;

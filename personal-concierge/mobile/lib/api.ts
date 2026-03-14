@@ -983,6 +983,10 @@ export async function getDailyPlan(): Promise<any | null> {
   return fetchApi('/daily/plan');
 }
 
+export async function refreshDailyPlan(): Promise<any | null> {
+  return fetchApi('/daily/plan?refresh=true');
+}
+
 export async function getCouncilDebug(): Promise<any | null> {
   return fetchApi('/daily/council-debug');
 }
