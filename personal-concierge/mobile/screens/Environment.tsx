@@ -18,6 +18,7 @@ interface EnvData {
   temp_c?: number;
   humidity?: number;
   conditions?: string;
+  weather_code?: number;
   wind_kph?: number;
   aqi?: number;
   aqi_category?: string;
@@ -35,6 +36,26 @@ interface EnvData {
   air_quality_notes?: string;
   date?: string;
   error?: string;
+}
+
+function weatherEmoji(code?: number): string {
+  if (code == null) return '🌡️';
+  if (code === 0) return '☀️';
+  if (code <= 2) return '⛅';
+  if (code === 3) return '☁️';
+  if (code <= 48) return '🌫️';
+  if (code <= 57) return '🌦️';
+  if (code <= 65) return '🌧️';
+  if (code <= 67) return '🧊';
+  if (code <= 77) return '🌨️';
+  if (code <= 82) return '🌧️';
+  if (code <= 86) return '🌨️';
+  return '⛈️';
+}
+
+function r(val?: number | null): string {
+  if (val == null) return '—';
+  return Math.round(val).toString();
 }
 
 interface SavedLocation {
@@ -243,6 +264,12 @@ export default function Environment() {
     : uvVal <= 5 ? colors.warning
     : uvVal <= 7 ? colors.scorePoor : colors.error;
 
+  const pollenLevel = data.pollen_risk_level || '';
+  const pollenColor = pollenLevel === 'Low' ? colors.success
+    : pollenLevel === 'Moderate' ? colors.warning
+    : pollenLevel === 'High' || pollenLevel === 'Very High' ? colors.error
+    : colors.textTertiary;
+
   const locationLabel = [location?.city, location?.admin1, location?.country].filter(Boolean).join(', ');
 
   return (
@@ -259,70 +286,89 @@ export default function Environment() {
         </TouchableOpacity>
       </View>
 
-      {/* Weather */}
-      {(data.conditions || data.temp_c != null) && (
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>WEATHER</Text>
-          {data.conditions && (
-            <Text style={styles.weatherText}>
-              {data.conditions.charAt(0).toUpperCase() + data.conditions.slice(1)}
-            </Text>
-          )}
-          {data.temp_c != null && (
-            <Text style={styles.tempText}>
-              {data.temp_c}°C · {data.humidity ?? '—'}% humidity
-              {data.wind_kph != null ? ` · ${data.wind_kph} km/h wind` : ''}
-            </Text>
-          )}
+      {/* Hero weather card */}
+      <View style={styles.weatherCard}>
+        <Text style={styles.weatherEmoji}>{weatherEmoji(data.weather_code)}</Text>
+        <Text style={styles.tempBig}>{r(data.temp_c)}°</Text>
+        {data.conditions && (
+          <Text style={styles.conditionsText}>{data.conditions}</Text>
+        )}
+        <View style={styles.weatherDetails}>
+          <View style={styles.weatherDetail}>
+            <Text style={styles.detailIcon}>💧</Text>
+            <Text style={styles.detailValue}>{r(data.humidity)}%</Text>
+            <Text style={styles.detailLabel}>Humidity</Text>
+          </View>
+          <View style={styles.weatherDetailDivider} />
+          <View style={styles.weatherDetail}>
+            <Text style={styles.detailIcon}>💨</Text>
+            <Text style={styles.detailValue}>{r(data.wind_kph)}</Text>
+            <Text style={styles.detailLabel}>km/h</Text>
+          </View>
+          <View style={styles.weatherDetailDivider} />
+          <View style={styles.weatherDetail}>
+            <Text style={styles.detailIcon}>☀️</Text>
+            <Text style={styles.detailValue}>{data.uv_index_current != null ? Math.round(data.uv_index_current) : '—'}</Text>
+            <Text style={styles.detailLabel}>UV Index</Text>
+          </View>
         </View>
-      )}
+      </View>
 
       {/* Metrics row */}
       <View style={styles.metricsRow}>
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, { borderTopWidth: 3, borderTopColor: aqiColor }]}>
           <Text style={styles.metricLabel}>AQI</Text>
           <Text style={[styles.metricValue, { color: aqiColor }]}>
-            {data.aqi ?? '—'}
+            {r(data.aqi)}
           </Text>
           <Text style={styles.metricSub}>{data.aqi_category || ''}</Text>
         </View>
-        <View style={styles.metricCard}>
-          <Text style={styles.metricLabel}>UV</Text>
+        <View style={[styles.metricCard, { borderTopWidth: 3, borderTopColor: uvColor }]}>
+          <Text style={styles.metricLabel}>UV MAX</Text>
           <Text style={[styles.metricValue, { color: uvColor }]}>
-            {uvVal || '—'}
+            {uvVal ? Math.round(uvVal) : '—'}
           </Text>
           <Text style={styles.metricSub}>{data.uv_risk_level || ''}</Text>
         </View>
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, { borderTopWidth: 3, borderTopColor: pollenColor }]}>
           <Text style={styles.metricLabel}>POLLEN</Text>
-          <Text style={styles.metricValue}>{data.pollen_risk_level || '—'}</Text>
+          <Text style={[styles.metricValue, { color: pollenColor }]}>
+            {data.pollen_risk_level || '—'}
+          </Text>
+          <Text style={styles.metricSub}>{data.pollen_risk_level ? '' : 'No data'}</Text>
         </View>
       </View>
 
       {/* Safety & Notes */}
       {(data.air_quality_notes || data.outdoor_exercise_safe != null) && (
-        <>
-          <Text style={styles.sectionTitle}>RECOMMENDATIONS</Text>
-          <View style={styles.card}>
-            {data.outdoor_exercise_safe != null && (
+        <View style={styles.recCard}>
+          {data.outdoor_exercise_safe != null && (
+            <View style={styles.recRow}>
+              <Text style={styles.recIcon}>{data.outdoor_exercise_safe ? '✅' : '⚠️'}</Text>
               <Text style={styles.recText}>
                 {data.outdoor_exercise_safe
-                  ? '✅ Conditions are safe for outdoor exercise'
-                  : '⚠️ Consider exercising indoors today'}
+                  ? 'Safe for outdoor exercise'
+                  : 'Consider exercising indoors today'}
               </Text>
-            )}
-            {data.sunscreen_required && (
-              <Text style={styles.recText}>🧴 Sunscreen recommended (UV ≥ 3)</Text>
-            )}
-            {data.air_quality_notes && (
+            </View>
+          )}
+          {data.sunscreen_required && (
+            <View style={styles.recRow}>
+              <Text style={styles.recIcon}>🧴</Text>
+              <Text style={styles.recText}>Sunscreen recommended</Text>
+            </View>
+          )}
+          {data.air_quality_notes && (
+            <View style={styles.recRow}>
+              <Text style={styles.recIcon}>🌬️</Text>
               <Text style={styles.recText}>{data.air_quality_notes}</Text>
-            )}
-          </View>
-        </>
+            </View>
+          )}
+        </View>
       )}
 
       {data.date && (
-        <Text style={styles.updatedText}>Data for: {data.date}</Text>
+        <Text style={styles.updatedText}>Updated: {data.date}</Text>
       )}
 
       <View style={{ height: 32 }} />
@@ -365,22 +411,47 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.lg },
   locationText: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.semibold },
   changeLocation: { color: colors.primary, fontSize: font.sm, fontWeight: font.medium },
-  // Data display
-  card: { ...cardStyle, marginBottom: spacing.md },
-  cardLabel: { ...sectionLabel, marginTop: 0 },
-  weatherText: { color: colors.textPrimary, fontSize: font.xl, fontWeight: font.semibold },
-  tempText: { color: colors.textSecondary, fontSize: font.md, marginTop: spacing.sm },
+  // Hero weather card
+  weatherCard: {
+    ...cardStyle,
+    alignItems: 'center',
+    paddingVertical: spacing['2xl'],
+    paddingHorizontal: spacing.xl,
+    marginBottom: spacing.md,
+  },
+  weatherEmoji: { fontSize: 56, marginBottom: spacing.sm },
+  tempBig: { fontSize: 56, fontWeight: font.bold, color: colors.textPrimary, lineHeight: 64 },
+  conditionsText: {
+    fontSize: font.lg, color: colors.textSecondary, fontWeight: font.medium,
+    marginBottom: spacing.xl, textTransform: 'capitalize',
+  },
+  weatherDetails: {
+    flexDirection: 'row', alignItems: 'center',
+    width: '100%', justifyContent: 'space-evenly',
+  },
+  weatherDetail: { alignItems: 'center' },
+  weatherDetailDivider: { width: 1, height: 36, backgroundColor: colors.border },
+  detailIcon: { fontSize: 18, marginBottom: spacing.xs },
+  detailValue: { fontSize: font.lg, fontWeight: font.bold, color: colors.textPrimary },
+  detailLabel: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
+  // Metrics row
   metricsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   metricCard: {
-    flex: 1, backgroundColor: colors.bgCard, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
+    flex: 1, backgroundColor: colors.bgCard, borderRadius: radii.lg, padding: spacing.lg, alignItems: 'center',
     borderWidth: 1, borderColor: colors.border, ...shadow.card,
   },
-  metricLabel: { ...sectionLabel, marginTop: 0, marginBottom: spacing.sm },
-  metricValue: { fontSize: 28, fontWeight: font.bold, color: colors.textPrimary },
-  metricSub: { fontSize: font.sm, color: colors.textTertiary, marginTop: spacing.xs },
-  sectionTitle: { ...sectionLabel },
-  recText: { color: colors.textPrimary, fontSize: font.md, lineHeight: 22, marginBottom: spacing.sm },
-  updatedText: { color: colors.textTertiary, fontSize: font.sm, textAlign: 'center', marginTop: spacing.sm },
+  metricLabel: {
+    fontSize: 10, color: colors.textTertiary, fontWeight: font.semibold,
+    textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: spacing.sm,
+  },
+  metricValue: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary },
+  metricSub: { fontSize: font.xs, color: colors.textTertiary, marginTop: spacing.xs },
+  // Recommendations
+  recCard: { ...cardStyle, marginBottom: spacing.md },
+  recRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: spacing.sm },
+  recIcon: { fontSize: 16, marginRight: spacing.sm, marginTop: 2 },
+  recText: { color: colors.textPrimary, fontSize: font.sm, lineHeight: 20, flex: 1 },
+  updatedText: { color: colors.textTertiary, fontSize: font.xs, textAlign: 'center', marginTop: spacing.sm },
   errorText: { color: colors.textSecondary, fontSize: font.lg },
   retryButton: { marginTop: spacing.md, paddingHorizontal: spacing['2xl'], paddingVertical: spacing.md, backgroundColor: colors.primary, borderRadius: radii.full, ...shadow.glow },
   retryText: { color: colors.white, fontWeight: font.semibold },

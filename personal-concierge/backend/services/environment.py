@@ -182,13 +182,16 @@ class EnvironmentService:
                     daily = data.get("daily", {})
                     uv_max = (daily.get("uv_index_max") or [0])[0]
                     uv_current = current.get("uv_index", 0)
+                    wc = current.get("weather_code", 0)
                     return {
-                        "temp_c": current.get("temperature_2m"),
-                        "humidity": current.get("relative_humidity_2m"),
-                        "wind_kph": current.get("wind_speed_10m"),
-                        "uv_index_current": uv_current,
-                        "uv_index_max": uv_max,
+                        "temp_c": round(current.get("temperature_2m") or 0),
+                        "humidity": round(current.get("relative_humidity_2m") or 0),
+                        "wind_kph": round(current.get("wind_speed_10m") or 0),
+                        "uv_index_current": round(uv_current, 1),
+                        "uv_index_max": round(uv_max, 1),
                         "uv_risk_level": self._uv_risk(uv_max),
+                        "weather_code": wc,
+                        "conditions": self._weather_code_to_text(wc),
                     }
         except Exception as e:
             logger.error(f"Open-Meteo fetch error: {e}")
@@ -300,6 +303,23 @@ class EnvironmentService:
         except Exception as e:
             logger.error(f"Ambee pollen fetch error: {e}")
         return {}
+
+    def _weather_code_to_text(self, code: int) -> str:
+        """Convert WMO weather code to human-readable text."""
+        codes = {
+            0: "Clear sky", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast",
+            45: "Fog", 48: "Rime fog",
+            51: "Light drizzle", 53: "Moderate drizzle", 55: "Dense drizzle",
+            56: "Freezing drizzle", 57: "Heavy freezing drizzle",
+            61: "Light rain", 63: "Moderate rain", 65: "Heavy rain",
+            66: "Light freezing rain", 67: "Heavy freezing rain",
+            71: "Light snow", 73: "Moderate snow", 75: "Heavy snow",
+            77: "Snow grains",
+            80: "Light showers", 81: "Moderate showers", 82: "Violent showers",
+            85: "Light snow showers", 86: "Heavy snow showers",
+            95: "Thunderstorm", 96: "Thunderstorm with hail", 99: "Severe thunderstorm",
+        }
+        return codes.get(code, "Unknown")
 
     def _uv_risk(self, uv: float) -> str:
         if uv < 3:
