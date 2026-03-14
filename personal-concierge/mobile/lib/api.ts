@@ -109,9 +109,19 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | nul
   }
 }
 
+interface DashboardSummary {
+  today: HealthData | null;
+  history: HealthData[];
+}
+
 export async function getTodayHealth(): Promise<HealthData | null> {
-  // Fetch from Supabase directly or via backend
-  return fetchApi<HealthData>('/health');
+  const summary = await fetchApi<DashboardSummary>('/dashboard/summary');
+  return summary?.today ?? null;
+}
+
+export async function getHealthHistory(): Promise<HealthData[]> {
+  const summary = await fetchApi<DashboardSummary>('/dashboard/summary');
+  return summary?.history ?? [];
 }
 
 export async function getTodayCheckIn(): Promise<CheckIn | null> {
