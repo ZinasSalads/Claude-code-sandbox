@@ -3,7 +3,7 @@ import { StatusBar, TouchableOpacity, View, StyleSheet as RNStyleSheet } from 'r
 import { NavigationContainer, DefaultTheme, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 import { colors, font, shadow } from './theme';
 
@@ -258,11 +258,14 @@ function ProfileStackScreen() {
 // Bottom tab navigator — 5 tabs
 const Tab = createBottomTabNavigator();
 
-export default function App() {
+function AppContent() {
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
+  const insets = useSafeAreaInsets();
+
+  const tabBarHeight = 60 + insets.bottom;
 
   return (
-    <SafeAreaProvider>
+    <>
       <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
       <NavigationContainer theme={DarkTheme} ref={navigationRef}>
         <View style={{ flex: 1 }}>
@@ -272,9 +275,9 @@ export default function App() {
                 backgroundColor: colors.tabBar,
                 borderTopColor: colors.tabBarBorder,
                 borderTopWidth: 1,
-                paddingBottom: 8,
+                paddingBottom: insets.bottom + 4,
                 paddingTop: 8,
-                height: 60,
+                height: tabBarHeight,
               },
               tabBarActiveTintColor: colors.tabActive,
               tabBarInactiveTintColor: colors.tabInactive,
@@ -311,7 +314,7 @@ export default function App() {
 
           {/* Floating chat button */}
           <TouchableOpacity
-            style={fabStyles.fab}
+            style={[fabStyles.fab, { bottom: tabBarHeight + 16 }]}
             onPress={() => navigationRef.current?.navigate('Home', { screen: 'Conversation' })}
             activeOpacity={0.8}
           >
@@ -319,6 +322,14 @@ export default function App() {
           </TouchableOpacity>
         </View>
       </NavigationContainer>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContent />
     </SafeAreaProvider>
   );
 }
@@ -326,7 +337,6 @@ export default function App() {
 const fabStyles = RNStyleSheet.create({
   fab: {
     position: 'absolute',
-    bottom: 80,
     right: 20,
     width: 56,
     height: 56,

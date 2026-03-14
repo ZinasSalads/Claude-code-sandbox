@@ -11,6 +11,7 @@ import {
 import ReadinessCircle from '../components/ReadinessCircle';
 import MetricCard from '../components/MetricCard';
 import LoadingSkeleton from '../components/LoadingSkeleton';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 import {
   getTodayHealth,
@@ -47,6 +48,7 @@ interface CommandCenterProps {
 }
 
 export default function CommandCenter({ navigation }: CommandCenterProps) {
+  const insets = useSafeAreaInsets();
   const [health, setHealth] = useState<HealthData | null>(null);
   const [checkIn, setCheckIn] = useState<CheckIn | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -94,7 +96,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.lg }]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
