@@ -19,6 +19,8 @@ const modules = [
   { key: 'CheckIn', title: 'Daily Check-In', emoji: '📋', desc: 'Energy, mood, stress & soreness' },
   { key: 'Personality', title: 'Personality Profile', emoji: '🧠', desc: 'MBTI assessment & coaching style' },
   { key: 'Onboarding', title: 'Onboarding & Setup', emoji: '🚀', desc: 'Configure your concierge' },
+  { key: 'HomeEnv', title: 'Home Environment', emoji: '🏠', desc: 'Optimization & correlations' },
+  { key: 'Financial', title: 'Financial', emoji: '💳', desc: 'Subscriptions & budget audit' },
   { key: 'DigitalIdentity', title: 'Digital Identity', emoji: '🌐', desc: 'Online brand & presence' },
   { key: 'FinancialPlanning', title: 'Financial Goals', emoji: '💰', desc: 'Goal tracking & stress flags' },
   { key: 'Privacy', title: 'Privacy & Data', emoji: '🔒', desc: 'Export, delete & manage data' },

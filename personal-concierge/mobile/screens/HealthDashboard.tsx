@@ -23,6 +23,7 @@ const modules = [
   { key: 'Research', title: 'Research', emoji: '📚', desc: 'Health research & protocols' },
   { key: 'AppleHealth', title: 'Apple Health', emoji: '📱', desc: 'Sync wearable data' },
   { key: 'Skincare', title: 'Skincare', emoji: '✨', desc: 'Routine & skin tracking' },
+  { key: 'Environment', title: 'Environment', emoji: '🌍', desc: 'Air quality, UV & pollen' },
 ];
 
 export default function HealthDashboard({ navigation }: Props) {

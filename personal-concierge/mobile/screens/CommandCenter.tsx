@@ -184,9 +184,14 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
           <Text style={styles.viewFull}>View Full →</Text>
         </TouchableOpacity>
       ) : (
-        <View style={styles.card}>
-          <Text style={styles.noDataText}>No workout available</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('Profile', { screen: 'CheckIn' })}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.noDataText}>Complete your morning check-in to generate today's plan</Text>
+          <Text style={styles.viewFull}>Go to Check-In →</Text>
+        </TouchableOpacity>
       )}
 
       {/* Today's Nutrition */}
@@ -212,9 +217,14 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
           <Text style={styles.viewFull}>View Full →</Text>
         </TouchableOpacity>
       ) : (
-        <View style={styles.card}>
-          <Text style={styles.noDataText}>No meal plan available</Text>
-        </View>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('Profile', { screen: 'CheckIn' })}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.noDataText}>Complete your morning check-in to generate today's meal plan</Text>
+          <Text style={styles.viewFull}>Go to Check-In →</Text>
+        </TouchableOpacity>
       )}
 
       {/* Quick Access Modules */}

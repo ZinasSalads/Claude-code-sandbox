@@ -20,11 +20,9 @@ const modules = [
   { key: 'Career', title: 'Career', emoji: '💼', desc: 'Profile, burnout & coaching' },
   { key: 'Travel', title: 'Travel', emoji: '✈️', desc: 'Trips & pre-trip planning' },
   { key: 'Wardrobe', title: 'Wardrobe', emoji: '👔', desc: 'Items & outfit suggestions' },
-  { key: 'Financial', title: 'Financial', emoji: '💳', desc: 'Subscriptions & budget audit' },
   { key: 'Hobbies', title: 'Hobbies', emoji: '🎯', desc: 'Activities & hobby health' },
-  { key: 'Legacy', title: 'Legacy & Vision', emoji: '🏛️', desc: 'Values, milestones & drift' },
-  { key: 'HomeEnv', title: 'Home Environment', emoji: '🏠', desc: 'Optimization & correlations' },
   { key: 'Learning', title: 'Learning', emoji: '📖', desc: 'Books, courses & sessions' },
+  { key: 'Legacy', title: 'Legacy & Vision', emoji: '🏛️', desc: 'Values, milestones & drift' },
 ];
 
 export default function LifeDashboard({ navigation }: Props) {

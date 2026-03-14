@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { StatusBar, TouchableOpacity, View, StyleSheet as RNStyleSheet } from 'react-native';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, NavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -25,6 +25,7 @@ import Longevity from './screens/Longevity';
 import Research from './screens/Research';
 import AppleHealth from './screens/AppleHealth';
 import Skincare from './screens/Skincare';
+import Environment from './screens/Environment';
 
 // Life tab screens
 import Social from './screens/Social';
@@ -33,11 +34,9 @@ import Growth from './screens/Growth';
 import Career from './screens/Career';
 import Travel from './screens/Travel';
 import WardrobeScreen from './screens/Wardrobe';
-import Financial from './screens/Financial';
 import Hobbies from './screens/Hobbies';
-import Legacy from './screens/Legacy';
-import HomeEnvironment from './screens/HomeEnvironment';
 import Learning from './screens/Learning';
+import Legacy from './screens/Legacy';
 
 // Voice / Intelligence tab screens
 import Voice from './screens/Voice';
@@ -48,6 +47,8 @@ import ContextualIntelligence from './screens/ContextualIntelligence';
 import CheckIn from './screens/CheckIn';
 import Personality from './screens/Personality';
 import Onboarding from './screens/Onboarding';
+import HomeEnvironment from './screens/HomeEnvironment';
+import Financial from './screens/Financial';
 import DigitalIdentity from './screens/DigitalIdentity';
 import FinancialPlanning from './screens/FinancialPlanning';
 import Privacy from './screens/Privacy';
@@ -198,6 +199,7 @@ function HealthStackScreen() {
       <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
       <HealthStack.Screen name="AppleHealth" component={AppleHealth} options={{ title: 'Apple Health' }} />
       <HealthStack.Screen name="Skincare" component={Skincare} options={{ title: 'Skincare' }} />
+      <HealthStack.Screen name="Environment" component={Environment} options={{ title: 'Environment' }} />
     </HealthStack.Navigator>
   );
 }
@@ -214,11 +216,9 @@ function LifeStackScreen() {
       <LifeStack.Screen name="Career" component={Career} options={{ title: 'Career' }} />
       <LifeStack.Screen name="Travel" component={Travel} options={{ title: 'Travel' }} />
       <LifeStack.Screen name="Wardrobe" component={WardrobeScreen} options={{ title: 'Wardrobe' }} />
-      <LifeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
       <LifeStack.Screen name="Hobbies" component={Hobbies} options={{ title: 'Hobbies' }} />
-      <LifeStack.Screen name="Legacy" component={Legacy} options={{ title: 'Legacy & Vision' }} />
-      <LifeStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
       <LifeStack.Screen name="Learning" component={Learning} options={{ title: 'Learning' }} />
+      <LifeStack.Screen name="Legacy" component={Legacy} options={{ title: 'Legacy & Vision' }} />
     </LifeStack.Navigator>
   );
 }
@@ -245,6 +245,8 @@ function ProfileStackScreen() {
       <ProfileStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check In' }} />
       <ProfileStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
       <ProfileStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
+      <ProfileStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
+      <ProfileStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
       <ProfileStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
       <ProfileStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
       <ProfileStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
@@ -256,12 +258,12 @@ function ProfileStackScreen() {
 const Tab = createBottomTabNavigator();
 
 export default function App() {
-  const [showChat, setShowChat] = useState(false);
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
 
   return (
     <SafeAreaProvider>
       <StatusBar barStyle="light-content" backgroundColor="#0D0D1A" />
-      <NavigationContainer theme={DarkTheme}>
+      <NavigationContainer theme={DarkTheme} ref={navigationRef}>
         <View style={{ flex: 1 }}>
           <Tab.Navigator
             screenOptions={{
@@ -309,7 +311,7 @@ export default function App() {
           {/* Floating chat button */}
           <TouchableOpacity
             style={fabStyles.fab}
-            onPress={() => setShowChat(!showChat)}
+            onPress={() => navigationRef.current?.navigate('Home', { screen: 'Conversation' })}
             activeOpacity={0.8}
           >
             <ChatIcon />
