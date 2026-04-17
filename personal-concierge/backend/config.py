@@ -23,6 +23,7 @@ MEM0_API_KEY = os.getenv("MEM0_API_KEY")
 # --- Session 2: Environmental ---
 OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 AMBEE_API_KEY = os.getenv("AMBEE_API_KEY")
+TOMORROW_API_KEY = os.getenv("TOMORROW_API_KEY")
 
 # --- Session 2: Research ---
 PUBMED_EMAIL = os.getenv("PUBMED_EMAIL")
@@ -62,6 +63,7 @@ def get_service_status() -> dict:
         "mem0": bool(MEM0_API_KEY),
         "openweather": bool(OPENWEATHER_API_KEY),
         "ambee": bool(AMBEE_API_KEY),
+        "tomorrow_io": bool(TOMORROW_API_KEY),
         "pubmed": bool(PUBMED_EMAIL),
         "openai": bool(OPENAI_API_KEY),
         "voice": bool(OPENAI_API_KEY),

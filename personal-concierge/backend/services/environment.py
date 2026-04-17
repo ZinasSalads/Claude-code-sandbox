@@ -14,7 +14,7 @@ from typing import Optional
 
 import httpx
 
-from config import OPENWEATHER_API_KEY, AMBEE_API_KEY, supabase
+from config import OPENWEATHER_API_KEY, AMBEE_API_KEY, TOMORROW_API_KEY, supabase
 
 logger = logging.getLogger("concierge.environment")
 
@@ -72,26 +72,30 @@ class EnvironmentService:
             "location_lon": lon,
         }
 
-        # Weather + UV from OpenWeatherMap or Open-Meteo fallback
-        if OPENWEATHER_API_KEY:
-            weather = await self._fetch_openweather(lat, lon)
-            data.update(weather)
-            aqi = await self._fetch_openweather_aqi(lat, lon)
-            data.update(aqi)
+        # Tomorrow.io is the preferred source (covers weather + UV + AQI + pollen in one call)
+        if TOMORROW_API_KEY:
+            tomorrow_data = await self._fetch_tomorrow_io(lat, lon)
+            data.update(tomorrow_data)
         else:
-            weather = await self._fetch_open_meteo(lat, lon)
-            data.update(weather)
-            # AQI from Open-Meteo Air Quality API (free, no key)
-            aqi = await self._fetch_open_meteo_aqi(lat, lon)
-            data.update(aqi)
+            # Weather + UV from OpenWeatherMap or Open-Meteo fallback
+            if OPENWEATHER_API_KEY:
+                weather = await self._fetch_openweather(lat, lon)
+                data.update(weather)
+                aqi = await self._fetch_openweather_aqi(lat, lon)
+                data.update(aqi)
+            else:
+                weather = await self._fetch_open_meteo(lat, lon)
+                data.update(weather)
+                aqi = await self._fetch_open_meteo_aqi(lat, lon)
+                data.update(aqi)
 
-        # Pollen from Ambee or Open-Meteo fallback
-        if AMBEE_API_KEY:
-            pollen = await self._fetch_ambee_pollen(lat, lon)
-            data.update(pollen)
-        else:
-            pollen = await self._fetch_open_meteo_pollen(lat, lon)
-            data.update(pollen)
+            # Pollen from Ambee or Open-Meteo fallback
+            if AMBEE_API_KEY:
+                pollen = await self._fetch_ambee_pollen(lat, lon)
+                data.update(pollen)
+            else:
+                pollen = await self._fetch_open_meteo_pollen(lat, lon)
+                data.update(pollen)
 
         # Compute safety recommendations
         data["outdoor_exercise_safe"] = self._is_outdoor_safe(data)
@@ -99,6 +103,81 @@ class EnvironmentService:
         data["air_quality_notes"] = self._air_quality_notes(data)
 
         return data
+
+    async def _fetch_tomorrow_io(self, lat: float, lon: float) -> dict:
+        """Fetch weather, UV, AQI, and pollen from Tomorrow.io (single API key covers all)."""
+        result = {}
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                # Realtime weather + UV + AQI
+                resp = await client.get(
+                    "https://api.tomorrow.io/v4/weather/realtime",
+                    params={
+                        "location": f"{lat},{lon}",
+                        "apikey": TOMORROW_API_KEY,
+                        "fields": "temperature,humidity,windSpeed,uvIndex,weatherCode,particulateMatter25,particulateMatter10,pollutantO3,epaIndex,epaHealthConcern",
+                        "units": "metric",
+                    },
+                )
+                if resp.status_code == 200:
+                    values = resp.json().get("data", {}).get("values", {})
+                    uv = values.get("uvIndex", 0)
+                    aqi = values.get("epaIndex", 0)
+                    aqi_labels = {1: "Good", 2: "Moderate", 3: "Unhealthy for Sensitive", 4: "Unhealthy", 5: "Very Unhealthy", 6: "Hazardous"}
+                    wc = values.get("weatherCode", 1000)
+                    result.update({
+                        "temp_c": round(values.get("temperature", 0)),
+                        "humidity": round(values.get("humidity", 0)),
+                        "wind_kph": round(values.get("windSpeed", 0) * 3.6, 1),
+                        "uv_index_current": round(uv, 1),
+                        "uv_index_max": round(uv, 1),
+                        "uv_risk_level": self._uv_risk(uv),
+                        "aqi": aqi * 50,
+                        "pm25": values.get("particulateMatter25"),
+                        "pm10": values.get("particulateMatter10"),
+                        "aqi_category": aqi_labels.get(aqi, "Unknown"),
+                        "weather_code": wc,
+                        "conditions": self._tomorrow_weather_code(wc),
+                    })
+
+                # Pollen forecast
+                pollen_resp = await client.get(
+                    "https://api.tomorrow.io/v4/pollen/forecasts/daily",
+                    params={
+                        "location": f"{lat},{lon}",
+                        "apikey": TOMORROW_API_KEY,
+                        "days": 1,
+                        "units": "metric",
+                    },
+                )
+                if pollen_resp.status_code == 200:
+                    pollen_data = pollen_resp.json().get("data", {}).get("timelines", [{}])[0].get("intervals", [{}])[0].get("values", {})
+                    tree = pollen_data.get("treeIndex", 0)
+                    grass = pollen_data.get("grassIndex", 0)
+                    weed = pollen_data.get("weedIndex", 0)
+                    max_val = max(tree, grass, weed)
+                    pollen_labels = {0: "None", 1: "Very Low", 2: "Low", 3: "Moderate", 4: "High", 5: "Very High"}
+                    result.update({
+                        "pollen_tree": tree,
+                        "pollen_grass": grass,
+                        "pollen_weed": weed,
+                        "pollen_risk_level": pollen_labels.get(max_val, "Low"),
+                    })
+        except Exception as e:
+            logger.error(f"Tomorrow.io fetch error: {e}")
+        return result
+
+    def _tomorrow_weather_code(self, code: int) -> str:
+        """Convert Tomorrow.io weather code to human-readable text."""
+        codes = {
+            1000: "Clear", 1001: "Cloudy", 1100: "Mostly Clear", 1101: "Partly Cloudy",
+            1102: "Mostly Cloudy", 2000: "Fog", 2100: "Light Fog",
+            4000: "Drizzle", 4001: "Rain", 4200: "Light Rain", 4201: "Heavy Rain",
+            5000: "Snow", 5001: "Flurries", 5100: "Light Snow", 5101: "Heavy Snow",
+            6000: "Freezing Drizzle", 6001: "Freezing Rain", 7000: "Ice Pellets",
+            8000: "Thunderstorm",
+        }
+        return codes.get(code, "Clear")
 
     async def _fetch_openweather(self, lat: float, lon: float) -> dict:
         """Fetch weather and UV from OpenWeatherMap."""

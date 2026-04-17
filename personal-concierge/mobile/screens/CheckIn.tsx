@@ -1,194 +1,158 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, TextInput,
+  ScrollView, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
-import { submitCheckIn } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
-interface SliderRowProps {
-  emoji: string;
-  label: string;
-  value: number;
-  onChange: (val: number) => void;
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+
+async function apiPost<T>(path: string, body: unknown): Promise<T | null> {
+  try {
+    const r = await fetch(`${API_URL}${path}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
 }
 
-function getSliderColor(value: number): string {
-  if (value <= 3) return colors.error;
-  if (value <= 6) return colors.warning;
-  return colors.success;
-}
+const SYMPTOMS = [
+  { id: 'tired', emoji: '😴', label: 'Unusually tired' },
+  { id: 'stress', emoji: '😤', label: 'High stress' },
+  { id: 'sore', emoji: '💪', label: 'Sore / aching' },
+  { id: 'sick', emoji: '🤒', label: 'Feeling sick' },
+  { id: 'mood', emoji: '😔', label: 'Low mood' },
+  { id: 'fog', emoji: '🧠', label: 'Brain fog' },
+  { id: 'other', emoji: '✍️', label: 'Other' },
+];
 
-function SliderRow({ emoji, label, value, onChange }: SliderRowProps) {
-  const color = getSliderColor(value);
-
-  return (
-    <View style={sliderStyles.container}>
-      <View style={sliderStyles.labelRow}>
-        <Text style={sliderStyles.emoji}>{emoji}</Text>
-        <Text style={sliderStyles.label}>{label}</Text>
-        <Text style={[sliderStyles.value, { color }]}>{value}</Text>
-      </View>
-      <View style={sliderStyles.dotsRow}>
-        {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-          <TouchableOpacity
-            key={n}
-            onPress={() => onChange(n)}
-            style={[
-              sliderStyles.dot,
-              {
-                backgroundColor: n <= value ? color : colors.border,
-                width: n <= value ? 28 : 24,
-                height: n <= value ? 28 : 24,
-              },
-            ]}
-            activeOpacity={0.7}
-          >
-            <Text
-              style={[
-                sliderStyles.dotText,
-                { color: n <= value ? colors.white : colors.textTertiary },
-              ]}
-            >
-              {n}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-const sliderStyles = StyleSheet.create({
-  container: {
-    marginBottom: 28,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  emoji: {
-    fontSize: 22,
-    marginRight: 10,
-  },
-  label: {
-    fontSize: font.lg,
-    fontWeight: font.semibold,
-    color: colors.textPrimary,
-    flex: 1,
-  },
-  value: {
-    fontSize: font['2xl'],
-    fontWeight: font.bold,
-  },
-  dotsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dot: {
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dotText: {
-    fontSize: font.xs,
-    fontWeight: font.semibold,
-  },
-});
+const SEVERITY = ['Mild', 'Moderate', 'Severe'] as const;
+type SeverityType = typeof SEVERITY[number];
 
 interface CheckInProps {
-  navigation: {
-    goBack: () => void;
-  };
+  navigation: { goBack: () => void };
 }
 
 export default function CheckIn({ navigation }: CheckInProps) {
-  const [energy, setEnergy] = useState(5);
-  const [mood, setMood] = useState(5);
-  const [stress, setStress] = useState(5);
-  const [soreness, setSoreness] = useState(5);
-  const [notes, setNotes] = useState('');
+  const [selected, setSelected] = useState<string[]>([]);
+  const [severity, setSeverity] = useState<SeverityType>('Moderate');
+  const [otherText, setOtherText] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [feedback, setFeedback] = useState('');
   const fadeAnim = useState(new Animated.Value(0))[0];
 
+  const toggle = (id: string) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
+  };
+
   const handleSubmit = useCallback(async () => {
+    if (selected.length === 0) return;
     setSubmitting(true);
-    const result = await submitCheckIn({ energy, mood, stress, soreness, notes: notes || undefined });
+
+    const signalText = [
+      ...selected.filter(s => s !== 'other').map(s => SYMPTOMS.find(x => x.id === s)?.label || s),
+      ...(selected.includes('other') && otherText.trim() ? [`Other: ${otherText.trim()}`] : []),
+    ].join(', ');
+
+    await apiPost('/context/signal', {
+      signal_text: `User flagged symptoms (${severity}): ${signalText}`,
+    });
+
+    const severityMap: Record<SeverityType, number> = { Mild: 3, Moderate: 6, Severe: 9 };
+    const val = 10 - severityMap[severity];
+    await apiPost('/checkin', {
+      energy: selected.includes('tired') ? severityMap[severity] : 7,
+      mood: selected.includes('mood') ? severityMap[severity] : 7,
+      stress: selected.includes('stress') ? severityMap[severity] : 3,
+      soreness: selected.includes('sore') ? severityMap[severity] : 3,
+      notes: signalText,
+    });
+
+    const adjustments: string[] = [];
+    if (selected.includes('tired') || selected.includes('sick')) adjustments.push("workout adjusted to recovery");
+    if (selected.includes('sore')) adjustments.push("high-impact exercises removed");
+    if (selected.includes('stress') || selected.includes('fog')) adjustments.push("heavy cognitive tasks de-prioritised");
+    if (selected.includes('mood')) adjustments.push("social and positive activities surfaced");
+
+    const fb = adjustments.length > 0
+      ? `Noted. ${adjustments.join(', ')}.`
+      : "Noted. I'll factor this into today's recommendations.";
+
+    setFeedback(fb);
     setSubmitting(false);
+    Animated.timing(fadeAnim, { toValue: 1, duration: 400, useNativeDriver: true }).start();
+  }, [selected, severity, otherText, fadeAnim]);
 
-    if (result) {
-      setSuccess(true);
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }).start(() => {
-        setTimeout(() => navigation.goBack(), 800);
-      });
-    }
-  }, [energy, mood, stress, soreness, notes, fadeAnim, navigation]);
-
-  if (success) {
+  if (feedback) {
     return (
-      <Animated.View style={[styles.successContainer, { opacity: fadeAnim }]}>
-        <Text style={styles.successEmoji}>✓</Text>
-        <Text style={styles.successText}>Check-in saved!</Text>
+      <Animated.View style={[styles.feedbackScreen, { opacity: fadeAnim }]}>
+        <Text style={styles.feedbackEmoji}>✓</Text>
+        <Text style={styles.feedbackTitle}>Got it</Text>
+        <Text style={styles.feedbackText}>{feedback}</Text>
+        <TouchableOpacity style={styles.doneBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <Text style={styles.doneBtnText}>Done</Text>
+        </TouchableOpacity>
       </Animated.View>
     );
   }
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>How are you feeling?</Text>
-        <Text style={styles.subtitle}>{today}</Text>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>What's going on?</Text>
+        <Text style={styles.subtitle}>Select all that apply</Text>
 
-        <View style={styles.slidersContainer}>
-          <SliderRow emoji="⚡" label="Energy" value={energy} onChange={setEnergy} />
-          <SliderRow emoji="😊" label="Mood" value={mood} onChange={setMood} />
-          <SliderRow emoji="😤" label="Stress" value={stress} onChange={setStress} />
-          <SliderRow emoji="💪" label="Soreness" value={soreness} onChange={setSoreness} />
+        <View style={styles.symptomsGrid}>
+          {SYMPTOMS.map(s => (
+            <TouchableOpacity
+              key={s.id}
+              style={[styles.symptomChip, selected.includes(s.id) && styles.symptomChipActive]}
+              onPress={() => toggle(s.id)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.symptomEmoji}>{s.emoji}</Text>
+              <Text style={[styles.symptomLabel, selected.includes(s.id) && styles.symptomLabelActive]}>
+                {s.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
-        <TextInput
-          style={styles.notesInput}
-          placeholder="Anything else to note?"
-          placeholderTextColor={colors.textTertiary}
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          numberOfLines={3}
-          textAlignVertical="top"
-        />
+        {selected.includes('other') && (
+          <TextInput
+            style={styles.otherInput}
+            placeholder="Describe what's going on..."
+            placeholderTextColor={colors.textTertiary}
+            value={otherText}
+            onChangeText={setOtherText}
+            multiline
+            autoFocus
+          />
+        )}
+
+        <Text style={styles.severityLabel}>How bad is it?</Text>
+        <View style={styles.severityRow}>
+          {SEVERITY.map(s => (
+            <TouchableOpacity
+              key={s}
+              style={[styles.severityBtn, severity === s && styles.severityBtnActive]}
+              onPress={() => setSeverity(s)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.severityText, severity === s && styles.severityTextActive]}>{s}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         <TouchableOpacity
-          style={[styles.doneButton, submitting && styles.doneButtonDisabled]}
+          style={[styles.submitBtn, (selected.length === 0 || submitting) && { opacity: 0.5 }]}
           onPress={handleSubmit}
-          disabled={submitting}
+          disabled={selected.length === 0 || submitting}
           activeOpacity={0.8}
         >
-          <Text style={styles.doneButtonText}>
-            {submitting ? 'Saving...' : 'Done'}
-          </Text>
+          <Text style={styles.submitBtnText}>{submitting ? 'Saving...' : 'Flag It'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -196,69 +160,53 @@ export default function CheckIn({ navigation }: CheckInProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.bg,
+  container: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: spacing.xl, paddingBottom: spacing['4xl'] },
+
+  title: { fontSize: font['3xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.xs },
+  subtitle: { fontSize: font.md, color: colors.textSecondary, marginBottom: spacing['2xl'] },
+
+  symptomsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing['2xl'] },
+  symptomChip: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    backgroundColor: colors.bgCard, borderRadius: radii.full,
+    paddingHorizontal: spacing.lg, paddingVertical: spacing.sm + 2,
+    borderWidth: 1, borderColor: colors.border,
   },
-  content: {
-    padding: spacing.xl,
-    paddingTop: spacing.lg,
+  symptomChipActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
+  symptomEmoji: { fontSize: 18 },
+  symptomLabel: { fontSize: font.sm, color: colors.textSecondary, fontWeight: font.medium },
+  symptomLabelActive: { color: colors.textAccent },
+
+  otherInput: {
+    backgroundColor: colors.bgInput, borderRadius: radii.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.lg, color: colors.textPrimary,
+    fontSize: font.md, minHeight: 80, marginBottom: spacing['2xl'],
+    textAlignVertical: 'top',
   },
-  title: {
-    fontSize: font['3xl'],
-    fontWeight: font.bold,
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
+
+  severityLabel: { fontSize: font.sm, color: colors.textSecondary, fontWeight: font.semibold, marginBottom: spacing.sm },
+  severityRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing['3xl'] },
+  severityBtn: {
+    flex: 1, paddingVertical: spacing.md + 2, borderRadius: radii.md,
+    alignItems: 'center', backgroundColor: colors.bgCard,
+    borderWidth: 1, borderColor: colors.border,
   },
-  subtitle: {
-    fontSize: font.md,
-    color: colors.textSecondary,
-    marginBottom: spacing['3xl'],
+  severityBtnActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
+  severityText: { color: colors.textSecondary, fontSize: font.md, fontWeight: font.semibold },
+  severityTextActive: { color: colors.textAccent },
+
+  submitBtn: {
+    backgroundColor: colors.primary, borderRadius: radii.lg,
+    paddingVertical: 18, alignItems: 'center', ...shadow.glow,
   },
-  slidersContainer: {
-    marginBottom: spacing.sm,
-  },
-  notesInput: {
-    backgroundColor: colors.bgCard,
-    borderRadius: radii.lg,
-    padding: spacing.lg,
-    color: colors.textPrimary,
-    fontSize: font.md,
-    minHeight: 80,
-    marginBottom: spacing['2xl'],
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  doneButton: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.lg,
-    paddingVertical: 18,
-    alignItems: 'center',
-    marginBottom: spacing['3xl'],
-    ...shadow.glow,
-  },
-  doneButtonDisabled: {
-    opacity: 0.6,
-  },
-  doneButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: font.bold,
-  },
-  successContainer: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  successEmoji: {
-    fontSize: 64,
-    color: colors.success,
-    marginBottom: spacing.lg,
-  },
-  successText: {
-    fontSize: 22,
-    fontWeight: font.semibold,
-    color: colors.textPrimary,
-  },
+  submitBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
+
+  feedbackScreen: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center', padding: spacing['3xl'] },
+  feedbackEmoji: { fontSize: 64, color: colors.success, marginBottom: spacing.lg },
+  feedbackTitle: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm },
+  feedbackText: { fontSize: font.md, color: colors.textSecondary, textAlign: 'center', lineHeight: 24, marginBottom: spacing['3xl'] },
+  doneBtn: { backgroundColor: colors.primary, borderRadius: radii.lg, paddingHorizontal: spacing['4xl'], paddingVertical: spacing.md + 2, ...shadow.glow },
+  doneBtnText: { color: colors.white, fontSize: font.md, fontWeight: font.bold },
 });

@@ -1,26 +1,22 @@
-import React, { useRef } from 'react';
-import { StatusBar, TouchableOpacity, View, StyleSheet as RNStyleSheet } from 'react-native';
-import { NavigationContainer, DefaultTheme, NavigationContainerRef } from '@react-navigation/native';
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path } from 'react-native-svg';
-import { colors, font, shadow } from './theme';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { colors, font } from './theme';
 
-// Dashboard / hub screens (landing pages for each tab)
+// Dashboard hub screens
 import HealthDashboard from './screens/HealthDashboard';
 import LifeDashboard from './screens/LifeDashboard';
 import ProfileDashboard from './screens/ProfileDashboard';
 
-// Home tab screens
+// Today tab
 import CommandCenter from './screens/CommandCenter';
 import WorkoutDetail from './screens/WorkoutDetail';
-import MealPlan from './screens/MealPlan';
 
-// Conversation (root-level modal)
-import Conversation from './screens/Conversation';
-
-// Health tab screens
+// Health tab
 import BloodWork from './screens/BloodWork';
 import Supplements from './screens/Supplements';
 import Longevity from './screens/Longevity';
@@ -29,7 +25,7 @@ import AppleHealth from './screens/AppleHealth';
 import Skincare from './screens/Skincare';
 import Environment from './screens/Environment';
 
-// Life tab screens
+// Life tab
 import Social from './screens/Social';
 import Relationships from './screens/Relationships';
 import Growth from './screens/Growth';
@@ -41,7 +37,7 @@ import Learning from './screens/Learning';
 import Legacy from './screens/Legacy';
 import Reviews from './screens/Reviews';
 
-// Profile tab screens
+// Me tab
 import CheckIn from './screens/CheckIn';
 import Personality from './screens/Personality';
 import Onboarding from './screens/Onboarding';
@@ -52,8 +48,8 @@ import FinancialPlanning from './screens/FinancialPlanning';
 import Privacy from './screens/Privacy';
 import Voice from './screens/Voice';
 import ContextualIntelligence from './screens/ContextualIntelligence';
+import Conversation from './screens/Conversation';
 
-// Dark theme
 const DarkTheme = {
   ...DefaultTheme,
   dark: true,
@@ -68,17 +64,14 @@ const DarkTheme = {
   },
 };
 
-// SVG icon components
-function HomeIcon({ color, size }: { color: string; size: number }) {
+// ── Icons ──────────────────────────────────────────────────────────────────
+
+function SunIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.5523 5.44772 21 6 21H9M19 10L21 12M19 10V20C19 20.5523 18.5523 21 18 21H15M9 21C9.55228 21 10 20.5523 10 20V16C10 15.4477 10.4477 15 11 15H13C13.5523 15 14 15.4477 14 16V20C14 20.5523 14.4477 21 15 21M9 21H15"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <Circle cx="12" cy="12" r="5" stroke={color} strokeWidth={2} />
+      <Path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+        stroke={color} strokeWidth={2} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -86,27 +79,19 @@ function HomeIcon({ color, size }: { color: string; size: number }) {
 function HeartIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
 
-function LifeIcon({ color, size }: { color: string; size: number }) {
+function SproutIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <Path d="M12 22V12" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Path d="M12 12C12 12 7 10 5 6c4 0 7 2 7 6z" stroke={color} strokeWidth={2} strokeLinejoin="round" fill="none" />
+      <Path d="M12 12C12 12 17 10 19 6c-4 0-7 2-7 6z" stroke={color} strokeWidth={2} strokeLinejoin="round" fill="none" />
+      <Path d="M12 17C12 17 8 15.5 7 12c3.5 0 5 2 5 5z" stroke={color} strokeWidth={2} strokeLinejoin="round" fill="none" />
     </Svg>
   );
 }
@@ -114,30 +99,13 @@ function LifeIcon({ color, size }: { color: string; size: number }) {
 function UserIcon({ color, size }: { color: string; size: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+      <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+        stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }
 
-function ChatIcon() {
-  return (
-    <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-        stroke="#fff"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
+// ── Stack options ──────────────────────────────────────────────────────────
 
 const stackScreenOptions = {
   headerStyle: { backgroundColor: colors.bg },
@@ -146,36 +114,38 @@ const stackScreenOptions = {
   headerShadowVisible: false,
 };
 
-// Home stack (Command Center + detail screens)
-const HomeStack = createNativeStackNavigator();
-function HomeStackScreen() {
+// ── Today stack ────────────────────────────────────────────────────────────
+
+const TodayStack = createNativeStackNavigator();
+function TodayStackScreen() {
   return (
-    <HomeStack.Navigator screenOptions={stackScreenOptions}>
-      <HomeStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
-      <HomeStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
-      <HomeStack.Screen name="MealPlan" component={MealPlan} options={{ title: 'Meal Plan' }} />
-    </HomeStack.Navigator>
+    <TodayStack.Navigator screenOptions={stackScreenOptions}>
+      <TodayStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
+      <TodayStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
+    </TodayStack.Navigator>
   );
 }
 
-// Health stack
+// ── Health stack ───────────────────────────────────────────────────────────
+
 const HealthStack = createNativeStackNavigator();
 function HealthStackScreen() {
   return (
     <HealthStack.Navigator screenOptions={stackScreenOptions}>
       <HealthStack.Screen name="HealthHub" component={HealthDashboard} options={{ title: 'Health' }} />
-      <HealthStack.Screen name="BloodWork" component={BloodWork} options={{ title: 'Blood Work' }} />
       <HealthStack.Screen name="Supplements" component={Supplements} options={{ title: 'Supplements' }} />
-      <HealthStack.Screen name="Longevity" component={Longevity} options={{ title: 'Longevity' }} />
-      <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
-      <HealthStack.Screen name="AppleHealth" component={AppleHealth} options={{ title: 'Apple Health' }} />
       <HealthStack.Screen name="Skincare" component={Skincare} options={{ title: 'Skincare' }} />
+      <HealthStack.Screen name="Longevity" component={Longevity} options={{ title: 'Longevity' }} />
+      <HealthStack.Screen name="AppleHealth" component={AppleHealth} options={{ title: 'Apple Health' }} />
       <HealthStack.Screen name="Environment" component={Environment} options={{ title: 'Environment' }} />
+      <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
+      <HealthStack.Screen name="BloodWork" component={BloodWork} options={{ title: 'Blood Work' }} />
     </HealthStack.Navigator>
   );
 }
 
-// Life stack — absorbs Reviews from old Voice tab
+// ── Life stack ─────────────────────────────────────────────────────────────
+
 const LifeStack = createNativeStackNavigator();
 function LifeStackScreen() {
   return (
@@ -195,30 +165,30 @@ function LifeStackScreen() {
   );
 }
 
-// Profile stack — absorbs Voice Commands and Contextual Intelligence
-const ProfileStack = createNativeStackNavigator();
-function ProfileStackScreen() {
+// ── Me stack ───────────────────────────────────────────────────────────────
+
+const MeStack = createNativeStackNavigator();
+function MeStackScreen() {
   return (
-    <ProfileStack.Navigator screenOptions={stackScreenOptions}>
-      <ProfileStack.Screen name="ProfileHub" component={ProfileDashboard} options={{ title: 'Profile' }} />
-      <ProfileStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Check In' }} />
-      <ProfileStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
-      <ProfileStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
-      <ProfileStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
-      <ProfileStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
-      <ProfileStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
-      <ProfileStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
-      <ProfileStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
-      <ProfileStack.Screen name="VoiceCommands" component={Voice} options={{ title: 'Voice & Briefings' }} />
-      <ProfileStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
-    </ProfileStack.Navigator>
+    <MeStack.Navigator screenOptions={stackScreenOptions}>
+      <MeStack.Screen name="MeHub" component={ProfileDashboard} options={{ title: 'Me' }} />
+      <MeStack.Screen name="Chat" component={Conversation} options={{ title: 'AI Chat' }} />
+      <MeStack.Screen name="VoiceCommands" component={Voice} options={{ title: 'Voice & Briefings' }} />
+      <MeStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Flag Something' }} />
+      <MeStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
+      <MeStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
+      <MeStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
+      <MeStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
+      <MeStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
+      <MeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
+      <MeStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
+      <MeStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
+    </MeStack.Navigator>
   );
 }
 
-// Root stack wraps tabs + Conversation modal
-const RootStack = createNativeStackNavigator();
+// ── Tab navigator ──────────────────────────────────────────────────────────
 
-// Bottom tab navigator — 4 tabs
 const Tab = createBottomTabNavigator();
 
 function TabsScreen() {
@@ -243,9 +213,9 @@ function TabsScreen() {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={HomeStackScreen}
-        options={{ tabBarIcon: ({ color, size }) => <HomeIcon color={color} size={size} /> }}
+        name="Today"
+        component={TodayStackScreen}
+        options={{ tabBarIcon: ({ color, size }) => <SunIcon color={color} size={size} /> }}
       />
       <Tab.Screen
         name="Health"
@@ -255,76 +225,26 @@ function TabsScreen() {
       <Tab.Screen
         name="Life"
         component={LifeStackScreen}
-        options={{ tabBarIcon: ({ color, size }) => <LifeIcon color={color} size={size} /> }}
+        options={{ tabBarIcon: ({ color, size }) => <SproutIcon color={color} size={size} /> }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileStackScreen}
+        name="Me"
+        component={MeStackScreen}
         options={{ tabBarIcon: ({ color, size }) => <UserIcon color={color} size={size} /> }}
       />
     </Tab.Navigator>
   );
 }
 
-function AppContent() {
-  const navigationRef = useRef<NavigationContainerRef<any>>(null);
-  const insets = useSafeAreaInsets();
-  const tabBarHeight = 56 + insets.bottom;
-
-  return (
-    <>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <NavigationContainer theme={DarkTheme} ref={navigationRef}>
-        <View style={{ flex: 1 }}>
-          <RootStack.Navigator screenOptions={{ headerShown: false }}>
-            <RootStack.Screen name="Tabs" component={TabsScreen} />
-            <RootStack.Screen
-              name="Conversation"
-              component={Conversation}
-              options={{
-                presentation: 'modal',
-                headerShown: true,
-                headerStyle: { backgroundColor: colors.bg },
-                headerTintColor: colors.textPrimary,
-                headerTitleStyle: { fontWeight: font.semibold },
-                headerShadowVisible: false,
-                title: 'AI Chat',
-              }}
-            />
-          </RootStack.Navigator>
-
-          {/* Floating chat button */}
-          <TouchableOpacity
-            style={[fabStyles.fab, { bottom: tabBarHeight + 16 }]}
-            onPress={() => navigationRef.current?.navigate('Conversation' as never)}
-            activeOpacity={0.8}
-          >
-            <ChatIcon />
-          </TouchableOpacity>
-        </View>
-      </NavigationContainer>
-    </>
-  );
-}
+// ── Root ───────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AppContent />
+      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
+      <NavigationContainer theme={DarkTheme}>
+        <TabsScreen />
+      </NavigationContainer>
     </SafeAreaProvider>
   );
 }
-
-const fabStyles = RNStyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadow.glow,
-  },
-});
