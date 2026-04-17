@@ -151,6 +151,29 @@ export default function Growth() {
           <Text style={styles.cardTitle}>Suggested: {(suggestion as Record<string, string>).name}</Text>
           <Text style={styles.suggestText}>{(suggestion as Record<string, string>).description}</Text>
           <Text style={styles.suggestWhy}>{(suggestion as Record<string, string>).why_now}</Text>
+          <View style={styles.suggestActions}>
+            <TouchableOpacity
+              style={[styles.primaryBtn, { flex: 1 }]}
+              onPress={async () => {
+                await addGrowthHabit({ name: (suggestion as Record<string, string>).name, category: (suggestion as Record<string, string>).category || 'health' } as Partial<GrowthHabit>);
+                setSuggestion(null);
+                fetchData();
+              }}
+            >
+              <Text style={styles.primaryBtnText}>Add This Habit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.prefillBtn}
+              onPress={() => {
+                setNewName((suggestion as Record<string, string>).name || '');
+                setNewCategory((suggestion as Record<string, string>).category || 'health');
+                setSuggestion(null);
+                setShowAdd(true);
+              }}
+            >
+              <Text style={styles.prefillBtnText}>Customise</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -209,7 +232,13 @@ const styles = StyleSheet.create({
   },
   actionBtnText: { color: colors.textAccent, fontWeight: font.semibold, fontSize: font.sm },
   suggestText: { fontSize: font.sm, color: colors.textSecondary, marginBottom: spacing.xs },
-  suggestWhy: { fontSize: font.sm, color: colors.textAccent, fontStyle: 'italic' },
+  suggestWhy: { fontSize: font.sm, color: colors.textAccent, fontStyle: 'italic', marginBottom: spacing.md },
+  suggestActions: { flexDirection: 'row', gap: spacing.sm },
+  prefillBtn: {
+    flex: 1, backgroundColor: colors.bgCard, borderRadius: radii.md,
+    padding: spacing.md, alignItems: 'center', borderWidth: 1, borderColor: colors.border,
+  },
+  prefillBtnText: { color: colors.textSecondary, fontWeight: font.semibold, fontSize: font.sm },
   input: {
     backgroundColor: colors.bgInput, borderRadius: radii.md, padding: spacing.md,
     color: colors.textPrimary, fontSize: font.sm, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,

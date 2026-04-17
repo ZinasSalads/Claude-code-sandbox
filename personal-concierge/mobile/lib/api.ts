@@ -380,6 +380,10 @@ export async function addSocialContact(data: Partial<SocialContact>): Promise<So
   return fetchApi('/social/circle', { method: 'POST', body: JSON.stringify(data) });
 }
 
+export async function updateSocialContact(contactId: string, data: Partial<SocialContact>): Promise<SocialContact | null> {
+  return fetchApi(`/social/circle/${contactId}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
 export async function logSocialConnection(contactId: string, data: Record<string, unknown>): Promise<unknown> {
   return fetchApi('/social/log', { method: 'POST', body: JSON.stringify({ contact_id: contactId, ...data }) });
 }
