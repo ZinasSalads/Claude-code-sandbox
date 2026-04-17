@@ -18,16 +18,14 @@ interface Props {
 }
 
 const modules = [
-  { key: 'CheckIn', title: 'Daily Check-In', emoji: '📋', desc: 'Energy, mood, stress & soreness' },
+  { key: 'Chat', title: 'AI Chat', emoji: '💬', desc: 'Ask your concierge anything' },
+  { key: 'CheckIn', title: 'Flag Something', emoji: '⚑', desc: 'Something feels off? Flag it' },
   { key: 'Personality', title: 'Personality Profile', emoji: '🧠', desc: 'MBTI assessment & coaching style' },
-  { key: 'Onboarding', title: 'Onboarding & Setup', emoji: '🚀', desc: 'Configure your concierge' },
   { key: 'VoiceCommands', title: 'Voice & Briefings', emoji: '🎙️', desc: 'Morning briefing & commands' },
   { key: 'ContextualIntel', title: 'Contextual Intelligence', emoji: '🧩', desc: 'Signals & anomaly detection' },
-  { key: 'HomeEnv', title: 'Home Environment', emoji: '🏠', desc: 'Optimization & correlations' },
-  { key: 'Financial', title: 'Financial', emoji: '💳', desc: 'Subscriptions & budget audit' },
-  { key: 'DigitalIdentity', title: 'Digital Identity', emoji: '🌐', desc: 'Online brand & presence' },
-  { key: 'FinancialPlanning', title: 'Financial Goals', emoji: '💰', desc: 'Goal tracking & stress flags' },
+  { key: 'Financial', title: 'Subscriptions', emoji: '💳', desc: 'Subscriptions & budget audit' },
   { key: 'Privacy', title: 'Privacy & Data', emoji: '🔒', desc: 'Export, delete & manage data' },
+  { key: 'Onboarding', title: 'Setup', emoji: '🚀', desc: 'Configure your concierge' },
 ];
 
 export default function ProfileDashboard({ navigation }: Props) {

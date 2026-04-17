@@ -43,8 +43,6 @@ import Personality from './screens/Personality';
 import Onboarding from './screens/Onboarding';
 import HomeEnvironment from './screens/HomeEnvironment';
 import Financial from './screens/Financial';
-import DigitalIdentity from './screens/DigitalIdentity';
-import FinancialPlanning from './screens/FinancialPlanning';
 import Privacy from './screens/Privacy';
 import Voice from './screens/Voice';
 import ContextualIntelligence from './screens/ContextualIntelligence';
@@ -176,10 +174,7 @@ function MeStackScreen() {
       <MeStack.Screen name="VoiceCommands" component={Voice} options={{ title: 'Voice & Briefings' }} />
       <MeStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Flag Something' }} />
       <MeStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
-      <MeStack.Screen name="DigitalIdentity" component={DigitalIdentity} options={{ title: 'Digital Identity' }} />
-      <MeStack.Screen name="FinancialPlanning" component={FinancialPlanning} options={{ title: 'Financial Goals' }} />
       <MeStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
-      <MeStack.Screen name="HomeEnv" component={HomeEnvironment} options={{ title: 'Home Environment' }} />
       <MeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
       <MeStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
       <MeStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
