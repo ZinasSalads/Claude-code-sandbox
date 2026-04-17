@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import date, timedelta
 from typing import Optional
@@ -38,22 +37,25 @@ async def sync_oura(days: int = 7):
         return {"status": "ok", "message": "No data returned from Oura API", "days_synced": 0}
 
     upserted = 0
+    errors = []
     for day_str, record in data.items():
         try:
             row = {k: v for k, v in record.items()}
-            row["raw_oura"] = json.dumps(row["raw_oura"]) if row.get("raw_oura") else None
-
+            # Keep raw_oura as dict — Supabase JSONB accepts dict directly
+            # Do NOT json.dumps it (that would double-encode)
             result = supabase.table("health_data").upsert(row, on_conflict="date").execute()
             if result.data:
                 upserted += 1
         except Exception as e:
             logger.warning(f"Failed to upsert health_data for {day_str}: {e}")
+            errors.append(str(e))
 
     return {
         "status": "ok",
         "days_synced": len(data),
         "records_upserted": upserted,
         "date_range": {"start": start.isoformat(), "end": end.isoformat()},
+        "errors": errors if errors else None,
     }
 
 
