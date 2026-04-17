@@ -39,12 +39,15 @@ async def sync_oura(days: int = 7):
 
     upserted = 0
     for day_str, record in data.items():
-        row = {k: v for k, v in record.items()}
-        row["raw_oura"] = json.dumps(row["raw_oura"]) if row.get("raw_oura") else None
+        try:
+            row = {k: v for k, v in record.items()}
+            row["raw_oura"] = json.dumps(row["raw_oura"]) if row.get("raw_oura") else None
 
-        result = supabase.table("health_data").upsert(row, on_conflict="date").execute()
-        if result.data:
-            upserted += 1
+            result = supabase.table("health_data").upsert(row, on_conflict="date").execute()
+            if result.data:
+                upserted += 1
+        except Exception as e:
+            logger.warning(f"Failed to upsert health_data for {day_str}: {e}")
 
     return {
         "status": "ok",

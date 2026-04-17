@@ -101,39 +101,40 @@ def dashboard_summary():
     today = date.today().isoformat()
     week_ago = (date.today() - timedelta(days=7)).isoformat()
 
-    # Today's data
-    today_resp = (
-        supabase.table("health_data")
-        .select("*")
-        .eq("date", today)
-        .execute()
-    )
-    today_data = today_resp.data[0] if today_resp.data else None
-
-    # If no data for today, get most recent
-    if not today_data:
-        latest_resp = (
+    try:
+        today_resp = (
             supabase.table("health_data")
             .select("*")
-            .order("date", desc=True)
-            .limit(1)
+            .eq("date", today)
             .execute()
         )
-        today_data = latest_resp.data[0] if latest_resp.data else None
+        today_data = today_resp.data[0] if today_resp.data else None
 
-    # 7-day history
-    history_resp = (
-        supabase.table("health_data")
-        .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps")
-        .gte("date", week_ago)
-        .order("date")
-        .execute()
-    )
+        if not today_data:
+            latest_resp = (
+                supabase.table("health_data")
+                .select("*")
+                .order("date", desc=True)
+                .limit(1)
+                .execute()
+            )
+            today_data = latest_resp.data[0] if latest_resp.data else None
 
-    return {
-        "today": today_data,
-        "history": history_resp.data or [],
-    }
+        history_resp = (
+            supabase.table("health_data")
+            .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps")
+            .gte("date", week_ago)
+            .order("date")
+            .execute()
+        )
+
+        return {
+            "today": today_data,
+            "history": history_resp.data or [],
+        }
+    except Exception as e:
+        logger.error(f"dashboard/summary error: {e}")
+        return {"today": None, "history": []}
 
 
 # --- Serve web dashboard ---
