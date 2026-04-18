@@ -122,9 +122,9 @@ def dashboard_summary():
 
         history_resp = (
             supabase.table("health_data")
-            .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps")
+            .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps,activity_score")
             .gte("date", week_ago)
-            .order("date")
+            .order("date", desc=True)
             .execute()
         )
 

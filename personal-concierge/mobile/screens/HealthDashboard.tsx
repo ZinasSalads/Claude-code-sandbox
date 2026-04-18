@@ -19,13 +19,13 @@ interface Props {
 }
 
 const modules = [
-  { key: 'BloodWork', title: 'Blood Work', emoji: '🩸', desc: 'Biomarkers & lab results' },
   { key: 'Supplements', title: 'Supplements', emoji: '💊', desc: 'Stack & daily tracking' },
   { key: 'Longevity', title: 'Longevity', emoji: '🧬', desc: 'Bio age & longevity scores' },
-  { key: 'Research', title: 'Research', emoji: '📚', desc: 'Health research & protocols' },
-  { key: 'AppleHealth', title: 'Apple Health', emoji: '📱', desc: 'Sync wearable data' },
   { key: 'Skincare', title: 'Skincare', emoji: '✨', desc: 'Routine & skin tracking' },
+  { key: 'AppleHealth', title: 'Apple Health', emoji: '📱', desc: 'Sync wearable data' },
   { key: 'Environment', title: 'Environment', emoji: '🌍', desc: 'Air quality, UV & pollen' },
+  { key: 'Research', title: 'Research', emoji: '📚', desc: 'Health research & protocols' },
+  { key: 'BloodWork', title: 'Blood Work', emoji: '🩸', desc: 'Quarterly lab results & biomarkers' },
 ];
 
 export default function HealthDashboard({ navigation }: Props) {
@@ -69,7 +69,7 @@ export default function HealthDashboard({ navigation }: Props) {
           <View style={styles.vitalsRow}>
             <VitalPill label="HRV" value={health.hrv != null ? `${health.hrv} ms` : '—'} />
             <VitalPill label="RHR" value={health.resting_heart_rate != null ? `${health.resting_heart_rate} bpm` : '—'} />
-            <VitalPill label="Sleep" value={health.sleep_duration != null ? `${health.sleep_duration}h` : '—'} />
+            <VitalPill label="Sleep Hrs" value={health.sleep_duration != null ? `${health.sleep_duration}h` : '—'} />
           </View>
           <View style={styles.vitalsRow}>
             <VitalPill label="Readiness" value={health.readiness_score != null ? `${health.readiness_score}` : '—'} />
@@ -116,7 +116,7 @@ export default function HealthDashboard({ navigation }: Props) {
             <Text style={styles.moduleDesc}>{mod.desc}</Text>
           </View>
           {mod.key === 'BloodWork' && flagged.length > 0 && (
-            <View style={styles.badge}>
+            <View style={[styles.badge, { backgroundColor: colors.error }]}>
               <Text style={styles.badgeText}>{flagged.length}</Text>
             </View>
           )}
@@ -137,7 +137,7 @@ export default function HealthDashboard({ navigation }: Props) {
                 <MiniStat label="HRV" value={day.hrv != null ? `${day.hrv}` : '—'} />
                 <MiniStat label="Sleep" value={day.sleep_score != null ? `${day.sleep_score}` : '—'} />
                 <MiniStat label="Ready" value={day.readiness_score != null ? `${day.readiness_score}` : '—'} />
-                <MiniStat label="Active" value={day.activity_score != null ? `${day.activity_score}` : '—'} />
+                <MiniStat label="Steps" value={day.steps != null ? `${(day.steps / 1000).toFixed(1)}k` : '—'} />
               </View>
             </View>
           ))}
