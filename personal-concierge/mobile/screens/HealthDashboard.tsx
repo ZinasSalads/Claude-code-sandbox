@@ -19,6 +19,7 @@ interface Props {
 }
 
 const modules = [
+  { key: 'FitnessHub', title: 'Fitness', emoji: '🏋️', desc: 'Goals, training plan & workouts' },
   { key: 'Supplements', title: 'Supplements', emoji: '💊', desc: 'Stack & daily tracking' },
   { key: 'Longevity', title: 'Longevity', emoji: '🧬', desc: 'Bio age & longevity scores' },
   { key: 'Skincare', title: 'Skincare', emoji: '✨', desc: 'Routine & skin tracking' },

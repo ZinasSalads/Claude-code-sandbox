@@ -139,14 +139,221 @@ export async function getTodayWorkout(): Promise<Workout | null> {
   return fetchApi<Workout>('/fitness/today');
 }
 
+export async function regenerateTodayWorkout(): Promise<Workout | null> {
+  return fetchApi<Workout>('/fitness/today/regenerate', { method: 'POST' });
+}
+
 export async function getTodayMeals(): Promise<MealPlan | null> {
   return fetchApi<MealPlan>('/nutrition/today');
 }
 
-export async function completeWorkout(notes?: string): Promise<{ status: string } | null> {
+export async function completeWorkout(notes?: string, workoutId?: string): Promise<{ status: string } | null> {
   return fetchApi('/fitness/complete', {
     method: 'POST',
-    body: JSON.stringify({ notes: notes || '' }),
+    body: JSON.stringify({ notes: notes || '', workout_id: workoutId }),
+  });
+}
+
+export async function getWorkoutHistory(days = 30): Promise<Workout[]> {
+  return (await fetchApi<Workout[]>(`/fitness/history?days=${days}`)) || [];
+}
+
+// --- Fitness Goals ---
+
+export interface FitnessGoal {
+  id: string;
+  goal_type: string;
+  target_description: string;
+  target_date: string | null;
+  baseline_description: string | null;
+  priority: string;
+  ai_feasibility: FeasibilityResult | null;
+  status: string;
+  created_at: string;
+}
+
+export interface FeasibilityResult {
+  verdict: 'realistic' | 'ambitious' | 'very_ambitious' | 'unrealistic' | 'unknown';
+  summary: string;
+  conditions: string[];
+  timeline_weeks_needed: number | null;
+  weekly_requirements: { run_km?: number; strength_sessions?: number; key_workouts?: string[] } | null;
+  phases: string[];
+  risk_factors: string[];
+}
+
+export interface TrainingPlan {
+  id: string;
+  goal_id: string | null;
+  week_start: string;
+  phase: string;
+  weekly_run_km_target: number | null;
+  weekly_strength_sessions_target: number | null;
+  planned_sessions: PlannedSession[];
+  ai_notes: string | null;
+}
+
+export interface PlannedSession {
+  date: string;
+  day: string;
+  session_type: string;
+  title: string;
+  duration_minutes: number;
+  description: string;
+  targets: {
+    distance_km?: number;
+    pace_per_km?: number;
+    hr_zone?: number;
+    exercises?: Array<{ name: string; sets: number; reps: string }>;
+  };
+}
+
+export interface UserEquipment {
+  id: string;
+  name: string;
+  category: string | null;
+  equipment_type: string | null;
+  notes: string | null;
+}
+
+export interface WorkoutSet {
+  id?: string;
+  workout_id?: string;
+  exercise_name: string;
+  set_number: number;
+  weight_kg: number | null;
+  reps_completed: number | null;
+  rpe: number | null;
+  notes: string | null;
+  date?: string;
+}
+
+export interface RunLog {
+  id?: string;
+  workout_id?: string;
+  distance_km: number | null;
+  duration_minutes: number | null;
+  avg_pace_per_km: number | null;
+  avg_hr: number | null;
+  max_hr: number | null;
+  zone2_pct: number | null;
+  zone3_pct: number | null;
+  zone4_pct: number | null;
+  run_type: string | null;
+  rpe: number | null;
+  notes: string | null;
+  source: string;
+}
+
+export interface AppleWatchWorkout {
+  id?: string;
+  apple_uuid?: string;
+  activity_type: string;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  calories: number | null;
+  distance_km: number | null;
+  avg_hr: number | null;
+  max_hr: number | null;
+  source_app: string | null;
+  linked_workout_id?: string | null;
+  date: string;
+}
+
+export interface WeekStats {
+  run_km: number;
+  strength_sessions: number;
+  workouts_done: number;
+}
+
+export async function getFitnessGoals(status = 'active'): Promise<FitnessGoal[]> {
+  return (await fetchApi<FitnessGoal[]>(`/fitness/goals?status=${status}`)) || [];
+}
+
+export async function createFitnessGoal(data: Partial<FitnessGoal>): Promise<FitnessGoal | null> {
+  return fetchApi('/fitness/goals', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function updateFitnessGoal(id: string, data: Partial<FitnessGoal>): Promise<FitnessGoal | null> {
+  return fetchApi(`/fitness/goals/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export async function getCurrentTrainingPlan(): Promise<TrainingPlan | null> {
+  return fetchApi<TrainingPlan>('/fitness/plan/current');
+}
+
+export async function generateTrainingPlan(): Promise<TrainingPlan | null> {
+  return fetchApi<TrainingPlan>('/fitness/plan/generate', { method: 'POST' });
+}
+
+export async function getPlanHistory(weeks = 8): Promise<TrainingPlan[]> {
+  return (await fetchApi<TrainingPlan[]>(`/fitness/plan/history?weeks=${weeks}`)) || [];
+}
+
+export async function getEquipment(): Promise<UserEquipment[]> {
+  return (await fetchApi<UserEquipment[]>('/fitness/equipment')) || [];
+}
+
+export async function addEquipment(data: Partial<UserEquipment>): Promise<UserEquipment | null> {
+  return fetchApi('/fitness/equipment', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export async function deleteEquipment(id: string): Promise<void> {
+  await fetchApi(`/fitness/equipment/${id}`, { method: 'DELETE' });
+}
+
+export async function logWorkoutSets(workoutId: string, sets: Omit<WorkoutSet, 'id' | 'workout_id' | 'date'>[]): Promise<{ logged: number } | null> {
+  return fetchApi('/fitness/sets', {
+    method: 'POST',
+    body: JSON.stringify({ workout_id: workoutId, sets }),
+  });
+}
+
+export async function getWorkoutSets(workoutId: string): Promise<WorkoutSet[]> {
+  return (await fetchApi<WorkoutSet[]>(`/fitness/sets/${workoutId}`)) || [];
+}
+
+export async function logRunResult(workoutId: string, data: Partial<RunLog>): Promise<RunLog | null> {
+  return fetchApi('/fitness/run', {
+    method: 'POST',
+    body: JSON.stringify({ workout_id: workoutId, ...data }),
+  });
+}
+
+export async function getRunResult(workoutId: string): Promise<RunLog | null> {
+  return fetchApi<RunLog>(`/fitness/run/${workoutId}`);
+}
+
+export async function getExerciseProgress(exerciseName: string, days = 90): Promise<WorkoutSet[]> {
+  return (await fetchApi<WorkoutSet[]>(`/fitness/progress/${encodeURIComponent(exerciseName)}?days=${days}`)) || [];
+}
+
+export async function getLoggedExercises(): Promise<string[]> {
+  return (await fetchApi<string[]>('/fitness/exercises/logged')) || [];
+}
+
+export async function getRunningSummary(weeks = 8): Promise<{ weekly: Array<{ week: string; km: number; runs: number }> } | null> {
+  return fetchApi(`/fitness/running/summary?weeks=${weeks}`);
+}
+
+export async function getWeekStats(): Promise<WeekStats | null> {
+  return fetchApi<WeekStats>('/fitness/stats/week');
+}
+
+export async function getTodayAppleWatchWorkouts(dateStr?: string): Promise<AppleWatchWorkout[]> {
+  const q = dateStr ? `?date_str=${dateStr}` : '';
+  return (await fetchApi<AppleWatchWorkout[]>(`/fitness/apple-watch${q}`)) || [];
+}
+
+export async function linkAppleWatchWorkout(awId: string, workoutId: string): Promise<void> {
+  await fetchApi(`/fitness/apple-watch/link?aw_id=${awId}&workout_id=${workoutId}`, { method: 'POST' });
+}
+
+export async function syncAppleWatchWorkoutsToBackend(workouts: AppleWatchWorkout[]): Promise<{ synced: number } | null> {
+  return fetchApi('/sync/apple-watch-workouts', {
+    method: 'POST',
+    body: JSON.stringify({ workouts }),
   });
 }
 
@@ -1024,4 +1231,13 @@ export type {
   BurnoutRisk,
   WardrobeItem,
   OutfitSuggestion,
+  FitnessGoal,
+  FeasibilityResult,
+  TrainingPlan,
+  PlannedSession,
+  UserEquipment,
+  WorkoutSet,
+  RunLog,
+  AppleWatchWorkout,
+  WeekStats,
 };

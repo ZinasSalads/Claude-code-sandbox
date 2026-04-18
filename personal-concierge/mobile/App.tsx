@@ -25,6 +25,14 @@ import AppleHealth from './screens/AppleHealth';
 import Skincare from './screens/Skincare';
 import Environment from './screens/Environment';
 
+// Fitness tab
+import FitnessHub from './screens/FitnessHub';
+import FitnessGoal from './screens/FitnessGoal';
+import WorkoutSession from './screens/WorkoutSession';
+import TrainingPlan from './screens/TrainingPlan';
+import ExerciseProgress from './screens/ExerciseProgress';
+import EquipmentSetup from './screens/EquipmentSetup';
+
 // Life tab
 import Social from './screens/Social';
 import Relationships from './screens/Relationships';
@@ -138,6 +146,12 @@ function HealthStackScreen() {
       <HealthStack.Screen name="Environment" component={Environment} options={{ title: 'Environment' }} />
       <HealthStack.Screen name="Research" component={Research} options={{ title: 'Research' }} />
       <HealthStack.Screen name="BloodWork" component={BloodWork} options={{ title: 'Blood Work' }} />
+      <HealthStack.Screen name="FitnessHub" component={FitnessHub} options={{ title: 'Fitness' }} />
+      <HealthStack.Screen name="FitnessGoal" component={FitnessGoal} options={{ title: 'Goals' }} />
+      <HealthStack.Screen name="WorkoutSession" component={WorkoutSession} options={{ title: 'Session' }} />
+      <HealthStack.Screen name="TrainingPlan" component={TrainingPlan} options={{ title: 'Training Plan' }} />
+      <HealthStack.Screen name="ExerciseProgress" component={ExerciseProgress} options={{ title: 'Progress' }} />
+      <HealthStack.Screen name="EquipmentSetup" component={EquipmentSetup} options={{ title: 'Equipment' }} />
     </HealthStack.Navigator>
   );
 }

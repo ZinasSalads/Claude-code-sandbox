@@ -1,12 +1,13 @@
 import logging
 from datetime import date, timedelta
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from config import supabase, OURA_TOKEN
 from services.oura import OuraClient
+from services.fitness_goals import fitness_goals_service
 
 logger = logging.getLogger("concierge.sync")
 router = APIRouter()
@@ -155,3 +156,30 @@ async def get_health_gaps():
     except Exception as e:
         logger.error(f"Failed to get health gaps: {e}")
         return []
+
+
+# --- Apple Watch workout sync ---
+
+class AppleWatchWorkout(BaseModel):
+    apple_uuid: Optional[str] = None
+    activity_type: Optional[str] = None
+    start_time: Optional[str] = None
+    end_time: Optional[str] = None
+    duration_minutes: Optional[float] = None
+    calories: Optional[int] = None
+    distance_km: Optional[float] = None
+    avg_hr: Optional[int] = None
+    max_hr: Optional[int] = None
+    source_app: Optional[str] = None
+    date: str
+
+
+class AppleWatchSync(BaseModel):
+    workouts: List[AppleWatchWorkout]
+
+
+@router.post("/apple-watch-workouts")
+async def sync_apple_watch_workouts(body: AppleWatchSync):
+    """Receive Apple Watch workout sessions and store for linking to fitness workouts."""
+    workouts = [w.model_dump(exclude_none=True) for w in body.workouts]
+    return await fitness_goals_service.sync_apple_watch_workouts(workouts)

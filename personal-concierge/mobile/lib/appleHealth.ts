@@ -34,9 +34,14 @@ export interface AppleHealthDay {
 export interface AppleHealthWorkout {
   type: string;
   duration_minutes: number;
-  calories: number;
+  calories: number | null;
   start_time: string;
   end_time: string;
+  distance_km: number | null;
+  avg_hr: number | null;
+  source_app: string | null;
+  apple_uuid: string | null;
+  date: string;
 }
 
 let AppleHealthKit: any = null;
@@ -83,6 +88,7 @@ export async function requestPermissions(): Promise<boolean> {
           'OxygenSaturation',
           'RespiratoryRate',
           'MindfulSession',
+          'Workout',
         ],
         write: [],
       },
@@ -171,6 +177,85 @@ export async function syncToBackend(days: AppleHealthDay[]): Promise<{ synced: n
     return await resp.json();
   } catch (e) {
     console.error('Apple Health sync failed:', e);
+    return null;
+  }
+}
+
+export async function getWorkouts(dateStr: string): Promise<AppleHealthWorkout[]> {
+  if (!(await isAppleHealthAvailable())) return [];
+  const dayStart = new Date(dateStr);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dateStr);
+  dayEnd.setHours(23, 59, 59, 999);
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getSamples(
+        {
+          type: 'Workout',
+          startDate: dayStart.toISOString(),
+          endDate: dayEnd.toISOString(),
+        },
+        async (err: any, results: any[]) => {
+          if (err || !results?.length) { resolve([]); return; }
+          const workouts: AppleHealthWorkout[] = await Promise.all(
+            results.map(async (w: any) => {
+              const hrAvg = await getWorkoutHeartRate(w.startDate, w.endDate);
+              const distanceKm = w.totalDistance ? w.totalDistance / 1000 : null;
+              const durationMin = w.duration ? w.duration / 60 : null;
+              return {
+                type: w.activityName || w.workoutActivityType || 'Unknown',
+                duration_minutes: durationMin ? Math.round(durationMin * 10) / 10 : 0,
+                calories: w.totalEnergyBurned ? Math.round(w.totalEnergyBurned) : null,
+                start_time: w.startDate,
+                end_time: w.endDate,
+                distance_km: distanceKm ? Math.round(distanceKm * 100) / 100 : null,
+                avg_hr: hrAvg,
+                source_app: w.sourceName || null,
+                apple_uuid: w.uuid || null,
+                date: dateStr,
+              } as AppleHealthWorkout;
+            })
+          );
+          resolve(workouts);
+        }
+      );
+    } catch {
+      resolve([]);
+    }
+  });
+}
+
+async function getWorkoutHeartRate(startDate: string, endDate: string): Promise<number | null> {
+  if (!AppleHealthKit) return null;
+  return new Promise((resolve) => {
+    try {
+      AppleHealthKit.getHeartRateSamples(
+        { startDate, endDate },
+        (err: any, results: any[]) => {
+          if (err || !results?.length) { resolve(null); return; }
+          const avg = results.reduce((sum, r) => sum + (r.value || 0), 0) / results.length;
+          resolve(Math.round(avg));
+        }
+      );
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
+export async function syncWorkoutsToBackend(workouts: AppleHealthWorkout[]): Promise<{ synced: number } | null> {
+  const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000';
+  if (!workouts.length) return { synced: 0 };
+  try {
+    const resp = await fetch(`${API_URL}/sync/apple-watch-workouts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workouts }),
+    });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch (e) {
+    console.error('AW workout sync failed:', e);
     return null;
   }
 }
