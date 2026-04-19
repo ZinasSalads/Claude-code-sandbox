@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator,
+  TextInput, Alert, ActivityIndicator, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { API_URL, getEquipment, addEquipment, deleteEquipment } from '../lib/api';
 import type { UserEquipment } from '../lib/api';
@@ -35,6 +35,10 @@ const PRESET_EQUIPMENT: Array<{ name: string; category: string; icon: string }> 
   { name: 'Chest Press Machine', category: 'machines', icon: '💪' },
   { name: 'Resistance Bands', category: 'other', icon: '🔁' },
 ];
+
+const CATEGORY_ICONS: Record<string, string> = {
+  cardio: '🏃', free_weights: '🏋️', machines: '🔧', other: '🏅',
+};
 
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | null> {
@@ -199,12 +203,15 @@ export default function FitnessSettings({ navigation }: Props) {
     setTimeout(() => setEquipSaved(false), 2000);
   };
 
+  const scrollRef = useRef<ScrollView>(null);
+
   if (loading) {
     return <View style={styles.container}><ActivityIndicator color={colors.primary} style={{ marginTop: 80 }} /></View>;
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={88}>
+    <ScrollView ref={scrollRef} style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       {/* Unit System */}
       <Text style={styles.sectionLabel}>UNIT SYSTEM</Text>
       <View style={styles.card}>
@@ -311,8 +318,12 @@ export default function FitnessSettings({ navigation }: Props) {
           <Text style={[styles.equipHint, { marginBottom: 0, flex: 1 }]}>Tap to toggle. Changes save automatically.</Text>
           {equipSaved && <Text style={{ color: colors.success, fontSize: font.xs, fontWeight: font.bold }}>Saved</Text>}
         </View>
-        {['cardio', 'free_weights', 'machines', 'other'].map(cat => {
+        {(['cardio', 'free_weights', 'machines', 'other'] as const).map(cat => {
           const presets = PRESET_EQUIPMENT.filter(p => p.category === cat);
+          const customInCat = equipment
+            .filter(eq => eq.category === cat && !PRESET_EQUIPMENT.some(p => p.name === eq.name))
+            .sort((a, b) => a.name.localeCompare(b.name));
+          if (presets.length === 0 && customInCat.length === 0) return null;
           const catLabel = cat === 'free_weights' ? 'Free Weights' : cat.charAt(0).toUpperCase() + cat.slice(1);
           return (
             <View key={cat}>
@@ -332,37 +343,30 @@ export default function FitnessSettings({ navigation }: Props) {
                     </TouchableOpacity>
                   );
                 })}
+                {customInCat.map(eq => (
+                  <TouchableOpacity
+                    key={eq.id}
+                    style={[styles.equipItem, styles.equipItemActive]}
+                    onLongPress={() => Alert.alert('Remove Equipment', `Remove "${eq.name}"?`, [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Remove', style: 'destructive', onPress: async () => {
+                        await deleteEquipment(eq.id);
+                        const updated = await getEquipment().catch(() => [] as UserEquipment[]);
+                        setEquipment(updated);
+                      }},
+                    ])}
+                    activeOpacity={0.9}
+                    delayLongPress={400}
+                  >
+                    <Text style={styles.equipIcon}>{CATEGORY_ICONS[eq.category] || '🏅'}</Text>
+                    <Text style={[styles.equipName, styles.equipNameActive]}>{eq.name}</Text>
+                    <Text style={styles.equipCustomHint}>hold to remove</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
           );
         })}
-
-        {/* Custom equipment already added (not in presets) */}
-        {equipment.filter(eq => !PRESET_EQUIPMENT.some(p => p.name === eq.name)).length > 0 && (
-          <>
-            <Text style={styles.catLabel}>Your Custom Equipment</Text>
-            <View style={styles.equipGrid}>
-              {equipment.filter(eq => !PRESET_EQUIPMENT.some(p => p.name === eq.name)).map(eq => (
-                <TouchableOpacity
-                  key={eq.id}
-                  style={[styles.equipItem, styles.equipItemActive]}
-                  onPress={() => Alert.alert('Remove Equipment', `Remove "${eq.name}"?`, [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Remove', style: 'destructive', onPress: async () => {
-                      await deleteEquipment(eq.id);
-                      const updated = await getEquipment().catch(() => [] as UserEquipment[]);
-                      setEquipment(updated);
-                    }},
-                  ])}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.equipIcon}>+</Text>
-                  <Text style={[styles.equipName, styles.equipNameActive]}>{eq.name}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
 
         {/* Add custom equipment */}
         <Text style={styles.catLabel}>Add Equipment</Text>
@@ -370,7 +374,7 @@ export default function FitnessSettings({ navigation }: Props) {
           style={[styles.input, { marginBottom: equipSuggestions.length > 0 ? 0 : spacing.sm }]}
           value={customEquipInput}
           onChangeText={setCustomEquipInput}
-          onFocus={loadCatalog}
+          onFocus={() => { loadCatalog(); setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300); }}
           placeholder="Start typing to search..."
           placeholderTextColor={colors.textTertiary}
           returnKeyType="done"
@@ -415,6 +419,7 @@ export default function FitnessSettings({ navigation }: Props) {
 
       <View style={{ height: 48 }} />
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -455,4 +460,5 @@ const styles = StyleSheet.create({
   equipIcon: { fontSize: 22, marginBottom: 2 },
   equipName: { fontSize: font.xs, color: colors.textSecondary, textAlign: 'center', fontWeight: font.medium },
   equipNameActive: { color: colors.textAccent },
+  equipCustomHint: { fontSize: 8, color: colors.textTertiary, marginTop: 2, textAlign: 'center' },
 });
