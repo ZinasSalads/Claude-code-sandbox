@@ -22,12 +22,12 @@ logger = logging.getLogger("concierge.environment")
 class EnvironmentService:
     """Fetches and caches environmental data for health recommendations."""
 
-    async def get_today(self, lat: Optional[float] = None, lon: Optional[float] = None) -> dict:
+    async def get_today(self, lat: Optional[float] = None, lon: Optional[float] = None, force: bool = False) -> dict:
         """Get today's environmental data, from cache or fresh fetch."""
-        # Check cache first
-        cached = await self._get_cached(date.today().isoformat())
-        if cached:
-            return cached
+        if not force:
+            cached = await self._get_cached(date.today().isoformat())
+            if cached:
+                return cached
 
         # Need location
         if lat is None or lon is None:
@@ -454,8 +454,8 @@ class EnvironmentService:
             )
             if result.data:
                 cached = result.data[0]
-                # Re-fetch if key fields are missing or AQI is 0 (stale/partial cache)
-                if not cached.get("aqi") or cached.get("conditions") is None:
+                # Re-fetch if conditions are missing (partial cache)
+                if cached.get("conditions") is None:
                     return None
                 # Derive weather_code from conditions for frontend emoji mapping
                 cached["weather_code"] = self._conditions_to_weather_code(cached.get("conditions", ""))

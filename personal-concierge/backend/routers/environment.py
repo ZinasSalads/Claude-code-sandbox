@@ -24,9 +24,9 @@ class LocationCoordsUpdate(BaseModel):
 
 
 @router.get("/today")
-async def get_today(lat: Optional[float] = None, lon: Optional[float] = None):
-    """Get today's environmental conditions."""
-    return await environment_service.get_today(lat, lon)
+async def get_today(lat: Optional[float] = None, lon: Optional[float] = None, force: bool = False):
+    """Get today's environmental conditions. Pass force=true to bypass cache."""
+    return await environment_service.get_today(lat, lon, force=force)
 
 
 @router.get("/forecast")

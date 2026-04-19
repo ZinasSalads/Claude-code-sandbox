@@ -7,6 +7,7 @@ import { API_URL, getEquipment, addEquipment, deleteEquipment } from '../lib/api
 import type { UserEquipment } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, inputStyle } from '../theme';
 import { useUnits } from '../context/UnitsContext';
+import { kgToLbs, lbsToKg } from '../lib/units';
 import { getBodyStats } from '../lib/appleHealth';
 
 interface FitnessProfile {
@@ -80,31 +81,39 @@ export default function FitnessSettings({ navigation }: Props) {
       setAge(prof.age?.toString() || '');
       setGender(prof.gender || '');
       setMaxHr(prof.max_hr?.toString() || '');
-      setWeightKg(prof.weight_kg?.toString() || '');
+      if (prof.weight_kg != null) {
+        const displayWeight = units === 'imperial' ? Math.round(kgToLbs(prof.weight_kg)) : prof.weight_kg;
+        setWeightKg(displayWeight.toString());
+      }
       const ormStr: Record<string, string> = {};
       for (const [k, v] of Object.entries(prof.one_rep_maxes || {})) {
-        ormStr[k] = v.toString();
+        const displayVal = units === 'imperial' ? Math.round(kgToLbs(v)) : v;
+        ormStr[k] = displayVal.toString();
       }
       setOneRepMaxes(ormStr);
     }
     setEquipment(equip || []);
     setLoading(false);
-  }, []);
+  }, [units]);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSaveProfile = async () => {
+  const handleSaveAll = async () => {
     setSaving(true);
     const orms: Record<string, number> = {};
     for (const [k, v] of Object.entries(oneRepMaxes)) {
       const n = parseFloat(v);
-      if (!isNaN(n) && n > 0) orms[k] = n;
+      if (!isNaN(n) && n > 0) {
+        orms[k] = units === 'imperial' ? Math.round(lbsToKg(n) * 10) / 10 : n;
+      }
     }
+    const weightVal = weightKg ? parseFloat(weightKg) : undefined;
+    const weightInKg = weightVal != null && units === 'imperial' ? Math.round(lbsToKg(weightVal) * 10) / 10 : weightVal;
     const data = {
       age: age ? parseInt(age) : undefined,
       gender: gender || undefined,
       max_hr: maxHr ? parseInt(maxHr) : undefined,
-      weight_kg: weightKg ? parseFloat(weightKg) : undefined,
+      weight_kg: weightInKg,
       one_rep_maxes: Object.keys(orms).length > 0 ? orms : undefined,
     };
     const result = await fetchApi('/fitness/profile-settings', {
@@ -113,7 +122,7 @@ export default function FitnessSettings({ navigation }: Props) {
     });
     setSaving(false);
     if (result) {
-      Alert.alert('Saved', 'Fitness profile updated.');
+      Alert.alert('Saved', 'All settings updated.');
     } else {
       Alert.alert('Error', 'Could not save settings. Try again.');
     }
@@ -123,13 +132,15 @@ export default function FitnessSettings({ navigation }: Props) {
     setPullingHealth(true);
     const stats = await getBodyStats();
     if (stats.weight_kg != null) {
-      setWeightKg(stats.weight_kg.toFixed(1));
+      const displayWeight = units === 'imperial' ? Math.round(kgToLbs(stats.weight_kg)) : parseFloat(stats.weight_kg.toFixed(1));
+      setWeightKg(displayWeight.toString());
     }
     setPullingHealth(false);
     if (stats.weight_kg == null) {
       Alert.alert('No Data', 'Could not read body stats from Apple Health. Make sure Health permissions are granted.');
     } else {
-      Alert.alert('Imported', `Weight set to ${stats.weight_kg.toFixed(1)} kg from Apple Health.`);
+      const label = units === 'imperial' ? `${Math.round(kgToLbs(stats.weight_kg))} lbs` : `${stats.weight_kg.toFixed(1)} kg`;
+      Alert.alert('Imported', `Weight set to ${label} from Apple Health.`);
     }
   };
 
@@ -144,6 +155,8 @@ export default function FitnessSettings({ navigation }: Props) {
     setOneRepMaxes(prev => { const n = { ...prev }; delete n[key]; return n; });
   };
 
+  const [equipSaved, setEquipSaved] = useState(false);
+
   const toggleEquipment = async (preset: typeof PRESET_EQUIPMENT[0]) => {
     const existing = equipment.find(e => e.name === preset.name);
     if (existing) {
@@ -153,6 +166,8 @@ export default function FitnessSettings({ navigation }: Props) {
     }
     const updated = await getEquipment().catch(() => [] as UserEquipment[]);
     setEquipment(updated);
+    setEquipSaved(true);
+    setTimeout(() => setEquipSaved(false), 2000);
   };
 
   if (loading) {
@@ -204,7 +219,7 @@ export default function FitnessSettings({ navigation }: Props) {
         <TextInput style={styles.input} value={maxHr} onChangeText={setMaxHr} placeholder="e.g. 185" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" returnKeyType="next" />
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Text style={styles.fieldLabel}>Weight (kg)</Text>
+          <Text style={styles.fieldLabel}>Weight ({units === 'imperial' ? 'lbs' : 'kg'})</Text>
           <TouchableOpacity onPress={handlePullFromAppleHealth} disabled={pullingHealth} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing.md }}>
             {pullingHealth
               ? <ActivityIndicator size="small" color={colors.primary} />
@@ -212,25 +227,16 @@ export default function FitnessSettings({ navigation }: Props) {
             }
           </TouchableOpacity>
         </View>
-        <TextInput style={styles.input} value={weightKg} onChangeText={setWeightKg} placeholder="e.g. 75" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" returnKeyType="done" />
-
-        <TouchableOpacity
-          style={[styles.saveBtn, saving && { opacity: 0.5 }]}
-          onPress={handleSaveProfile}
-          disabled={saving}
-          activeOpacity={0.8}
-        >
-          {saving ? <ActivityIndicator color={colors.white} /> : <Text style={styles.saveBtnText}>Save Profile</Text>}
-        </TouchableOpacity>
+        <TextInput style={styles.input} value={weightKg} onChangeText={setWeightKg} placeholder={units === 'imperial' ? 'e.g. 165' : 'e.g. 75'} placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" returnKeyType="done" />
       </View>
 
       {/* 1 Rep Max */}
-      <Text style={styles.sectionLabel}>1 REP MAX (kg)</Text>
+      <Text style={styles.sectionLabel}>1 REP MAX ({units === 'imperial' ? 'lbs' : 'kg'})</Text>
       <View style={styles.card}>
-        {Object.entries(oneRepMaxes).map(([exercise, kg]) => (
+        {Object.entries(oneRepMaxes).map(([exercise, val]) => (
           <View key={exercise} style={styles.ormRow}>
             <Text style={styles.ormExercise}>{exercise}</Text>
-            <Text style={styles.ormValue}>{kg} kg</Text>
+            <Text style={styles.ormValue}>{val} {units === 'imperial' ? 'lbs' : 'kg'}</Text>
             <TouchableOpacity onPress={() => removeOrm(exercise)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={styles.ormDelete}>×</Text>
             </TouchableOpacity>
@@ -250,7 +256,7 @@ export default function FitnessSettings({ navigation }: Props) {
             style={[styles.input, { flex: 1 }]}
             value={newOrm}
             onChangeText={setNewOrm}
-            placeholder="kg"
+            placeholder={units === 'imperial' ? 'lbs' : 'kg'}
             placeholderTextColor={colors.textTertiary}
             keyboardType="decimal-pad"
             returnKeyType="done"
@@ -259,16 +265,6 @@ export default function FitnessSettings({ navigation }: Props) {
             <Text style={styles.addOrmBtnText}>Add</Text>
           </TouchableOpacity>
         </View>
-        {Object.keys(oneRepMaxes).length > 0 && (
-          <TouchableOpacity
-            style={[styles.saveBtn, saving && { opacity: 0.5 }]}
-            onPress={handleSaveProfile}
-            disabled={saving}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.saveBtnText}>Save 1RM</Text>
-          </TouchableOpacity>
-        )}
         <Text style={styles.commonExLabel}>Common exercises:</Text>
         <View style={styles.chipRow}>
           {COMMON_EXERCISES.filter(e => !oneRepMaxes[e]).map(e => (
@@ -282,7 +278,10 @@ export default function FitnessSettings({ navigation }: Props) {
       {/* Equipment */}
       <Text style={styles.sectionLabel}>EQUIPMENT</Text>
       <View style={styles.card}>
-        <Text style={styles.equipHint}>Tap to toggle available equipment. The AI uses this to plan workouts.</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+          <Text style={[styles.equipHint, { marginBottom: 0, flex: 1 }]}>Tap to toggle. Changes save automatically.</Text>
+          {equipSaved && <Text style={{ color: colors.success, fontSize: font.xs, fontWeight: font.bold }}>Saved</Text>}
+        </View>
         {['cardio', 'free_weights', 'machines', 'other'].map(cat => {
           const presets = PRESET_EQUIPMENT.filter(p => p.category === cat);
           const catLabel = cat === 'free_weights' ? 'Free Weights' : cat.charAt(0).toUpperCase() + cat.slice(1);
@@ -309,6 +308,16 @@ export default function FitnessSettings({ navigation }: Props) {
           );
         })}
       </View>
+
+      {/* Save All */}
+      <TouchableOpacity
+        style={[styles.saveBtn, saving && { opacity: 0.5 }]}
+        onPress={handleSaveAll}
+        disabled={saving}
+        activeOpacity={0.8}
+      >
+        {saving ? <ActivityIndicator color={colors.white} /> : <Text style={styles.saveBtnText}>Save All Settings</Text>}
+      </TouchableOpacity>
 
       <View style={{ height: 48 }} />
     </ScrollView>

@@ -73,10 +73,10 @@ export default function FitnessHub({ navigation }: Props) {
       headerRight: () => (
         <TouchableOpacity
           onPress={() => navigation.navigate('FitnessSettings')}
-          style={{ marginRight: 8, padding: 6 }}
+          style={{ marginRight: 8, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={{ fontSize: 22 }}>⚙️</Text>
+          <Text style={{ fontSize: 22, textAlign: 'center' }}>⚙️</Text>
         </TouchableOpacity>
       ),
     });

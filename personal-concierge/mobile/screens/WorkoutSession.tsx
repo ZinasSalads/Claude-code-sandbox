@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Alert, ActivityIndicator, Platform,
+  TextInput, Alert, ActivityIndicator, Platform, Modal,
 } from 'react-native';
 import {
   getTodayWorkout, completeWorkout, logWorkoutSets, logRunResult,
   getWorkoutSets, getRunResult, getWorkoutHistory,
   getTodayAppleWatchWorkouts, linkAppleWatchWorkout,
+  getEquipment,
 } from '../lib/api';
-import type { Workout, WorkoutSet, RunLog, AppleWatchWorkout } from '../lib/api';
+import type { Workout, WorkoutSet, RunLog, AppleWatchWorkout, UserEquipment } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, inputStyle } from '../theme';
 
 interface Props {
@@ -58,11 +59,28 @@ export default function WorkoutSession({ navigation, route }: Props) {
   // History mode
   const [history, setHistory] = useState<Workout[]>([]);
 
+  // Add exercise state
+  const [showAddExercise, setShowAddExercise] = useState(false);
+  const [userEquipment, setUserEquipment] = useState<UserEquipment[]>([]);
+  const [customExName, setCustomExName] = useState('');
+
   const isRunWorkout = useCallback((w: Workout | null) => {
     if (!w) return false;
     const t = w.workout_type || w.title || '';
-    return /run|cardio|tempo|interval|treadmill/i.test(t);
+    return /run|tempo|interval|treadmill/i.test(t) && !/bike|cycling|row/i.test(t);
   }, []);
+
+  const isCardioWorkout = useCallback((w: Workout | null) => {
+    if (!w) return false;
+    const t = `${w.workout_type || ''} ${w.title || ''}`;
+    return /bike|cycling|cross.?train|row|elliptical|stationary|cardio/i.test(t) && !/run|treadmill/i.test(t);
+  }, []);
+
+  // Cardio logging (bike, cross-train, etc.)
+  const [cardioData, setCardioData] = useState({
+    duration_minutes: '', distance_km: '', calories: '',
+    avg_hr: '', max_hr: '', resistance: '', rpe: '',
+  });
 
   const load = useCallback(async () => {
     if (mode === 'history') {
@@ -174,6 +192,8 @@ export default function WorkoutSession({ navigation, route }: Props) {
       }
     }
 
+    const eq = await getEquipment().catch(() => []);
+    setUserEquipment(eq);
     setLoading(false);
   }, [workoutId, mode, plannedSession]);
 
@@ -250,6 +270,21 @@ export default function WorkoutSession({ navigation, route }: Props) {
           rpe: runData.rpe ? parseInt(runData.rpe) : undefined,
           notes: runData.notes || undefined,
           source: linkedAW ? 'apple_watch' : 'manual',
+        });
+      }
+
+      if (cardioData.duration_minutes || cardioData.distance_km) {
+        await logRunResult(wid, {
+          distance_km: cardioData.distance_km ? parseFloat(cardioData.distance_km) : undefined,
+          duration_minutes: cardioData.duration_minutes ? parseFloat(cardioData.duration_minutes) : undefined,
+          avg_hr: cardioData.avg_hr ? parseInt(cardioData.avg_hr) : undefined,
+          rpe: cardioData.rpe ? parseInt(cardioData.rpe) : undefined,
+          run_type: 'cardio',
+          notes: [
+            cardioData.calories ? `Calories: ${cardioData.calories}` : '',
+            cardioData.resistance ? `Resistance: ${cardioData.resistance}` : '',
+          ].filter(Boolean).join(', ') || undefined,
+          source: 'manual',
         });
       }
 
@@ -389,8 +424,10 @@ export default function WorkoutSession({ navigation, route }: Props) {
     );
   }
 
-  const isPlannedRun = plannedSession && /run|cardio|tempo|interval/i.test(plannedSession.session_type || '');
+  const isPlannedRun = plannedSession && /run|tempo|interval/i.test(plannedSession.session_type || '') && !/bike|cycling|cross/i.test(plannedSession.session_type || '');
+  const isPlannedCardio = plannedSession && /bike|cycling|cross.?train|row|elliptical|cardio/i.test(plannedSession.session_type || '') && !/run|treadmill/i.test(plannedSession.session_type || '');
   const showRunSection = isRunWorkout(workout) || (workout as any).run_targets || isPlannedRun;
+  const showCardioSection = isCardioWorkout(workout) || isPlannedCardio;
   const hasExercises = workout.exercises && workout.exercises.length > 0;
 
   return (
@@ -555,6 +592,42 @@ export default function WorkoutSession({ navigation, route }: Props) {
         </>
       )}
 
+      {/* Add extra exercise */}
+      {Object.keys(exerciseSets).filter(name => !workout.exercises?.some((ex: any) => (ex.name || ex.exercise_name) === name)).map(name => {
+        const rows = exerciseSets[name] || [];
+        return (
+          <View key={name} style={styles.exerciseCard}>
+            <View style={styles.exerciseHeader}>
+              <Text style={styles.exerciseName}>{name}</Text>
+              <TouchableOpacity onPress={() => setExerciseSets(prev => { const n = { ...prev }; delete n[name]; return n; })} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={{ color: colors.error, fontSize: 18, fontWeight: 'bold' }}>×</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.setHeader}>
+              <Text style={[styles.setHeaderCell, { width: 30 }]}>Set</Text>
+              <Text style={[styles.setHeaderCell, { flex: 1 }]}>Weight (kg)</Text>
+              <Text style={[styles.setHeaderCell, { flex: 1 }]}>Reps</Text>
+              <Text style={[styles.setHeaderCell, { width: 50 }]}>RPE</Text>
+            </View>
+            {rows.map((row, i) => (
+              <View key={i} style={styles.setRow}>
+                <Text style={[styles.setNum, { width: 30 }]}>{row.set_number}</Text>
+                <TextInput style={[styles.setInput, { flex: 1 }]} value={row.weight_kg} onChangeText={v => updateSetRow(name, i, 'weight_kg', v)} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+                <TextInput style={[styles.setInput, { flex: 1 }]} value={row.reps_completed} onChangeText={v => updateSetRow(name, i, 'reps_completed', v)} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" />
+                <TextInput style={[styles.setInput, { width: 50 }]} value={row.rpe} onChangeText={v => updateSetRow(name, i, 'rpe', v)} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+              </View>
+            ))}
+            <TouchableOpacity style={styles.addSetBtn} onPress={() => addSetRow(name)}>
+              <Text style={styles.addSetBtnText}>+ Add Set</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })}
+
+      <TouchableOpacity style={styles.addExerciseBtn} onPress={() => setShowAddExercise(true)} activeOpacity={0.7}>
+        <Text style={styles.addExerciseBtnText}>+ Add Exercise</Text>
+      </TouchableOpacity>
+
       {/* Run Logging */}
       {showRunSection && (
         <>
@@ -602,6 +675,41 @@ export default function WorkoutSession({ navigation, route }: Props) {
         </>
       )}
 
+      {/* Cardio Logging (bike, cross-train, etc.) */}
+      {showCardioSection && (
+        <>
+          <Text style={styles.sectionLabel}>CARDIO DATA</Text>
+          <View style={styles.runCard}>
+            <View style={styles.runGrid}>
+              <View style={styles.runField}>
+                <Text style={styles.runLabel}>Duration (min)</Text>
+                <TextInput style={styles.runInput} value={cardioData.duration_minutes} onChangeText={v => setCardioData(p => ({ ...p, duration_minutes: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+              </View>
+              <View style={styles.runField}>
+                <Text style={styles.runLabel}>Distance (miles)</Text>
+                <TextInput style={styles.runInput} value={cardioData.distance_km} onChangeText={v => setCardioData(p => ({ ...p, distance_km: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+              </View>
+              <View style={styles.runField}>
+                <Text style={styles.runLabel}>Calories</Text>
+                <TextInput style={styles.runInput} value={cardioData.calories} onChangeText={v => setCardioData(p => ({ ...p, calories: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" />
+              </View>
+              <View style={styles.runField}>
+                <Text style={styles.runLabel}>Resistance</Text>
+                <TextInput style={styles.runInput} value={cardioData.resistance} onChangeText={v => setCardioData(p => ({ ...p, resistance: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" />
+              </View>
+              <View style={styles.runField}>
+                <Text style={styles.runLabel}>Avg HR</Text>
+                <TextInput style={styles.runInput} value={cardioData.avg_hr} onChangeText={v => setCardioData(p => ({ ...p, avg_hr: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" />
+              </View>
+              <View style={styles.runField}>
+                <Text style={styles.runLabel}>RPE (1-10)</Text>
+                <TextInput style={styles.runInput} value={cardioData.rpe} onChangeText={v => setCardioData(p => ({ ...p, rpe: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" />
+              </View>
+            </View>
+          </View>
+        </>
+      )}
+
       {/* Notes */}
       <Text style={styles.sectionLabel}>NOTES</Text>
       <TextInput
@@ -627,6 +735,73 @@ export default function WorkoutSession({ navigation, route }: Props) {
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />
+
+      {/* Add Exercise Modal */}
+      <Modal visible={showAddExercise} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAddExercise(false)}>
+        <View style={{ flex: 1, backgroundColor: colors.bg }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.xl, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+            <Text style={{ fontSize: font.xl, fontWeight: font.bold as any, color: colors.textPrimary }}>Add Exercise</Text>
+            <TouchableOpacity onPress={() => setShowAddExercise(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Text style={{ color: colors.textSecondary, fontSize: font.lg }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView contentContainerStyle={{ padding: spacing.xl }}>
+            {userEquipment.length > 0 && (
+              <>
+                <Text style={{ fontSize: font.xs, fontWeight: font.bold as any, color: colors.textTertiary, letterSpacing: 0.8, marginBottom: spacing.md }}>FROM YOUR EQUIPMENT</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.xl }}>
+                  {userEquipment.filter(eq => !exerciseSets[eq.name]).map(eq => (
+                    <TouchableOpacity
+                      key={eq.id}
+                      style={{ paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderRadius: radii.md, backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border }}
+                      onPress={() => {
+                        setExerciseSets(prev => ({ ...prev, [eq.name]: [{ set_number: 1, weight_kg: '', reps_completed: '', rpe: '' }] }));
+                        setShowAddExercise(false);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={{ color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold as any }}>{eq.name}</Text>
+                      <Text style={{ color: colors.textTertiary, fontSize: font.xs, marginTop: 2 }}>{eq.category}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+            <Text style={{ fontSize: font.xs, fontWeight: font.bold as any, color: colors.textTertiary, letterSpacing: 0.8, marginBottom: spacing.sm }}>CUSTOM EXERCISE</Text>
+            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+              <TextInput
+                style={[inputStyle, { flex: 1, color: colors.textPrimary }]}
+                value={customExName}
+                onChangeText={setCustomExName}
+                placeholder="Exercise name"
+                placeholderTextColor={colors.textTertiary}
+                returnKeyType="done"
+                onSubmitEditing={() => {
+                  const name = customExName.trim();
+                  if (name && !exerciseSets[name]) {
+                    setExerciseSets(prev => ({ ...prev, [name]: [{ set_number: 1, weight_kg: '', reps_completed: '', rpe: '' }] }));
+                    setCustomExName('');
+                    setShowAddExercise(false);
+                  }
+                }}
+              />
+              <TouchableOpacity
+                style={{ backgroundColor: colors.primary, borderRadius: radii.md, paddingHorizontal: spacing.lg, justifyContent: 'center' }}
+                onPress={() => {
+                  const name = customExName.trim();
+                  if (name && !exerciseSets[name]) {
+                    setExerciseSets(prev => ({ ...prev, [name]: [{ set_number: 1, weight_kg: '', reps_completed: '', rpe: '' }] }));
+                    setCustomExName('');
+                    setShowAddExercise(false);
+                  }
+                }}
+              >
+                <Text style={{ color: colors.white, fontWeight: font.bold as any }}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -773,6 +948,13 @@ const styles = StyleSheet.create({
   histMeta: { fontSize: font.xs, color: colors.textSecondary },
   doneBadge: { backgroundColor: colors.successMuted, borderRadius: radii.full, paddingHorizontal: spacing.sm, paddingVertical: 2 },
   doneBadgeText: { fontSize: font.xs, color: colors.success, fontWeight: font.bold },
+
+  addExerciseBtn: {
+    borderWidth: 1, borderColor: colors.primary, borderStyle: 'dashed',
+    borderRadius: radii.md, padding: spacing.lg, alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  addExerciseBtnText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.md },
 
   completeBtn: {
     backgroundColor: colors.secondary, borderRadius: radii.md, padding: spacing.lg,

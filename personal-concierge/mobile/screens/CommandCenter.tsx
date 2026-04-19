@@ -316,6 +316,10 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    await Promise.all([
+      apiPost('/sync/oura', {}),
+      apiFetch('/environment/today?force=true'),
+    ]);
     await fetchAll();
     setRefreshing(false);
   }, [fetchAll]);
