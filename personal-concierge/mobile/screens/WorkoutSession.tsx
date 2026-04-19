@@ -14,6 +14,7 @@ import { colors, spacing, radii, font, cardStyle, sectionLabel, inputStyle } fro
 interface Props {
   navigation: {
     goBack: () => void;
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
   };
   route?: { params?: { workoutId?: string; mode?: string; plannedSession?: any } };
 }
@@ -272,14 +273,35 @@ export default function WorkoutSession({ navigation, route }: Props) {
         <Text style={styles.sectionLabel}>WORKOUT HISTORY</Text>
         {history.length === 0 && <Text style={styles.empty}>No workouts logged yet.</Text>}
         {history.map(w => (
-          <View key={w.id} style={[styles.histCard, w.completed && styles.histCardDone]}>
+          <TouchableOpacity
+            key={w.id}
+            style={[styles.histCard, w.completed && styles.histCardDone]}
+            onPress={() => w.id && navigation.navigate('WorkoutSession', { workoutId: w.id, mode: 'view' })}
+            onLongPress={() => {
+              Alert.alert(w.title || 'Workout', 'What would you like to do?', [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Delete', style: 'destructive',
+                  onPress: () => Alert.alert('Delete Workout', 'Are you sure? This cannot be undone.', [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Delete', style: 'destructive', onPress: async () => {
+                      const { deleteWorkout } = await import('../lib/api');
+                      if (w.id) { await deleteWorkout(w.id).catch(() => null); setHistory(prev => prev.filter(x => x.id !== w.id)); }
+                    }},
+                  ]),
+                },
+              ]);
+            }}
+            activeOpacity={0.7}
+          >
             <View style={styles.histRow}>
-              <Text style={styles.histDate}>{new Date(w.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</Text>
+              <Text style={styles.histDate}>{new Date((w.date || '') + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</Text>
               {w.completed && <View style={styles.doneBadge}><Text style={styles.doneBadgeText}>Done</Text></View>}
             </View>
             <Text style={styles.histTitle}>{w.title}</Text>
             <Text style={styles.histMeta}>{w.duration_minutes}min · {w.intensity}</Text>
-          </View>
+            <Text style={[styles.histMeta, { marginTop: 2, color: colors.primary }]}>Tap to view details · Hold to delete</Text>
+          </TouchableOpacity>
         ))}
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -536,7 +558,7 @@ export default function WorkoutSession({ navigation, route }: Props) {
       {/* Run Logging */}
       {showRunSection && (
         <>
-          <Text style={styles.sectionLabel}>RUN DATA</Text>
+          <Text style={styles.sectionLabel}>RUN DATA (enter in miles)</Text>
           <View style={styles.runCard}>
             <View style={styles.runGrid}>
               <View style={styles.runField}>
