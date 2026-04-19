@@ -127,6 +127,7 @@ function TodayStackScreen() {
     <TodayStack.Navigator screenOptions={stackScreenOptions}>
       <TodayStack.Screen name="CommandCenter" component={CommandCenter} options={{ headerShown: false }} />
       <TodayStack.Screen name="WorkoutDetail" component={WorkoutDetail} options={{ title: 'Workout' }} />
+      <TodayStack.Screen name="WorkoutSession" component={WorkoutSession} options={{ title: 'Workout Log' }} />
     </TodayStack.Navigator>
   );
 }

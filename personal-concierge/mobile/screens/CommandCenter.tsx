@@ -256,7 +256,10 @@ function FlagModal({ visible, onClose }: FlagModalProps) {
 }
 
 interface CommandCenterProps {
-  navigation: { navigate: (screen: string, params?: Record<string, unknown>) => void };
+  navigation: {
+    navigate: (screen: string, params?: Record<string, unknown>) => void;
+    addListener: (event: string, cb: () => void) => () => void;
+  };
 }
 
 export default function CommandCenter({ navigation }: CommandCenterProps) {
@@ -312,7 +315,11 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
     }
   }, [locationInput, fetchAll]);
 
-  useEffect(() => { fetchAll(); }, [fetchAll]);
+  useEffect(() => {
+    fetchAll();
+    const unsub = navigation.addListener('focus', fetchAll);
+    return unsub;
+  }, [fetchAll, navigation]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -377,7 +384,10 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
     } catch { return null; }
   };
 
-  const workoutTitle = workout ? `${workout.workout_type === 'rest' ? '🧘' : '💪'} ${workout.title}` : null;
+  const workoutCompleted = !!(workout as any)?.completed;
+  const workoutTitle = workout
+    ? `${workoutCompleted ? '✓ ' : workout.workout_type === 'rest' ? '🧘 ' : '💪 '}${workout.title}`
+    : null;
   const workoutSummary = workout ? `${workout.duration_minutes} min · ${workout.intensity} intensity` : null;
 
   return (
@@ -495,7 +505,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
         )}
 
         {/* Today's plan */}
-        <View style={styles.planCard}>
+        <View style={[styles.planCard, workoutCompleted && styles.planCardDone]}>
           <TouchableOpacity
             style={styles.planHeader}
             onPress={() => setPlanExpanded(!planExpanded)}
@@ -506,15 +516,17 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
               {loading ? (
                 <Text style={styles.planSummary}>Loading...</Text>
               ) : workoutTitle ? (
-                <Text style={styles.planSummary}>{workoutTitle}</Text>
+                <Text style={[styles.planSummary, workoutCompleted && styles.planSummaryDone]}>{workoutTitle}</Text>
               ) : (
                 <Text style={styles.planSummaryDim}>No plan generated yet</Text>
               )}
             </View>
-            <Text style={styles.planChevron}>{planExpanded ? '▲' : '▼'}</Text>
+            {workout && !workoutCompleted && (
+              <Text style={styles.planChevron}>{planExpanded ? '▲' : '▼'}</Text>
+            )}
           </TouchableOpacity>
 
-          {planExpanded && workout && (
+          {planExpanded && workout && !workoutCompleted && (
             <View style={styles.planDetail}>
               <Text style={styles.planDetailMeta}>{workoutSummary}</Text>
               {workout.ai_reasoning ? (
@@ -522,12 +534,22 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
               ) : null}
               <TouchableOpacity
                 style={styles.planViewBtn}
-                onPress={() => navigation.navigate('WorkoutDetail', { workout })}
+                onPress={() => navigation.navigate('WorkoutSession', {})}
                 activeOpacity={0.7}
               >
-                <Text style={styles.planViewBtnText}>View Full Workout →</Text>
+                <Text style={styles.planViewBtnText}>Open in Fitness →</Text>
               </TouchableOpacity>
             </View>
+          )}
+
+          {workoutCompleted && (
+            <TouchableOpacity
+              style={styles.planViewSession}
+              onPress={() => navigation.navigate('WorkoutSession', {})}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.planViewSessionText}>View logged session →</Text>
+            </TouchableOpacity>
           )}
 
           {/* Flag button — immediately below plan */}
@@ -651,9 +673,11 @@ const styles = StyleSheet.create({
   },
 
   planCard: { ...cardStyle, marginBottom: spacing.md },
+  planCardDone: { borderLeftWidth: 3, borderLeftColor: colors.success },
   planHeader: { flexDirection: 'row', alignItems: 'center' },
   planLabel: { fontSize: font.xs, fontWeight: font.bold, color: colors.textTertiary, letterSpacing: 1, marginBottom: 4 },
   planSummary: { fontSize: font.lg, fontWeight: font.semibold, color: colors.textPrimary },
+  planSummaryDone: { color: colors.success },
   planSummaryDim: { fontSize: font.md, color: colors.textTertiary },
   planChevron: { color: colors.textTertiary, fontSize: font.sm, marginLeft: spacing.sm },
   planDetail: { marginTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.lg },
@@ -661,6 +685,8 @@ const styles = StyleSheet.create({
   planDetailReasoning: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 20, marginBottom: spacing.md },
   planViewBtn: { alignSelf: 'flex-start' },
   planViewBtnText: { color: colors.primary, fontSize: font.sm, fontWeight: font.semibold },
+  planViewSession: { marginTop: spacing.sm },
+  planViewSessionText: { color: colors.textTertiary, fontSize: font.xs, fontWeight: font.semibold },
 
   flagBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
