@@ -259,19 +259,23 @@ class EnvironmentService:
                     data = resp.json()
                     current = data.get("current", {})
                     daily = data.get("daily", {})
-                    uv_max = (daily.get("uv_index_max") or [0])[0]
-                    uv_current = current.get("uv_index", 0)
+                    uv_max_list = daily.get("uv_index_max") or []
+                    uv_max = uv_max_list[0] if uv_max_list else None
+                    uv_current = current.get("uv_index")
                     wc = current.get("weather_code", 0)
-                    return {
+                    result = {
                         "temp_c": round(current.get("temperature_2m") or 0),
                         "humidity": round(current.get("relative_humidity_2m") or 0),
                         "wind_kph": round(current.get("wind_speed_10m") or 0),
-                        "uv_index_current": round(uv_current, 1),
-                        "uv_index_max": round(uv_max, 1),
-                        "uv_risk_level": self._uv_risk(uv_max),
                         "weather_code": wc,
                         "conditions": self._weather_code_to_text(wc),
                     }
+                    if uv_max is not None:
+                        result["uv_index_max"] = round(uv_max, 1)
+                        result["uv_risk_level"] = self._uv_risk(uv_max)
+                    if uv_current is not None:
+                        result["uv_index_current"] = round(uv_current, 1)
+                    return result
         except Exception as e:
             logger.error(f"Open-Meteo fetch error: {e}")
         return {}
@@ -285,12 +289,20 @@ class EnvironmentService:
                     params={
                         "latitude": lat,
                         "longitude": lon,
-                        "current": "us_aqi,pm2_5,pm10",
+                        "current": "us_aqi,european_aqi,pm2_5,pm10",
                     },
                 )
                 if resp.status_code == 200:
                     current = resp.json().get("current", {})
-                    aqi_val = current.get("us_aqi", 0)
+                    aqi_val = current.get("us_aqi")
+                    eu_aqi = current.get("european_aqi")
+                    # Use US AQI if available, otherwise convert European AQI
+                    if aqi_val is None or aqi_val == 0:
+                        if eu_aqi is not None and eu_aqi > 0:
+                            # Rough EU→US mapping: EU scale 0-100 ≈ US 0-150
+                            aqi_val = round(eu_aqi * 1.5)
+                        else:
+                            return {"pm25": current.get("pm2_5"), "pm10": current.get("pm10")}
                     if aqi_val <= 50:
                         category = "Good"
                     elif aqi_val <= 100:

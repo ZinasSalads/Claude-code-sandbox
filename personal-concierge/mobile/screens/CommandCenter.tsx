@@ -400,6 +400,9 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
 
         {/* Sleep + Readiness circles */}
         <View style={styles.scoreRow}>
+          {!loading && formatLastUpdated(healthDate) && (
+            <Text style={styles.lastUpdated}>{formatLastUpdated(healthDate)}</Text>
+          )}
           {loading ? (
             <>
               <View style={styles.scorePlaceholder}><Text style={styles.placeholderText}>—</Text><Text style={styles.ringLabel}>Sleep</Text></View>
@@ -417,9 +420,6 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
             </>
           )}
         </View>
-        {!loading && formatLastUpdated(healthDate) && (
-          <Text style={styles.lastUpdated}>{formatLastUpdated(healthDate)}</Text>
-        )}
 
         {/* No data state */}
         {!loading && readiness == null && (
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
   ringLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: spacing.xs, fontWeight: font.semibold, letterSpacing: 0.5 },
   sleepHours: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
   lastUpdated: {
-    fontSize: 10, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.sm,
+    fontSize: 10, color: colors.textTertiary, position: 'absolute', top: spacing.md, right: spacing.lg,
   },
 
   syncCard: { ...cardStyle, marginBottom: spacing.lg, alignItems: 'center', padding: spacing['2xl'] },

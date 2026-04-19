@@ -36,6 +36,63 @@ const PRESET_EQUIPMENT: Array<{ name: string; category: string; icon: string }> 
   { name: 'Resistance Bands', category: 'other', icon: '🔁' },
 ];
 
+const ALL_KNOWN_EQUIPMENT: Array<{ name: string; category: string }> = [
+  // Cardio
+  { name: 'Treadmill', category: 'cardio' },
+  { name: 'Stationary Bike', category: 'cardio' },
+  { name: 'Rowing Machine', category: 'cardio' },
+  { name: 'Elliptical', category: 'cardio' },
+  { name: 'Stair Climber', category: 'cardio' },
+  { name: 'Assault Bike', category: 'cardio' },
+  { name: 'Spin Bike', category: 'cardio' },
+  { name: 'Ski Erg', category: 'cardio' },
+  { name: 'Recumbent Bike', category: 'cardio' },
+  { name: 'Jacob\'s Ladder', category: 'cardio' },
+  // Free Weights
+  { name: 'Dumbbells', category: 'free_weights' },
+  { name: 'Barbell & Rack', category: 'free_weights' },
+  { name: 'Kettlebells', category: 'free_weights' },
+  { name: 'Pull-up Bar', category: 'free_weights' },
+  { name: 'EZ Curl Bar', category: 'free_weights' },
+  { name: 'Trap Bar', category: 'free_weights' },
+  { name: 'Medicine Ball', category: 'free_weights' },
+  { name: 'Olympic Rings', category: 'free_weights' },
+  { name: 'Dip Station', category: 'free_weights' },
+  { name: 'Weight Plates', category: 'free_weights' },
+  // Machines
+  { name: 'Cable Machine', category: 'machines' },
+  { name: 'Leg Press', category: 'machines' },
+  { name: 'Chest Press Machine', category: 'machines' },
+  { name: 'Smith Machine', category: 'machines' },
+  { name: 'Lat Pulldown Machine', category: 'machines' },
+  { name: 'Seated Row Machine', category: 'machines' },
+  { name: 'Leg Extension Machine', category: 'machines' },
+  { name: 'Leg Curl Machine', category: 'machines' },
+  { name: 'Shoulder Press Machine', category: 'machines' },
+  { name: 'Pec Deck / Fly Machine', category: 'machines' },
+  { name: 'Hip Abductor Machine', category: 'machines' },
+  { name: 'Hip Adductor Machine', category: 'machines' },
+  { name: 'Hack Squat Machine', category: 'machines' },
+  { name: 'Calf Raise Machine', category: 'machines' },
+  { name: 'Ab Crunch Machine', category: 'machines' },
+  { name: 'Reverse Hyper', category: 'machines' },
+  { name: 'GHD (Glute Ham Developer)', category: 'machines' },
+  { name: 'Preacher Curl Bench', category: 'machines' },
+  { name: 'Cable Crossover', category: 'machines' },
+  { name: 'Functional Trainer', category: 'machines' },
+  // Other
+  { name: 'Resistance Bands', category: 'other' },
+  { name: 'TRX / Suspension Trainer', category: 'other' },
+  { name: 'Foam Roller', category: 'other' },
+  { name: 'Plyo Box', category: 'other' },
+  { name: 'Battle Ropes', category: 'other' },
+  { name: 'Sandbag', category: 'other' },
+  { name: 'Ab Wheel', category: 'other' },
+  { name: 'Bench (Flat/Incline)', category: 'other' },
+  { name: 'Landmine Attachment', category: 'other' },
+  { name: 'Sled / Prowler', category: 'other' },
+];
+
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | null> {
   try {
     const resp = await fetch(`${API_URL}${path}`, {
@@ -156,6 +213,24 @@ export default function FitnessSettings({ navigation }: Props) {
   };
 
   const [equipSaved, setEquipSaved] = useState(false);
+  const [customEquipInput, setCustomEquipInput] = useState('');
+
+  const equipSuggestions = customEquipInput.trim().length >= 2
+    ? ALL_KNOWN_EQUIPMENT.filter(e =>
+        e.name.toLowerCase().includes(customEquipInput.trim().toLowerCase()) &&
+        !equipment.some(eq => eq.name === e.name) &&
+        !PRESET_EQUIPMENT.some(p => p.name === e.name)
+      ).slice(0, 5)
+    : [];
+
+  const addCustomEquipment = async (name: string, category: string) => {
+    await addEquipment({ name, category });
+    const updated = await getEquipment().catch(() => [] as UserEquipment[]);
+    setEquipment(updated);
+    setCustomEquipInput('');
+    setEquipSaved(true);
+    setTimeout(() => setEquipSaved(false), 2000);
+  };
 
   const toggleEquipment = async (preset: typeof PRESET_EQUIPMENT[0]) => {
     const existing = equipment.find(e => e.name === preset.name);
@@ -307,6 +382,65 @@ export default function FitnessSettings({ navigation }: Props) {
             </View>
           );
         })}
+
+        {/* Custom equipment already added (not in presets) */}
+        {equipment.filter(eq => !PRESET_EQUIPMENT.some(p => p.name === eq.name)).length > 0 && (
+          <>
+            <Text style={styles.catLabel}>Your Custom Equipment</Text>
+            <View style={styles.equipGrid}>
+              {equipment.filter(eq => !PRESET_EQUIPMENT.some(p => p.name === eq.name)).map(eq => (
+                <TouchableOpacity
+                  key={eq.id}
+                  style={[styles.equipItem, styles.equipItemActive]}
+                  onPress={() => Alert.alert('Remove Equipment', `Remove "${eq.name}"?`, [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Remove', style: 'destructive', onPress: async () => {
+                      await deleteEquipment(eq.id);
+                      const updated = await getEquipment().catch(() => [] as UserEquipment[]);
+                      setEquipment(updated);
+                    }},
+                  ])}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.equipIcon}>+</Text>
+                  <Text style={[styles.equipName, styles.equipNameActive]}>{eq.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </>
+        )}
+
+        {/* Add custom equipment */}
+        <Text style={styles.catLabel}>Add Equipment</Text>
+        <TextInput
+          style={[styles.input, { marginBottom: equipSuggestions.length > 0 ? 0 : spacing.sm }]}
+          value={customEquipInput}
+          onChangeText={setCustomEquipInput}
+          placeholder="Start typing to search..."
+          placeholderTextColor={colors.textTertiary}
+          returnKeyType="done"
+          onSubmitEditing={() => {
+            const name = customEquipInput.trim();
+            if (name && !equipment.some(e => e.name === name)) {
+              addCustomEquipment(name, 'other');
+            }
+          }}
+        />
+        {equipSuggestions.length > 0 && (
+          <View style={{ borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, marginBottom: spacing.sm, overflow: 'hidden' }}>
+            {equipSuggestions.map(s => (
+              <TouchableOpacity
+                key={s.name}
+                style={{ padding: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border, backgroundColor: colors.bgCard }}
+                onPress={() => addCustomEquipment(s.name, s.category)}
+                activeOpacity={0.7}
+              >
+                <Text style={{ color: colors.textPrimary, fontSize: font.md }}>{s.name}</Text>
+                <Text style={{ color: colors.textTertiary, fontSize: font.xs }}>{s.category.replace('_', ' ')}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
       </View>
 
       {/* Save All */}

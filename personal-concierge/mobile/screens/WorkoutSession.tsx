@@ -83,6 +83,11 @@ export default function WorkoutSession({ navigation, route }: Props) {
   });
 
   const load = useCallback(async () => {
+    // Load equipment for all modes that might need it
+    if (mode !== 'history' && mode !== 'view') {
+      getEquipment().catch(() => []).then(eq => setUserEquipment(eq));
+    }
+
     if (mode === 'history') {
       const h = await getWorkoutHistory(30).catch(() => []);
       setHistory(h);
@@ -192,8 +197,6 @@ export default function WorkoutSession({ navigation, route }: Props) {
       }
     }
 
-    const eq = await getEquipment().catch(() => []);
-    setUserEquipment(eq);
     setLoading(false);
   }, [workoutId, mode, plannedSession]);
 
@@ -380,10 +383,10 @@ export default function WorkoutSession({ navigation, route }: Props) {
           <>
             <Text style={styles.sectionLabel}>RUN DATA</Text>
             <View style={styles.runCard}>
-              <View style={styles.runGrid}>
-                {viewRun.distance_km != null && <View style={styles.runField}><Text style={styles.runLabel}>Distance</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{(viewRun.distance_km * 0.621371).toFixed(1)} mi</Text></View>}
-                {viewRun.duration_minutes != null && <View style={styles.runField}><Text style={styles.runLabel}>Duration</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.duration_minutes} min</Text></View>}
-                {viewRun.avg_hr != null && <View style={styles.runField}><Text style={styles.runLabel}>Avg HR</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.avg_hr} bpm</Text></View>}
+              <View style={[styles.runGrid, { justifyContent: 'space-evenly' }]}>
+                {viewRun.distance_km != null && <View style={[styles.runField, { width: undefined, flex: 1, alignItems: 'center' }]}><Text style={[styles.runLabel, { textAlign: 'center' }]}>Distance</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{(viewRun.distance_km * 0.621371).toFixed(1)} mi</Text></View>}
+                {viewRun.duration_minutes != null && <View style={[styles.runField, { width: undefined, flex: 1, alignItems: 'center' }]}><Text style={[styles.runLabel, { textAlign: 'center' }]}>Duration</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.duration_minutes} min</Text></View>}
+                {viewRun.avg_hr != null && <View style={[styles.runField, { width: undefined, flex: 1, alignItems: 'center' }]}><Text style={[styles.runLabel, { textAlign: 'center' }]}>Avg HR</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.avg_hr} bpm</Text></View>}
               </View>
             </View>
           </>
@@ -535,13 +538,25 @@ export default function WorkoutSession({ navigation, route }: Props) {
           {workout.exercises.map((ex: any, exIdx: number) => {
             const name = ex.name || ex.exercise_name || `Exercise ${exIdx + 1}`;
             const rows = exerciseSets[name] || [];
+            const isRemoved = !exerciseSets[name];
+            if (isRemoved) return null;
             return (
               <View key={name} style={styles.exerciseCard}>
                 <View style={styles.exerciseHeader}>
-                  <Text style={styles.exerciseName}>{name}</Text>
+                  <Text style={[styles.exerciseName, { flex: 1 }]}>{name}</Text>
                   {ex.suggested_weight_kg && (
-                    <Text style={styles.exerciseSuggested}>~{ex.suggested_weight_kg}kg suggested</Text>
+                    <Text style={styles.exerciseSuggested}>~{ex.suggested_weight_kg}kg</Text>
                   )}
+                  <TouchableOpacity
+                    onPress={() => Alert.alert('Remove Exercise', `Remove "${name}" from this session?`, [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Remove', style: 'destructive', onPress: () => setExerciseSets(prev => { const n = { ...prev }; delete n[name]; return n; }) },
+                    ])}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    style={{ marginLeft: spacing.sm }}
+                  >
+                    <Text style={{ color: colors.textTertiary, fontSize: 18 }}>×</Text>
+                  </TouchableOpacity>
                 </View>
                 {ex.notes && <Text style={styles.exerciseNotes}>{ex.notes}</Text>}
 
@@ -898,8 +913,8 @@ const styles = StyleSheet.create({
 
   targetCard: { ...cardStyle, marginBottom: spacing.md, backgroundColor: colors.primaryMuted },
   targetTitle: { fontSize: font.sm, fontWeight: font.bold, color: colors.textAccent, marginBottom: spacing.md },
-  targetRow: { flexDirection: 'row', gap: spacing.md },
-  targetItem: { alignItems: 'center' },
+  targetRow: { flexDirection: 'row', gap: spacing.md, justifyContent: 'center' },
+  targetItem: { alignItems: 'center', flex: 1 },
   targetValue: { fontSize: font.xl, fontWeight: font.bold, color: colors.textPrimary },
   targetLabel: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
 
@@ -922,7 +937,7 @@ const styles = StyleSheet.create({
   addSetBtnText: { fontSize: font.sm, color: colors.primary, fontWeight: font.semibold },
 
   runCard: { ...cardStyle, marginBottom: spacing.md },
-  runGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md },
+  runGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md, justifyContent: 'center' },
   runField: { width: '47%' },
   runLabel: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.bold, marginBottom: 4, letterSpacing: 0.5 },
   runInput: {
