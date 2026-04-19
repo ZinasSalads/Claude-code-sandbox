@@ -457,18 +457,54 @@ class EnvironmentService:
                 # Re-fetch if key fields are missing (stale/partial cache)
                 if cached.get("aqi") is None or cached.get("conditions") is None:
                     return None
+                # Derive weather_code from conditions for frontend emoji mapping
+                cached["weather_code"] = self._conditions_to_weather_code(cached.get("conditions", ""))
                 return cached
             return None
         except Exception as e:
             logger.error(f"Cache read error: {e}")
             return None
 
+    def _conditions_to_weather_code(self, conditions: str) -> int:
+        """Reverse-map conditions text to a WMO weather code for frontend display."""
+        c = (conditions or "").lower()
+        if "thunderstorm" in c:
+            return 95
+        if "heavy rain" in c or "violent" in c:
+            return 65
+        if "rain" in c or "shower" in c:
+            return 61
+        if "drizzle" in c:
+            return 51
+        if "heavy snow" in c:
+            return 75
+        if "snow" in c:
+            return 71
+        if "fog" in c:
+            return 45
+        if "overcast" in c or "cloudy" in c:
+            return 3
+        if "partly" in c:
+            return 2
+        if "mainly clear" in c:
+            return 1
+        return 0
+
     async def _cache(self, data: dict) -> None:
         """Cache environmental data."""
         if not supabase:
             return
+        valid_columns = {
+            "date", "location_lat", "location_lon", "location_name",
+            "uv_index_max", "uv_index_current", "uv_risk_level",
+            "aqi", "pm25", "pm10", "aqi_category",
+            "pollen_tree", "pollen_grass", "pollen_weed", "pollen_risk_level",
+            "temp_c", "humidity", "conditions", "wind_kph",
+            "outdoor_exercise_safe", "sunscreen_required", "air_quality_notes",
+        }
+        filtered = {k: v for k, v in data.items() if k in valid_columns}
         try:
-            supabase.table("environmental_data").upsert(data, on_conflict="date").execute()
+            supabase.table("environmental_data").upsert(filtered, on_conflict="date").execute()
         except Exception as e:
             logger.error(f"Cache write error: {e}")
 
