@@ -67,32 +67,22 @@ export default function Onboarding({ navigation }: any) {
     setSubmitting(false);
   };
 
-  if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  const handleRedoStep = async (stepName: string) => {
+  const handleRedoStep = useCallback(async (stepName: string) => {
     const content = await getStepContent(stepName);
     if (content) {
       setStep(content);
       setFormData({});
       setIsRedoing(true);
     }
-  };
+  }, []);
 
   const handleBackFromStep = useCallback(() => {
     setStep(null);
     setIsRedoing(false);
     setFormData({});
-    // Reload to reflect any changes
     loadStatus();
   }, [loadStatus]);
 
-  // Override native back button when re-doing a step to go back to step list
   useLayoutEffect(() => {
     if (isRedoing) {
       navigation.setOptions({
@@ -106,6 +96,14 @@ export default function Onboarding({ navigation }: any) {
       navigation.setOptions({ headerLeft: undefined });
     }
   }, [isRedoing, navigation, handleBackFromStep]);
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   if (!isRedoing && (!status || status.is_complete)) {
     const displaySteps = allSteps.filter(s => s.step_name !== 'welcome' && s.step_name !== 'complete');
