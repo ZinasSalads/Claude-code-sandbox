@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
   envWeatherEmoji: { fontSize: 44 },
   envTemp: { fontSize: 28, fontWeight: font.bold, color: colors.textPrimary },
   envConditions: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize', marginTop: 2 },
-  envMetrics: { flexDirection: 'column', gap: 4, alignItems: 'flex-end' },
+  envMetrics: { flexDirection: 'row', gap: spacing.xs, alignItems: 'center' },
   envPill: { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, paddingHorizontal: spacing.sm, paddingVertical: 4, gap: 4, minWidth: 60 },
   envEmoji: { fontSize: 13 },
   envValue: { fontSize: font.sm, fontWeight: font.bold },
