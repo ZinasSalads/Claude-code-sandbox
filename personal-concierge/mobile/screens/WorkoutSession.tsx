@@ -15,7 +15,7 @@ interface Props {
   navigation: {
     goBack: () => void;
   };
-  route?: { params?: { workoutId?: string; mode?: string } };
+  route?: { params?: { workoutId?: string; mode?: string; plannedSession?: any } };
 }
 
 interface SetRow {
@@ -30,6 +30,7 @@ const DEFAULT_SET: SetRow = { set_number: 1, weight_kg: '', reps_completed: '', 
 export default function WorkoutSession({ navigation, route }: Props) {
   const workoutId = route?.params?.workoutId;
   const mode = route?.params?.mode;
+  const plannedSession = route?.params?.plannedSession;
 
   const [workout, setWorkout] = useState<Workout | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,6 +50,10 @@ export default function WorkoutSession({ navigation, route }: Props) {
   const [awWorkouts, setAwWorkouts] = useState<AppleWatchWorkout[]>([]);
   const [linkedAW, setLinkedAW] = useState<AppleWatchWorkout | null>(null);
 
+  // View mode state
+  const [viewSets, setViewSets] = useState<WorkoutSet[]>([]);
+  const [viewRun, setViewRun] = useState<RunLog | null>(null);
+
   // History mode
   const [history, setHistory] = useState<Workout[]>([]);
 
@@ -66,14 +71,61 @@ export default function WorkoutSession({ navigation, route }: Props) {
       return;
     }
 
-    const w = workoutId
-      ? null // will fetch from history by id if needed
-      : await getTodayWorkout().catch(() => null);
+    if (mode === 'view' && workoutId) {
+      const h = await getWorkoutHistory(30).catch(() => []);
+      const found = h.find((x: Workout) => x.id === workoutId) || null;
+      setWorkout(found);
+      if (found?.id) {
+        const [sets, run] = await Promise.all([
+          getWorkoutSets(found.id).catch(() => []),
+          getRunResult(found.id).catch(() => null),
+        ]);
+        setViewSets(sets);
+        setViewRun(run);
+      }
+      setLoading(false);
+      return;
+    }
 
+    // For plannedSession mode: show planned session as the workout structure
+    if (plannedSession && !workoutId) {
+      // Build a synthetic workout from the planned session
+      const exercises = (plannedSession.targets?.exercises || []).map((ex: any) => ({
+        name: ex.name,
+        sets: ex.sets || 3,
+        reps: ex.reps || '8-12',
+        notes: ex.notes || '',
+        suggested_weight_kg: null,
+      }));
+      const synthetic: Workout = {
+        id: undefined,
+        workout_type: plannedSession.session_type,
+        title: plannedSession.title,
+        intensity: 'moderate',
+        duration_minutes: plannedSession.duration_minutes,
+        ai_reasoning: plannedSession.description || '',
+        exercises,
+        completed: false,
+      };
+      if (exercises.length > 0) {
+        const init: Record<string, SetRow[]> = {};
+        for (const ex of exercises) {
+          init[ex.name] = Array.from({ length: ex.sets }, (_, i) => ({
+            set_number: i + 1, weight_kg: '', reps_completed: ex.reps, rpe: '',
+          }));
+        }
+        setExerciseSets(init);
+      }
+      setWorkout(synthetic);
+      setLoading(false);
+      return;
+    }
+
+    // Manual mode or no workoutId: load today's AI workout
+    const w = await getTodayWorkout().catch(() => null);
     setWorkout(w);
 
     if (w) {
-      // Load existing sets if any
       const existingSets = await getWorkoutSets(w.id).catch(() => []);
       if (existingSets.length > 0) {
         const byExercise: Record<string, SetRow[]> = {};
@@ -87,24 +139,20 @@ export default function WorkoutSession({ navigation, route }: Props) {
           });
         }
         setExerciseSets(byExercise);
-      } else if (w.exercises?.length > 0) {
-        // Init blank set rows from workout plan
+      } else if (w.exercises?.length > 0 && mode !== 'manual') {
         const init: Record<string, SetRow[]> = {};
         for (const ex of w.exercises) {
-          const name = ex.name || ex.exercise_name || '';
+          const name = ex.name || (ex as any).exercise_name || '';
           if (!name) continue;
-          const sets = ex.sets || 3;
-          init[name] = Array.from({ length: sets }, (_, i) => ({
+          init[name] = Array.from({ length: ex.sets || 3 }, (_, i) => ({
             set_number: i + 1,
-            weight_kg: ex.suggested_weight_kg?.toString() || '',
+            weight_kg: (ex as any).suggested_weight_kg?.toString() || '',
             reps_completed: ex.reps?.toString() || '',
             rpe: '',
           }));
         }
         setExerciseSets(init);
       }
-
-      // Load existing run data
       const existingRun = await getRunResult(w.id).catch(() => null);
       if (existingRun) {
         setRunData({
@@ -118,8 +166,6 @@ export default function WorkoutSession({ navigation, route }: Props) {
           notes: existingRun.notes || '',
         });
       }
-
-      // Load Apple Watch workouts (iOS only)
       if (Platform.OS === 'ios') {
         const today = new Date().toISOString().split('T')[0];
         const aw = await getTodayAppleWatchWorkouts(today).catch(() => []);
@@ -128,7 +174,7 @@ export default function WorkoutSession({ navigation, route }: Props) {
     }
 
     setLoading(false);
-  }, [workoutId, mode]);
+  }, [workoutId, mode, plannedSession]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -166,10 +212,16 @@ export default function WorkoutSession({ navigation, route }: Props) {
   };
 
   const handleComplete = async () => {
-    if (!workout) return;
     setSaving(true);
     try {
-      // Save sets
+      // For plannedSession without workoutId, or manual mode: use today's workout as anchor
+      let wid = workout?.id;
+      if (!wid) {
+        const tw = await getTodayWorkout().catch(() => null);
+        wid = tw?.id;
+      }
+      if (!wid) { Alert.alert('Error', 'No workout found to log against.'); setSaving(false); return; }
+
       const allSets: WorkoutSet[] = [];
       for (const [exName, rows] of Object.entries(exerciseSets)) {
         for (const row of rows) {
@@ -184,13 +236,10 @@ export default function WorkoutSession({ navigation, route }: Props) {
           } as WorkoutSet);
         }
       }
-      if (allSets.length > 0) {
-        await logWorkoutSets(workout.id, allSets);
-      }
+      if (allSets.length > 0) await logWorkoutSets(wid, allSets);
 
-      // Save run data if any filled
       if (runData.distance_km || runData.duration_minutes) {
-        await logRunResult(workout.id, {
+        await logRunResult(wid, {
           distance_km: runData.distance_km ? parseFloat(runData.distance_km) : undefined,
           duration_minutes: runData.duration_minutes ? parseFloat(runData.duration_minutes) : undefined,
           avg_hr: runData.avg_hr ? parseInt(runData.avg_hr) : undefined,
@@ -203,10 +252,8 @@ export default function WorkoutSession({ navigation, route }: Props) {
         });
       }
 
-      await completeWorkout(notes, workout.id);
-      Alert.alert('Session logged!', 'Great work. See you tomorrow.', [
-        { text: 'Done', onPress: () => navigation.goBack() },
-      ]);
+      await completeWorkout(notes, wid);
+      Alert.alert('Session logged!', 'Great work.', [{ text: 'Done', onPress: () => navigation.goBack() }]);
     } catch (e) {
       Alert.alert('Error', 'Could not save session. Please try again.');
     } finally {
@@ -239,6 +286,79 @@ export default function WorkoutSession({ navigation, route }: Props) {
     );
   }
 
+  // View mode: read-only completed workout
+  if (mode === 'view') {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        {workout && (
+          <View style={[styles.header, { borderLeftColor: colors.success }]}>
+            <Text style={styles.workoutTitle}>{workout.title}</Text>
+            <Text style={styles.workoutMeta}>
+              {workout.date ? new Date(workout.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : ''} · {workout.duration_minutes}min
+            </Text>
+          </View>
+        )}
+        {viewSets.length > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>SETS LOGGED</Text>
+            {Object.entries(
+              viewSets.reduce((acc: Record<string, WorkoutSet[]>, s) => {
+                if (!acc[s.exercise_name]) acc[s.exercise_name] = [];
+                acc[s.exercise_name].push(s);
+                return acc;
+              }, {})
+            ).map(([ex, sets]) => (
+              <View key={ex} style={styles.exerciseCard}>
+                <Text style={styles.exerciseName}>{ex}</Text>
+                {sets.map((s, i) => (
+                  <Text key={i} style={styles.exerciseNotes}>
+                    Set {s.set_number}: {s.weight_kg != null ? `${s.weight_kg}kg` : ''} × {s.reps_completed ?? '—'} reps{s.rpe ? ` · RPE ${s.rpe}` : ''}
+                  </Text>
+                ))}
+              </View>
+            ))}
+          </>
+        )}
+        {viewRun && (
+          <>
+            <Text style={styles.sectionLabel}>RUN DATA</Text>
+            <View style={styles.runCard}>
+              <View style={styles.runGrid}>
+                {viewRun.distance_km != null && <View style={styles.runField}><Text style={styles.runLabel}>Distance</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.distance_km} km</Text></View>}
+                {viewRun.duration_minutes != null && <View style={styles.runField}><Text style={styles.runLabel}>Duration</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.duration_minutes} min</Text></View>}
+                {viewRun.avg_hr != null && <View style={styles.runField}><Text style={styles.runLabel}>Avg HR</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.avg_hr} bpm</Text></View>}
+              </View>
+            </View>
+          </>
+        )}
+        {viewSets.length === 0 && !viewRun && (
+          <Text style={styles.empty}>No detailed data logged for this session.</Text>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    );
+  }
+
+  // Manual mode: show empty exercise picker
+  if (mode === 'manual' && !workout) {
+    return (
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Text style={styles.sectionLabel}>LOG A WORKOUT</Text>
+        <ManualExercisePicker exerciseSets={exerciseSets} setExerciseSets={setExerciseSets} />
+        <Text style={styles.sectionLabel}>NOTES</Text>
+        <TextInput
+          style={[inputStyle, { color: colors.textPrimary, height: 80, textAlignVertical: 'top', paddingTop: spacing.md, marginBottom: spacing.lg }]}
+          value={notes} onChangeText={setNotes}
+          placeholder="How did it feel?" placeholderTextColor={colors.textTertiary} multiline
+        />
+        <TouchableOpacity style={[styles.completeBtn, saving && { opacity: 0.6 }]} onPress={handleComplete} disabled={saving}>
+          {saving ? <ActivityIndicator color={colors.white} /> : <Text style={styles.completeBtnText}>Save Workout ✓</Text>}
+        </TouchableOpacity>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    );
+  }
+
   if (!workout) {
     return (
       <View style={styles.container}>
@@ -247,7 +367,8 @@ export default function WorkoutSession({ navigation, route }: Props) {
     );
   }
 
-  const showRunSection = isRunWorkout(workout) || (workout as any).run_targets;
+  const isPlannedRun = plannedSession && /run|cardio|tempo|interval/i.test(plannedSession.session_type || '');
+  const showRunSection = isRunWorkout(workout) || (workout as any).run_targets || isPlannedRun;
   const hasExercises = workout.exercises && workout.exercises.length > 0;
 
   return (
@@ -291,6 +412,33 @@ export default function WorkoutSession({ navigation, route }: Props) {
       {linkedAW && (
         <View style={styles.awLinked}>
           <Text style={styles.awLinkedText}>⌚ Apple Watch data imported</Text>
+        </View>
+      )}
+
+      {/* Planned Session Run Targets */}
+      {plannedSession?.targets && (plannedSession.targets.distance_km || plannedSession.targets.pace_per_km || plannedSession.targets.hr_zone) && (
+        <View style={styles.targetCard}>
+          <Text style={styles.targetTitle}>Session Targets</Text>
+          <View style={styles.targetRow}>
+            {plannedSession.targets.distance_km && (
+              <View style={styles.targetItem}>
+                <Text style={styles.targetValue}>{plannedSession.targets.distance_km}km</Text>
+                <Text style={styles.targetLabel}>Distance</Text>
+              </View>
+            )}
+            {plannedSession.targets.pace_per_km && (
+              <View style={styles.targetItem}>
+                <Text style={styles.targetValue}>{plannedSession.targets.pace_per_km}'/km</Text>
+                <Text style={styles.targetLabel}>Pace</Text>
+              </View>
+            )}
+            {plannedSession.targets.hr_zone && (
+              <View style={styles.targetItem}>
+                <Text style={styles.targetValue}>Z{plannedSession.targets.hr_zone}</Text>
+                <Text style={styles.targetLabel}>HR Zone</Text>
+              </View>
+            )}
+          </View>
         </View>
       )}
 
@@ -458,6 +606,76 @@ export default function WorkoutSession({ navigation, route }: Props) {
 
       <View style={{ height: 40 }} />
     </ScrollView>
+  );
+}
+
+function ManualExercisePicker({
+  exerciseSets,
+  setExerciseSets,
+}: {
+  exerciseSets: Record<string, SetRow[]>;
+  setExerciseSets: React.Dispatch<React.SetStateAction<Record<string, SetRow[]>>>;
+}) {
+  const [newExercise, setNewExercise] = useState('');
+
+  const addExercise = () => {
+    const name = newExercise.trim();
+    if (!name || exerciseSets[name]) return;
+    setExerciseSets(prev => ({ ...prev, [name]: [{ set_number: 1, weight_kg: '', reps_completed: '', rpe: '' }] }));
+    setNewExercise('');
+  };
+
+  const addSet = (exercise: string) => {
+    setExerciseSets(prev => {
+      const rows = prev[exercise] || [];
+      return { ...prev, [exercise]: [...rows, { set_number: rows.length + 1, weight_kg: '', reps_completed: '', rpe: '' }] };
+    });
+  };
+
+  const updateRow = (exercise: string, idx: number, field: keyof SetRow, val: string) => {
+    setExerciseSets(prev => {
+      const rows = [...(prev[exercise] || [])];
+      rows[idx] = { ...rows[idx], [field]: val };
+      return { ...prev, [exercise]: rows };
+    });
+  };
+
+  return (
+    <View>
+      <View style={{ flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }}>
+        <TextInput
+          style={[inputStyle, { flex: 1, color: colors.textPrimary }]}
+          value={newExercise}
+          onChangeText={setNewExercise}
+          onSubmitEditing={addExercise}
+          placeholder="Exercise name (e.g. Bench Press)"
+          placeholderTextColor={colors.textTertiary}
+          returnKeyType="done"
+        />
+        <TouchableOpacity
+          style={{ backgroundColor: colors.primary, borderRadius: radii.md, paddingHorizontal: spacing.lg, justifyContent: 'center' }}
+          onPress={addExercise}
+        >
+          <Text style={{ color: colors.white, fontWeight: font.bold }}>Add</Text>
+        </TouchableOpacity>
+      </View>
+      {Object.entries(exerciseSets).map(([name, rows]) => (
+        <View key={name} style={[{ ...cardStyle } as any, { marginBottom: spacing.md }]}>
+          <Text style={{ fontSize: font.md, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.sm }}>{name}</Text>
+          {rows.map((row, i) => (
+            <View key={i} style={{ flexDirection: 'row', gap: spacing.xs, marginBottom: spacing.xs }}>
+              <Text style={{ color: colors.textTertiary, width: 24, paddingTop: 10, textAlign: 'center' }}>{row.set_number}</Text>
+              <TextInput style={[{ backgroundColor: colors.bgInput, borderRadius: radii.sm, borderWidth: 1, borderColor: colors.border, padding: spacing.sm, color: colors.textPrimary, textAlign: 'center' }, { flex: 1 }]} value={row.weight_kg} onChangeText={v => updateRow(name, i, 'weight_kg', v)} placeholder="kg" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+              <TextInput style={[{ backgroundColor: colors.bgInput, borderRadius: radii.sm, borderWidth: 1, borderColor: colors.border, padding: spacing.sm, color: colors.textPrimary, textAlign: 'center' }, { flex: 1 }]} value={row.reps_completed} onChangeText={v => updateRow(name, i, 'reps_completed', v)} placeholder="reps" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" />
+              <TextInput style={[{ backgroundColor: colors.bgInput, borderRadius: radii.sm, borderWidth: 1, borderColor: colors.border, padding: spacing.sm, color: colors.textPrimary, textAlign: 'center' }, { width: 50 }]} value={row.rpe} onChangeText={v => updateRow(name, i, 'rpe', v)} placeholder="RPE" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
+            </View>
+          ))}
+          <TouchableOpacity onPress={() => addSet(name)}>
+            <Text style={{ color: colors.primary, fontSize: font.sm, fontWeight: font.semibold }}>+ Add Set</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+    </View>
   );
 }
 

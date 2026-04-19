@@ -21,11 +21,8 @@ interface Props {
 const modules = [
   { key: 'FitnessHub', title: 'Fitness', emoji: '🏋️', desc: 'Goals, training plan & workouts' },
   { key: 'Supplements', title: 'Supplements', emoji: '💊', desc: 'Stack & daily tracking' },
-  { key: 'Longevity', title: 'Longevity', emoji: '🧬', desc: 'Bio age & longevity scores' },
-  { key: 'Skincare', title: 'Skincare', emoji: '✨', desc: 'Routine & skin tracking' },
   { key: 'AppleHealth', title: 'Apple Health', emoji: '📱', desc: 'Sync wearable data' },
   { key: 'Environment', title: 'Environment', emoji: '🌍', desc: 'Air quality, UV & pollen' },
-  { key: 'Research', title: 'Research', emoji: '📚', desc: 'Health research & protocols' },
   { key: 'BloodWork', title: 'Blood Work', emoji: '🩸', desc: 'Quarterly lab results & biomarkers' },
 ];
 

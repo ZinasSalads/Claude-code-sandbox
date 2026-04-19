@@ -1,17 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-  TextInput,
-  RefreshControl,
-  Alert,
+  View, Text, ScrollView, StyleSheet, TouchableOpacity,
+  ActivityIndicator, TextInput, RefreshControl, Alert, Modal,
 } from 'react-native';
 import { API_URL } from '../lib/api';
-import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
+import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, inputStyle } from '../theme';
 
 interface Supplement {
   id: string;
@@ -32,7 +25,6 @@ interface TodayLog {
   dose_unit?: string;
   timing?: string;
   taken: boolean;
-  skipped_reason?: string;
 }
 
 interface AdherenceStats {
@@ -41,12 +33,7 @@ interface AdherenceStats {
   total_taken: number;
   adherence_pct: number;
   current_streak_days: number;
-  breakdown: {
-    name: string;
-    adherence_pct: number;
-    taken: number;
-    total: number;
-  }[];
+  breakdown: { name: string; adherence_pct: number; taken: number; total: number }[];
 }
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | null> {
@@ -62,24 +49,46 @@ async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | nul
   }
 }
 
-type Tab = 'today' | 'stack' | 'add' | 'stats';
+const TIMINGS = ['morning', 'afternoon', 'evening', 'with_meals', 'bedtime'];
 
-// ---- Today Tab ----
-function TodayTab() {
+export default function Supplements() {
   const [logs, setLogs] = useState<TodayLog[]>([]);
+  const [stack, setStack] = useState<Supplement[]>([]);
+  const [stats, setStats] = useState<AdherenceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingSupplement, setEditingSupplement] = useState<Supplement | null>(null);
+
+  // Form state
+  const [formName, setFormName] = useState('');
+  const [formDose, setFormDose] = useState('');
+  const [formUnit, setFormUnit] = useState('mg');
+  const [formTiming, setFormTiming] = useState('morning');
+  const [formPurpose, setFormPurpose] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const data = await fetchApi<TodayLog[]>('/supplements/today');
-    setLogs(data || []);
+    const [l, s, st] = await Promise.all([
+      fetchApi<TodayLog[]>('/supplements/today'),
+      fetchApi<Supplement[]>('/supplements/stack?active_only=false'),
+      fetchApi<AdherenceStats>('/supplements/stats'),
+    ]);
+    setLogs(l || []);
+    setStack(s || []);
+    setStats(st);
     setLoading(false);
-    setRefreshing(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const toggle = useCallback(async (supplementId: string, taken: boolean) => {
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
+
+  const toggleTaken = useCallback(async (supplementId: string, taken: boolean) => {
     await fetchApi('/supplements/log', {
       method: 'POST',
       body: JSON.stringify({ supplement_id: supplementId, taken }),
@@ -87,525 +96,358 @@ function TodayTab() {
     load();
   }, [load]);
 
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
+  const resetForm = () => {
+    setFormName('');
+    setFormDose('');
+    setFormUnit('mg');
+    setFormTiming('morning');
+    setFormPurpose('');
+    setEditingSupplement(null);
+  };
 
-  if (logs.length === 0) {
-    return (
-      <View style={tabStyles.center}>
-        <Text style={tabStyles.empty}>No supplements in your stack yet.</Text>
-        <Text style={tabStyles.emptyHint}>Add supplements to start tracking.</Text>
-      </View>
-    );
+  const openAddForm = () => {
+    resetForm();
+    setShowForm(true);
+  };
+
+  const openEditForm = (s: Supplement) => {
+    setEditingSupplement(s);
+    setFormName(s.name);
+    setFormDose(s.dose_amount?.toString() || '');
+    setFormUnit(s.dose_unit || 'mg');
+    setFormTiming(s.timing || 'morning');
+    setFormPurpose(s.purpose || '');
+    setShowForm(true);
+  };
+
+  const handleSave = async () => {
+    if (!formName.trim()) { Alert.alert('Enter a supplement name'); return; }
+    setSaving(true);
+    const payload = {
+      name: formName.trim(),
+      dose_amount: formDose ? parseFloat(formDose) : undefined,
+      dose_unit: formUnit,
+      timing: formTiming,
+      purpose: formPurpose.trim() || undefined,
+    };
+
+    let result;
+    if (editingSupplement) {
+      result = await fetchApi(`/supplements/${editingSupplement.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      if (!result) {
+        result = await fetchApi('/supplements/add', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      }
+    } else {
+      result = await fetchApi('/supplements/add', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+    }
+
+    setSaving(false);
+    if (result) {
+      setShowForm(false);
+      resetForm();
+      load();
+    } else {
+      Alert.alert('Error', 'Could not save supplement. Check your connection and try again.');
+    }
+  };
+
+  const handleDeactivate = (s: Supplement) => {
+    Alert.alert('Remove Supplement', `Remove "${s.name}" from your stack?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Remove', style: 'destructive',
+        onPress: async () => {
+          await fetch(`${API_URL}/supplements/${s.id}`, { method: 'DELETE' });
+          load();
+        },
+      },
+    ]);
+  };
+
+  if (loading) {
+    return <View style={styles.container}><ActivityIndicator color={colors.primary} style={{ marginTop: 80 }} /></View>;
   }
 
   const taken = logs.filter(l => l.taken).length;
   const total = logs.length;
-
-  return (
-    <ScrollView
-      style={tabStyles.scroll}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.primary} />}
-    >
-      {/* Progress */}
-      <View style={todayStyles.progressCard}>
-        <Text style={todayStyles.progressText}>{taken}/{total} taken today</Text>
-        <View style={todayStyles.progressBar}>
-          <View style={[todayStyles.progressFill, { width: `${(taken / total) * 100}%` }]} />
-        </View>
-      </View>
-
-      {/* Supplement list */}
-      {logs.map((l) => (
-        <TouchableOpacity
-          key={l.supplement_id}
-          style={[todayStyles.item, l.taken && todayStyles.itemTaken]}
-          onPress={() => toggle(l.supplement_id, !l.taken)}
-          activeOpacity={0.7}
-        >
-          <View style={[todayStyles.checkbox, l.taken && todayStyles.checkboxChecked]}>
-            {l.taken && <Text style={todayStyles.check}>✓</Text>}
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[todayStyles.name, l.taken && todayStyles.nameTaken]}>{l.name}</Text>
-            <Text style={todayStyles.dose}>
-              {l.dose_amount} {l.dose_unit} · {l.timing}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      ))}
-      <View style={{ height: 30 }} />
-    </ScrollView>
-  );
-}
-
-const todayStyles = StyleSheet.create({
-  progressCard: {
-    ...cardStyle,
-    marginBottom: spacing.lg,
-  },
-  progressText: {
-    color: colors.textPrimary,
-    fontSize: font.lg,
-    fontWeight: font.bold,
-    marginBottom: spacing.md,
-  },
-  progressBar: {
-    height: 6,
-    backgroundColor: colors.border,
-    borderRadius: radii.full,
-  },
-  progressFill: {
-    height: 6,
-    backgroundColor: colors.success,
-    borderRadius: radii.full,
-  },
-  item: {
-    ...cardStyle,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  itemTaken: {
-    opacity: 0.6,
-  },
-  checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: radii.full,
-    borderWidth: 2,
-    borderColor: colors.textTertiary,
-    marginRight: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: colors.success,
-    borderColor: colors.success,
-  },
-  check: {
-    color: colors.white,
-    fontWeight: font.bold,
-    fontSize: font.md,
-  },
-  name: {
-    color: colors.textPrimary,
-    fontSize: font.md,
-    fontWeight: font.semibold,
-  },
-  nameTaken: {
-    textDecorationLine: 'line-through',
-    color: colors.textSecondary,
-  },
-  dose: {
-    color: colors.textTertiary,
-    fontSize: font.sm,
-    marginTop: spacing.xs,
-  },
-});
-
-// ---- Stack Tab ----
-function StackTab() {
-  const [stack, setStack] = useState<Supplement[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchApi<Supplement[]>('/supplements/stack?active_only=false').then(s => {
-      setStack(s || []);
-      setLoading(false);
-    });
-  }, []);
-
-  const deactivate = useCallback(async (id: string) => {
-    Alert.alert('Remove Supplement', 'Deactivate this supplement?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Deactivate',
-        style: 'destructive',
-        onPress: async () => {
-          await fetch(`${API_URL}/supplements/${id}`, { method: 'DELETE' });
-          setStack(prev => prev.map(s => s.id === id ? { ...s, active: false } : s));
-        },
-      },
-    ]);
-  }, []);
-
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
-
-  return (
-    <ScrollView style={tabStyles.scroll}>
-      {stack.length === 0 ? (
-        <View style={tabStyles.center}><Text style={tabStyles.empty}>No supplements added.</Text></View>
-      ) : (
-        stack.map(s => (
-          <View key={s.id} style={[stackStyles.card, !s.active && stackStyles.inactive]}>
-            <View style={{ flex: 1 }}>
-              <Text style={stackStyles.name}>{s.name}</Text>
-              <Text style={stackStyles.detail}>
-                {s.dose_amount} {s.dose_unit} · {s.timing} · {s.category || 'general'}
-              </Text>
-              {s.purpose && <Text style={stackStyles.purpose}>{s.purpose}</Text>}
-              {!s.active && <Text style={stackStyles.inactiveLabel}>INACTIVE</Text>}
-            </View>
-            {s.active && (
-              <TouchableOpacity onPress={() => deactivate(s.id)} style={stackStyles.removeBtn}>
-                <Text style={stackStyles.removeTxt}>×</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))
-      )}
-      <View style={{ height: 30 }} />
-    </ScrollView>
-  );
-}
-
-const stackStyles = StyleSheet.create({
-  card: {
-    ...cardStyle,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  inactive: { opacity: 0.4 },
-  name: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold },
-  detail: { color: colors.textTertiary, fontSize: font.sm, marginTop: spacing.xs },
-  purpose: { color: colors.textSecondary, fontSize: font.sm, marginTop: spacing.xs, fontStyle: 'italic' },
-  inactiveLabel: { color: colors.error, fontSize: font.xs, fontWeight: font.bold, marginTop: spacing.xs },
-  removeBtn: { padding: spacing.sm },
-  removeTxt: { color: colors.error, fontSize: 22, fontWeight: font.bold },
-});
-
-// ---- Add Tab ----
-function AddTab({ onAdded }: { onAdded: () => void }) {
-  const [name, setName] = useState('');
-  const [dose, setDose] = useState('');
-  const [unit, setUnit] = useState('mg');
-  const [timing, setTiming] = useState('morning');
-  const [purpose, setPurpose] = useState('');
-  const [adding, setAdding] = useState(false);
-
-  const timings = ['morning', 'afternoon', 'evening', 'with_meals', 'bedtime'];
-
-  const handleAdd = useCallback(async () => {
-    if (!name.trim()) return;
-    setAdding(true);
-    const result = await fetchApi('/supplements/add', {
-      method: 'POST',
-      body: JSON.stringify({
-        name: name.trim(),
-        dose_amount: parseFloat(dose) || undefined,
-        dose_unit: unit,
-        timing,
-        purpose: purpose.trim() || undefined,
-      }),
-    });
-    setAdding(false);
-    if (result) {
-      setName('');
-      setDose('');
-      setPurpose('');
-      onAdded();
-      Alert.alert('Added', `${name} added to your stack.`);
-    } else {
-      Alert.alert('Error', 'Failed to add supplement.');
-    }
-  }, [name, dose, unit, timing, purpose, onAdded]);
-
-  return (
-    <ScrollView style={tabStyles.scroll}>
-      <Text style={addStyles.label}>Supplement Name</Text>
-      <TextInput
-        style={addStyles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="e.g., Vitamin D3"
-        placeholderTextColor={colors.textTertiary}
-      />
-
-      <View style={{ flexDirection: 'row', gap: 12 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={addStyles.label}>Dose</Text>
-          <TextInput
-            style={addStyles.input}
-            value={dose}
-            onChangeText={setDose}
-            placeholder="5000"
-            placeholderTextColor={colors.textTertiary}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={addStyles.label}>Unit</Text>
-          <TextInput
-            style={addStyles.input}
-            value={unit}
-            onChangeText={setUnit}
-            placeholder="mg, mcg, IU"
-            placeholderTextColor={colors.textTertiary}
-          />
-        </View>
-      </View>
-
-      <Text style={addStyles.label}>Timing</Text>
-      <View style={addStyles.timingRow}>
-        {timings.map(t => (
-          <TouchableOpacity
-            key={t}
-            style={[addStyles.timingBtn, timing === t && addStyles.timingActive]}
-            onPress={() => setTiming(t)}
-          >
-            <Text style={[addStyles.timingText, timing === t && addStyles.timingActiveText]}>
-              {t.replace('_', ' ')}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <Text style={addStyles.label}>Purpose (optional)</Text>
-      <TextInput
-        style={addStyles.input}
-        value={purpose}
-        onChangeText={setPurpose}
-        placeholder="e.g., Bone health, immune support"
-        placeholderTextColor={colors.textTertiary}
-      />
-
-      <TouchableOpacity
-        style={addStyles.addBtn}
-        onPress={handleAdd}
-        disabled={adding || !name.trim()}
-        activeOpacity={0.8}
-      >
-        {adding ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={addStyles.addBtnText}>Add Supplement</Text>
-        )}
-      </TouchableOpacity>
-      <View style={{ height: 30 }} />
-    </ScrollView>
-  );
-}
-
-const addStyles = StyleSheet.create({
-  label: {
-    ...sectionLabel,
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-  },
-  input: {
-    backgroundColor: colors.bgInput,
-    borderRadius: radii.md,
-    padding: spacing.lg,
-    color: colors.textPrimary,
-    fontSize: font.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  timingRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  timingBtn: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radii.sm,
-    backgroundColor: colors.bgCard,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  timingActive: {
-    backgroundColor: colors.primaryMuted,
-    borderColor: colors.primary,
-  },
-  timingText: {
-    color: colors.textSecondary,
-    fontSize: font.sm,
-    fontWeight: font.semibold,
-  },
-  timingActiveText: {
-    color: colors.textAccent,
-  },
-  addBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radii.lg,
-    paddingVertical: 18,
-    alignItems: 'center',
-    marginTop: spacing['2xl'],
-    ...shadow.glow,
-  },
-  addBtnText: {
-    color: colors.white,
-    fontSize: font.lg,
-    fontWeight: font.bold,
-  },
-});
-
-// ---- Stats Tab ----
-function StatsTab() {
-  const [stats, setStats] = useState<AdherenceStats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchApi<AdherenceStats>('/supplements/stats').then(s => {
-      setStats(s);
-      setLoading(false);
-    });
-  }, []);
-
-  if (loading) return <View style={tabStyles.center}><ActivityIndicator color={colors.primary} size="large" /></View>;
-  if (!stats || !stats.total_logs) {
-    return (
-      <View style={tabStyles.center}>
-        <Text style={tabStyles.empty}>No adherence data yet.</Text>
-        <Text style={tabStyles.emptyHint}>Start logging to see your stats.</Text>
-      </View>
-    );
-  }
-
-  return (
-    <ScrollView style={tabStyles.scroll}>
-      <View style={statsStyles.overviewCard}>
-        <View style={statsStyles.statRow}>
-          <View style={statsStyles.stat}>
-            <Text style={statsStyles.statValue}>{stats.adherence_pct}%</Text>
-            <Text style={statsStyles.statLabel}>Adherence</Text>
-          </View>
-          <View style={statsStyles.stat}>
-            <Text style={statsStyles.statValue}>{stats.current_streak_days}</Text>
-            <Text style={statsStyles.statLabel}>Day Streak</Text>
-          </View>
-          <View style={statsStyles.stat}>
-            <Text style={statsStyles.statValue}>{stats.period_days}d</Text>
-            <Text style={statsStyles.statLabel}>Period</Text>
-          </View>
-        </View>
-      </View>
-
-      {Array.isArray(stats.breakdown) && stats.breakdown.length > 0 && (
-        <>
-          <Text style={tabStyles.sectionTitle}>BY SUPPLEMENT</Text>
-          {stats.breakdown.map((b, i) => (
-            <View key={i} style={statsStyles.breakdownRow}>
-              <Text style={statsStyles.breakdownName} numberOfLines={1}>{b.name}</Text>
-              <View style={statsStyles.barContainer}>
-                <View style={[statsStyles.bar, { width: `${b.adherence_pct}%` }]} />
-              </View>
-              <Text style={statsStyles.breakdownPct}>{b.adherence_pct}%</Text>
-            </View>
-          ))}
-        </>
-      )}
-      <View style={{ height: 30 }} />
-    </ScrollView>
-  );
-}
-
-const statsStyles = StyleSheet.create({
-  overviewCard: {
-    ...cardStyle,
-    padding: spacing.xl,
-    marginBottom: spacing.xl,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  stat: { alignItems: 'center' },
-  statValue: { color: colors.textAccent, fontSize: 28, fontWeight: font.bold },
-  statLabel: { color: colors.textTertiary, fontSize: font.sm, marginTop: spacing.xs },
-  breakdownRow: {
-    ...cardStyle,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  breakdownName: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold, width: 100 },
-  barContainer: {
-    flex: 1,
-    height: 6,
-    backgroundColor: colors.border,
-    borderRadius: radii.full,
-    marginHorizontal: spacing.md,
-  },
-  bar: {
-    height: 6,
-    backgroundColor: colors.success,
-    borderRadius: radii.full,
-  },
-  breakdownPct: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold, width: 45, textAlign: 'right' },
-});
-
-// ---- Main Screen ----
-export default function Supplements() {
-  const [tab, setTab] = useState<Tab>('today');
-  const [refreshKey, setRefreshKey] = useState(0);
+  const activeStack = stack.filter(s => s.active !== false);
 
   return (
     <View style={styles.container}>
-      <View style={styles.tabBar}>
-        {(['today', 'stack', 'add', 'stats'] as Tab[]).map(t => (
-          <TouchableOpacity
-            key={t}
-            style={[styles.tab, tab === t && styles.activeTab]}
-            onPress={() => setTab(t)}
-          >
-            <Text style={[styles.tabText, tab === t && styles.activeTabText]}>
-              {t.charAt(0).toUpperCase() + t.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
+        {/* Today's Progress */}
+        {total > 0 && (
+          <View style={styles.progressCard}>
+            <Text style={styles.progressText}>{taken}/{total} taken today</Text>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: `${total > 0 ? (taken / total) * 100 : 0}%` }]} />
+            </View>
+          </View>
+        )}
 
-      <View style={styles.content} key={refreshKey}>
-        {tab === 'today' && <TodayTab />}
-        {tab === 'stack' && <StackTab />}
-        {tab === 'add' && <AddTab onAdded={() => { setRefreshKey(k => k + 1); setTab('today'); }} />}
-        {tab === 'stats' && <StatsTab />}
-      </View>
+        {/* Today's Checklist */}
+        {logs.length > 0 ? (
+          <>
+            {logs.map(l => {
+              const supp = stack.find(s => s.id === l.supplement_id);
+              return (
+                <TouchableOpacity
+                  key={l.supplement_id}
+                  style={[styles.checkItem, l.taken && styles.checkItemDone]}
+                  onPress={() => toggleTaken(l.supplement_id, !l.taken)}
+                  onLongPress={() => supp && openEditForm(supp)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.checkbox, l.taken && styles.checkboxDone]}>
+                    {l.taken && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.checkName, l.taken && styles.checkNameDone]}>{l.name}</Text>
+                    <Text style={styles.checkDose}>{l.dose_amount} {l.dose_unit} · {l.timing}</Text>
+                  </View>
+                  <TouchableOpacity onPress={() => supp && openEditForm(supp)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    <Text style={styles.editIcon}>✏️</Text>
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              );
+            })}
+          </>
+        ) : (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>No supplements in your stack.</Text>
+            <Text style={styles.emptyHint}>Tap + to add your first supplement.</Text>
+          </View>
+        )}
+
+        {/* Stats Summary (inline, not a separate tab) */}
+        {stats && stats.total_logs > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>ADHERENCE</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{stats.adherence_pct}%</Text>
+                <Text style={styles.statLabel}>Rate</Text>
+              </View>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{stats.current_streak_days}</Text>
+                <Text style={styles.statLabel}>Streak</Text>
+              </View>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{stats.period_days}d</Text>
+                <Text style={styles.statLabel}>Tracked</Text>
+              </View>
+            </View>
+          </>
+        )}
+
+        {/* Full Stack (with edit/remove) */}
+        {activeStack.length > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>YOUR STACK</Text>
+            {activeStack.map(s => (
+              <View key={s.id} style={styles.stackCard}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.stackName}>{s.name}</Text>
+                  <Text style={styles.stackDetail}>
+                    {s.dose_amount} {s.dose_unit} · {s.timing}
+                    {s.purpose ? ` · ${s.purpose}` : ''}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => openEditForm(s)} style={styles.stackBtn}>
+                  <Text style={styles.stackBtnText}>Edit</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDeactivate(s)} style={[styles.stackBtn, styles.stackBtnDanger]}>
+                  <Text style={styles.stackBtnDangerText}>×</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </>
+        )}
+
+        <View style={{ height: 80 }} />
+      </ScrollView>
+
+      {/* Floating Add Button */}
+      <TouchableOpacity style={styles.fab} onPress={openAddForm} activeOpacity={0.8}>
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
+
+      {/* Add/Edit Modal */}
+      <Modal visible={showForm} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{editingSupplement ? 'Edit Supplement' : 'Add Supplement'}</Text>
+              <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Text style={styles.modalClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView keyboardShouldPersistTaps="handled">
+              <Text style={styles.fieldLabel}>Name</Text>
+              <TextInput
+                style={styles.input}
+                value={formName}
+                onChangeText={setFormName}
+                placeholder="e.g. Vitamin D3"
+                placeholderTextColor={colors.textTertiary}
+                autoFocus
+              />
+
+              <View style={styles.fieldRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fieldLabel}>Dose</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formDose}
+                    onChangeText={setFormDose}
+                    placeholder="5000"
+                    placeholderTextColor={colors.textTertiary}
+                    keyboardType="decimal-pad"
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fieldLabel}>Unit</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formUnit}
+                    onChangeText={setFormUnit}
+                    placeholder="mg"
+                    placeholderTextColor={colors.textTertiary}
+                  />
+                </View>
+              </View>
+
+              <Text style={styles.fieldLabel}>Timing</Text>
+              <View style={styles.chipRow}>
+                {TIMINGS.map(t => (
+                  <TouchableOpacity
+                    key={t}
+                    style={[styles.chip, formTiming === t && styles.chipActive]}
+                    onPress={() => setFormTiming(t)}
+                  >
+                    <Text style={[styles.chipText, formTiming === t && styles.chipTextActive]}>
+                      {t.replace('_', ' ')}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.fieldLabel}>Purpose (optional)</Text>
+              <TextInput
+                style={styles.input}
+                value={formPurpose}
+                onChangeText={setFormPurpose}
+                placeholder="e.g. Bone health"
+                placeholderTextColor={colors.textTertiary}
+              />
+
+              <TouchableOpacity
+                style={[styles.saveBtn, (!formName.trim() || saving) && { opacity: 0.5 }]}
+                onPress={handleSave}
+                disabled={!formName.trim() || saving}
+                activeOpacity={0.8}
+              >
+                {saving
+                  ? <ActivityIndicator color={colors.white} />
+                  : <Text style={styles.saveBtnText}>{editingSupplement ? 'Update' : 'Add to Stack'}</Text>
+                }
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
-const tabStyles = StyleSheet.create({
-  scroll: { flex: 1, paddingHorizontal: spacing.xl },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing['5xl'] },
-  empty: { color: colors.textSecondary, fontSize: font.lg, textAlign: 'center' },
-  emptyHint: { color: colors.textTertiary, fontSize: font.sm, textAlign: 'center', marginTop: spacing.sm },
-  sectionTitle: {
-    ...sectionLabel,
-  },
-});
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
-  tabBar: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    gap: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+  content: { padding: spacing.lg },
+  sectionLabel: { ...sectionLabel },
+
+  progressCard: { ...cardStyle, marginBottom: spacing.lg },
+  progressText: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.bold, marginBottom: spacing.md },
+  progressBar: { height: 6, backgroundColor: colors.border, borderRadius: radii.full },
+  progressFill: { height: 6, backgroundColor: colors.success, borderRadius: radii.full },
+
+  checkItem: { ...cardStyle, flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm },
+  checkItemDone: { opacity: 0.6 },
+  checkbox: {
+    width: 28, height: 28, borderRadius: radii.full,
+    borderWidth: 2, borderColor: colors.textTertiary,
+    marginRight: spacing.lg, alignItems: 'center', justifyContent: 'center',
   },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: radii.sm,
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
+  checkboxDone: { backgroundColor: colors.success, borderColor: colors.success },
+  checkmark: { color: colors.white, fontWeight: font.bold, fontSize: font.md },
+  checkName: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold },
+  checkNameDone: { textDecorationLine: 'line-through', color: colors.textSecondary },
+  checkDose: { color: colors.textTertiary, fontSize: font.sm, marginTop: 2 },
+  editIcon: { fontSize: 14 },
+
+  emptyCard: { ...cardStyle, alignItems: 'center', padding: spacing['2xl'] },
+  emptyText: { color: colors.textSecondary, fontSize: font.lg, textAlign: 'center' },
+  emptyHint: { color: colors.textTertiary, fontSize: font.sm, textAlign: 'center', marginTop: spacing.sm },
+
+  statsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  statBox: { flex: 1, ...cardStyle, alignItems: 'center', padding: spacing.md },
+  statValue: { fontSize: font.xl, fontWeight: font.bold, color: colors.textAccent },
+  statLabel: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
+
+  stackCard: { ...cardStyle, flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm, gap: spacing.sm },
+  stackName: { color: colors.textPrimary, fontSize: font.md, fontWeight: font.semibold },
+  stackDetail: { color: colors.textTertiary, fontSize: font.sm, marginTop: 2 },
+  stackBtn: { backgroundColor: colors.bgElevated, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
+  stackBtnText: { fontSize: font.xs, color: colors.textSecondary, fontWeight: font.semibold },
+  stackBtnDanger: { backgroundColor: colors.errorMuted },
+  stackBtnDangerText: { fontSize: font.lg, color: colors.error, fontWeight: font.bold },
+
+  fab: {
+    position: 'absolute', bottom: 24, right: 20,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center',
+    ...shadow.glow,
   },
-  activeTab: {
-    borderBottomColor: colors.primary,
-    backgroundColor: colors.primaryGlow,
+  fabText: { color: colors.white, fontSize: 28, fontWeight: font.bold, marginTop: -2 },
+
+  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
+  modalContent: {
+    backgroundColor: colors.bg, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl,
+    padding: spacing.xl, paddingBottom: spacing['5xl'], maxHeight: '85%',
   },
-  tabText: { color: colors.textTertiary, fontSize: font.sm, fontWeight: font.semibold },
-  activeTabText: { color: colors.textAccent },
-  content: { flex: 1, paddingTop: spacing.sm },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl },
+  modalTitle: { fontSize: font.xl, fontWeight: font.bold, color: colors.textPrimary },
+  modalClose: { fontSize: 20, color: colors.textTertiary, padding: spacing.sm },
+
+  fieldLabel: { fontSize: font.xs, fontWeight: font.bold, color: colors.textTertiary, letterSpacing: 0.8, marginBottom: spacing.xs, marginTop: spacing.md },
+  fieldRow: { flexDirection: 'row', gap: spacing.md },
+  input: { ...inputStyle, marginBottom: spacing.xs },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  chip: {
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    borderRadius: radii.sm, backgroundColor: colors.bgCard,
+    borderWidth: 1, borderColor: colors.border,
+  },
+  chipActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
+  chipText: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold },
+  chipTextActive: { color: colors.textAccent },
+
+  saveBtn: {
+    backgroundColor: colors.primary, borderRadius: radii.md,
+    paddingVertical: 16, alignItems: 'center', marginTop: spacing.xl,
+    ...shadow.glow,
+  },
+  saveBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
 });

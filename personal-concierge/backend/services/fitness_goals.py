@@ -50,7 +50,16 @@ class FitnessGoalsService:
                 weeks_available = max(1, (td - date.today()).days // 7)
             except Exception:
                 pass
-        prompt = f"""You are an expert sports scientist. Assess feasibility of this fitness goal concisely.
+        prompt = f"""You are an expert running and strength coach assessing a fitness goal. Be encouraging but honest.
+
+IMPORTANT GUIDELINES:
+- If the user's baseline is within 10-15% of the target, verdict should be "realistic" or "ambitious" at most.
+- Example: a 2:03 half marathon runner aiming for sub-2:00 is REALISTIC with proper training, NOT unrealistic.
+- Reserve "unrealistic" only for truly impossible goals (e.g., couch to marathon in 2 weeks).
+- Reserve "very_ambitious" for goals requiring major transformation (e.g., 30min 5K to sub-18min in 6 months).
+- "ambitious" means doable but needs serious commitment.
+- "realistic" means achievable with consistent training.
+- Always consider the user's baseline carefully. They provided it for a reason.
 
 Goal: {target}
 Baseline: {baseline or 'Not specified'}
@@ -60,8 +69,8 @@ Weeks available: {weeks_available or 'Unlimited'}
 Respond in JSON only, no markdown:
 {{
   "verdict": "realistic|ambitious|very_ambitious|unrealistic",
-  "summary": "One sentence verdict",
-  "conditions": ["condition 1", "condition 2"],
+  "summary": "One encouraging sentence about their goal",
+  "conditions": ["condition 1 for success", "condition 2 for success"],
   "timeline_weeks_needed": 20,
   "weekly_requirements": {{"run_km": 45, "strength_sessions": 2, "key_workouts": ["long run", "tempo"]}},
   "phases": ["Base (weeks 1-6): build aerobic base", "Build (weeks 7-12): increase intensity"],
@@ -182,11 +191,13 @@ Recent 2-week history (completed workouts):
 Week dates: {days[0]} (Mon) through {days[6]} (Sun)
 Today: {date.today().isoformat()}
 
-Rules:
+CRITICAL RULES:
 - Respect recovery: no hard sessions on back-to-back days
 - Balance running and strength based on goal priorities
 - If primary goal is running_race, max 2 strength sessions/week
 - Include at least 1 rest day
+- EQUIPMENT: For strength sessions, you MUST prescribe exercises that use the available equipment listed above. If the user has dumbbells, barbells, or machines — use them with specific weights. Do NOT default to bodyweight if equipment is available. Only use bodyweight if "no equipment" or equipment list is empty.
+- For each strength session, include 4-6 exercises in targets.exercises with specific sets, reps, and suggested weight ranges based on the available equipment.
 
 Respond in JSON only, no markdown:
 {{
@@ -206,7 +217,9 @@ Respond in JSON only, no markdown:
         "distance_km": 8,
         "pace_per_km": 6.0,
         "hr_zone": 2,
-        "exercises": []
+        "exercises": [
+          {{"name": "Barbell Squat", "sets": 4, "reps": "6-8", "notes": "70-80% 1RM"}}
+        ]
       }}
     }}
   ]

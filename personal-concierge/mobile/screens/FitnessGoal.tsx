@@ -89,12 +89,11 @@ export default function FitnessGoal({ navigation, route }: Props) {
       };
       if (editingGoal) {
         await updateFitnessGoal(editingGoal.id, payload);
-        Alert.alert('Goal updated!');
+        Alert.alert('Goal updated!', '', [{ text: 'Done', onPress: () => navigation.goBack() }]);
       } else {
         await createFitnessGoal(payload);
-        Alert.alert('Goal set! AI is assessing feasibility…');
+        Alert.alert('Goal set!', 'AI is assessing feasibility in the background.', [{ text: 'Done', onPress: () => navigation.goBack() }]);
       }
-      navigation.goBack();
     } catch (e) {
       Alert.alert('Error', 'Could not save goal. Please try again.');
     } finally {
