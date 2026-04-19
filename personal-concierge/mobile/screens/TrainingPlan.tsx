@@ -211,8 +211,8 @@ export default function TrainingPlanScreen({ navigation, route }: Props) {
                 <Text style={styles.sessionTitle}>{selectedSession.title}</Text>
                 <Text style={styles.sessionMeta}>
                   {selectedSession.duration_minutes}min
-                  {selectedSession.targets?.distance_km ? ` · ${selectedSession.targets.distance_km}km` : ''}
-                  {selectedSession.targets?.pace_per_km ? ` · ${selectedSession.targets.pace_per_km}'/km target` : ''}
+                  {selectedSession.targets?.distance_km ? ` · ${(selectedSession.targets.distance_km * 0.621371).toFixed(1)} mi` : ''}
+                  {selectedSession.targets?.pace_per_km ? ` · ${(60 / (selectedSession.targets.pace_per_km * 1.60934)).toFixed(1)} mph` : ''}
                 </Text>
               </View>
             </View>

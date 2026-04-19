@@ -454,8 +454,8 @@ class EnvironmentService:
             )
             if result.data:
                 cached = result.data[0]
-                # Re-fetch if key fields are missing (stale/partial cache)
-                if cached.get("aqi") is None or cached.get("conditions") is None:
+                # Re-fetch if key fields are missing or AQI is 0 (stale/partial cache)
+                if not cached.get("aqi") or cached.get("conditions") is None:
                     return None
                 # Derive weather_code from conditions for frontend emoji mapping
                 cached["weather_code"] = self._conditions_to_weather_code(cached.get("conditions", ""))

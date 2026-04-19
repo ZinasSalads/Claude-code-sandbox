@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   RefreshControl, Alert, ActivityIndicator,
@@ -30,6 +30,7 @@ interface Props {
   navigation: {
     navigate: (screen: string, params?: Record<string, unknown>) => void;
     addListener: (event: string, callback: () => void) => () => void;
+    setOptions: (options: Record<string, unknown>) => void;
   };
 }
 
@@ -66,6 +67,20 @@ export default function FitnessHub({ navigation }: Props) {
     const unsub = navigation.addListener('focus', load);
     return unsub;
   }, [load, navigation]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate('FitnessSettings')}
+          style={{ marginRight: 8, padding: 6 }}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <Text style={{ fontSize: 22 }}>⚙️</Text>
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -175,11 +190,18 @@ export default function FitnessHub({ navigation }: Props) {
                 )}
               </View>
               <Text style={styles.goalTarget}>{g.target_description}</Text>
-              {g.target_date && (
-                <Text style={styles.goalMeta}>
-                  Target: {new Date(g.target_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </Text>
-              )}
+              {g.target_date && (() => {
+                const daysLeft = Math.ceil((new Date(g.target_date + 'T12:00:00').getTime() - Date.now()) / 86400000);
+                const dateStr = new Date(g.target_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                return (
+                  <View style={styles.goalMetaRow}>
+                    <Text style={styles.goalMeta}>{dateStr}</Text>
+                    <Text style={[styles.goalDaysLeft, daysLeft < 30 && { color: colors.warning }, daysLeft < 0 && { color: colors.error }]}>
+                      {daysLeft > 0 ? `${daysLeft}d left` : daysLeft === 0 ? 'Today!' : 'Passed'}
+                    </Text>
+                  </View>
+                );
+              })()}
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={styles.addGoalRow} onPress={() => navigation.navigate('FitnessGoal')}>
@@ -224,6 +246,11 @@ export default function FitnessHub({ navigation }: Props) {
                 isPast && !isThisWeek && styles.iconCellPastWeek,
               ]}
               onPress={() => {
+                // Past completed days: open workout log view
+                if (isPast && isDone && histW) {
+                  navigation.navigate('WorkoutSession', { workoutId: histW.id, mode: 'view' });
+                  return;
+                }
                 if (session) { handleDayPress(d); return; }
                 if (hasActivity && histW) navigation.navigate('WorkoutSession', { workoutId: histW.id, mode: 'view' });
               }}
@@ -287,7 +314,7 @@ export default function FitnessHub({ navigation }: Props) {
                         {session.targets?.distance_km && <Text style={styles.expandedMetaItem}>{kmToMi(session.targets.distance_km)} mi</Text>}
                         {session.targets?.pace_per_km && (
                           <Text style={styles.expandedMetaItem}>
-                            {(session.targets.pace_per_km * 1.60934).toFixed(1)}'/mi · {(60 / (session.targets.pace_per_km * 1.60934)).toFixed(1)} mph
+                            {(60 / (session.targets.pace_per_km * 1.60934)).toFixed(1)} mph
                           </Text>
                         )}
                       </View>
@@ -348,7 +375,6 @@ export default function FitnessHub({ navigation }: Props) {
         {[
           { label: 'Progress', icon: '📈', screen: 'ExerciseProgress' },
           { label: 'History', icon: '📋', screen: 'WorkoutSession', params: { mode: 'history' } },
-          { label: 'Settings', icon: '⚙️', screen: 'FitnessSettings' },
           { label: 'How I Feel', icon: '🌡️', screen: 'CheckIn' },
         ].map(tool => (
           <TouchableOpacity
@@ -434,7 +460,9 @@ const styles = StyleSheet.create({
   verdictBadge: { borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 2 },
   verdictText: { fontSize: font.xs, fontWeight: font.semibold },
   goalTarget: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary, marginBottom: 2 },
-  goalMeta: { fontSize: font.xs, color: colors.textSecondary, marginTop: 2 },
+  goalMetaRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 },
+  goalMeta: { fontSize: font.xs, color: colors.textSecondary },
+  goalDaysLeft: { fontSize: font.xs, color: colors.success, fontWeight: font.bold },
   addGoalRow: { alignItems: 'center', paddingVertical: spacing.md, marginBottom: spacing.sm },
   addGoalText: { color: colors.primary, fontWeight: font.semibold, fontSize: font.sm },
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { UnitsProvider } from './context/UnitsContext';
 import { StatusBar } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -246,10 +247,12 @@ function TabsScreen() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
-      <NavigationContainer theme={DarkTheme}>
-        <TabsScreen />
-      </NavigationContainer>
+      <UnitsProvider>
+        <StatusBar barStyle="light-content" backgroundColor={colors.bg} />
+        <NavigationContainer theme={DarkTheme}>
+          <TabsScreen />
+        </NavigationContainer>
+      </UnitsProvider>
     </SafeAreaProvider>
   );
 }

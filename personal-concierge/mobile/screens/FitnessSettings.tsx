@@ -6,6 +6,8 @@ import {
 import { API_URL, getEquipment, addEquipment, deleteEquipment } from '../lib/api';
 import type { UserEquipment } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, inputStyle } from '../theme';
+import { useUnits } from '../context/UnitsContext';
+import { getBodyStats } from '../lib/appleHealth';
 
 interface FitnessProfile {
   age?: number;
@@ -52,10 +54,12 @@ interface Props {
 }
 
 export default function FitnessSettings({ navigation }: Props) {
+  const { units, setUnits } = useUnits();
   const [profile, setProfile] = useState<FitnessProfile>({});
   const [equipment, setEquipment] = useState<UserEquipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pullingHealth, setPullingHealth] = useState(false);
 
   // Form state
   const [age, setAge] = useState('');
@@ -115,6 +119,20 @@ export default function FitnessSettings({ navigation }: Props) {
     }
   };
 
+  const handlePullFromAppleHealth = async () => {
+    setPullingHealth(true);
+    const stats = await getBodyStats();
+    if (stats.weight_kg != null) {
+      setWeightKg(stats.weight_kg.toFixed(1));
+    }
+    setPullingHealth(false);
+    if (stats.weight_kg == null) {
+      Alert.alert('No Data', 'Could not read body stats from Apple Health. Make sure Health permissions are granted.');
+    } else {
+      Alert.alert('Imported', `Weight set to ${stats.weight_kg.toFixed(1)} kg from Apple Health.`);
+    }
+  };
+
   const addOrm = () => {
     if (!newExercise.trim() || !newOrm.trim()) return;
     setOneRepMaxes(prev => ({ ...prev, [newExercise.trim()]: newOrm.trim() }));
@@ -143,6 +161,25 @@ export default function FitnessSettings({ navigation }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      {/* Unit System */}
+      <Text style={styles.sectionLabel}>UNIT SYSTEM</Text>
+      <View style={styles.card}>
+        <View style={styles.chipRow}>
+          <TouchableOpacity
+            style={[styles.chip, styles.chipHalf, units === 'imperial' && styles.chipActive]}
+            onPress={() => setUnits('imperial')}
+          >
+            <Text style={[styles.chipText, units === 'imperial' && styles.chipTextActive]}>Imperial (lbs, mph, ft)</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.chip, styles.chipHalf, units === 'metric' && styles.chipActive]}
+            onPress={() => setUnits('metric')}
+          >
+            <Text style={[styles.chipText, units === 'metric' && styles.chipTextActive]}>Metric (kg, km/h, cm)</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Fitness Profile */}
       <Text style={styles.sectionLabel}>FITNESS PROFILE</Text>
       <View style={styles.card}>
@@ -166,7 +203,15 @@ export default function FitnessSettings({ navigation }: Props) {
         <Text style={styles.fieldHint}>If unsure, we'll estimate from age: 220 - age</Text>
         <TextInput style={styles.input} value={maxHr} onChangeText={setMaxHr} placeholder="e.g. 185" placeholderTextColor={colors.textTertiary} keyboardType="number-pad" returnKeyType="next" />
 
-        <Text style={styles.fieldLabel}>Weight (kg)</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Text style={styles.fieldLabel}>Weight (kg)</Text>
+          <TouchableOpacity onPress={handlePullFromAppleHealth} disabled={pullingHealth} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: spacing.md }}>
+            {pullingHealth
+              ? <ActivityIndicator size="small" color={colors.primary} />
+              : <Text style={{ color: colors.primary, fontSize: font.xs, fontWeight: font.semibold }}>📱 Pull from Apple Health</Text>
+            }
+          </TouchableOpacity>
+        </View>
         <TextInput style={styles.input} value={weightKg} onChangeText={setWeightKg} placeholder="e.g. 75" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" returnKeyType="done" />
 
         <TouchableOpacity
@@ -282,6 +327,7 @@ const styles = StyleSheet.create({
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm },
   chip: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radii.sm, backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border },
+  chipHalf: { flex: 1, alignItems: 'center' },
   chipActive: { backgroundColor: colors.primaryMuted, borderColor: colors.primary },
   chipText: { color: colors.textSecondary, fontSize: font.sm, fontWeight: font.semibold },
   chipTextActive: { color: colors.textAccent },

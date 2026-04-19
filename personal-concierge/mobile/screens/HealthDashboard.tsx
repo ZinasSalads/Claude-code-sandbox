@@ -11,6 +11,18 @@ import { getTodayHealth, getHealthHistory, getFlaggedBiomarkers, syncOura } from
 import type { HealthData, Biomarker } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel } from '../theme';
 
+function formatLastUpdated(dateStr: string | null): string | null {
+  if (!dateStr) return null;
+  try {
+    const dt = new Date(dateStr);
+    const diffMins = Math.floor((Date.now() - dt.getTime()) / 60000);
+    if (diffMins < 60) return `Updated ${diffMins}m ago`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `Updated ${diffHrs}h ago`;
+    return `Updated ${dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  } catch { return null; }
+}
+
 interface Props {
   navigation: {
     navigate: (screen: string, params?: Record<string, unknown>) => void;
@@ -62,7 +74,12 @@ export default function HealthDashboard({ navigation }: Props) {
       {/* Today's vitals summary */}
       {health && (
         <View style={styles.vitalsCard}>
-          <Text style={styles.vitalsTitle}>TODAY'S VITALS</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+            <Text style={[styles.vitalsTitle, { marginBottom: 0 }]}>TODAY'S VITALS</Text>
+            {formatLastUpdated((health as any)?.updated_at || (health as any)?.date) && (
+              <Text style={styles.lastUpdated}>{formatLastUpdated((health as any)?.updated_at || (health as any)?.date)}</Text>
+            )}
+          </View>
           <View style={styles.vitalsRow}>
             <VitalPill label="HRV" value={health.hrv != null ? `${health.hrv} ms` : '—'} />
             <VitalPill label="RHR" value={health.resting_heart_rate != null ? `${health.resting_heart_rate} bpm` : '—'} />
@@ -176,6 +193,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     marginBottom: spacing.md,
   },
+  lastUpdated: { fontSize: 10, color: colors.textTertiary },
   vitalsRow: {
     flexDirection: 'row',
     gap: spacing.sm,

@@ -450,8 +450,8 @@ export default function WorkoutSession({ navigation, route }: Props) {
             )}
             {plannedSession.targets.pace_per_km && (
               <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{(plannedSession.targets.pace_per_km * 1.60934).toFixed(1)}'/mi</Text>
-                <Text style={styles.targetLabel}>Pace</Text>
+                <Text style={styles.targetValue}>{(60 / (plannedSession.targets.pace_per_km * 1.60934)).toFixed(1)} mph</Text>
+                <Text style={styles.targetLabel}>Speed</Text>
               </View>
             )}
             {plannedSession.targets.hr_zone && (
@@ -477,8 +477,8 @@ export default function WorkoutSession({ navigation, route }: Props) {
             )}
             {(workout as any).run_targets.pace_per_km && (
               <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{((workout as any).run_targets.pace_per_km * 1.60934).toFixed(1)}'/mi</Text>
-                <Text style={styles.targetLabel}>Pace</Text>
+                <Text style={styles.targetValue}>{(60 / ((workout as any).run_targets.pace_per_km * 1.60934)).toFixed(1)} mph</Text>
+                <Text style={styles.targetLabel}>Speed</Text>
               </View>
             )}
             {(workout as any).run_targets.hr_zone && (

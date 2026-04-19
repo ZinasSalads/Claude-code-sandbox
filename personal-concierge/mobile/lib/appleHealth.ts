@@ -316,6 +316,29 @@ function getActiveCalories(opts: any): Promise<number | null> {
   });
 }
 
+export async function getBodyStats(): Promise<{ weight_kg: number | null; height_cm: number | null }> {
+  if (!(await isAppleHealthAvailable())) return { weight_kg: null, height_cm: null };
+  const [weight_kg, height_cm] = await Promise.all([
+    new Promise<number | null>((resolve) => {
+      try {
+        AppleHealthKit.getLatestWeight({ unit: 'gram' }, (err: any, result: any) => {
+          if (err || result?.value == null) { resolve(null); return; }
+          resolve(Math.round(result.value / 10) / 100); // grams -> kg
+        });
+      } catch { resolve(null); }
+    }),
+    new Promise<number | null>((resolve) => {
+      try {
+        AppleHealthKit.getLatestHeight({ unit: 'meter' }, (err: any, result: any) => {
+          if (err || result?.value == null) { resolve(null); return; }
+          resolve(Math.round(result.value * 100)); // meters -> cm
+        });
+      } catch { resolve(null); }
+    }),
+  ]);
+  return { weight_kg, height_cm };
+}
+
 export function getConnectionStatus(): { available: boolean; platform: string } {
   return {
     available: isAvailable,

@@ -118,7 +118,7 @@ class OuraClient:
                 "readiness_temperature": r_contrib.get("body_temperature"),
                 "hrv": hrv_by_day.get(day),
                 "hrv_balance": r_contrib.get("hrv_balance"),
-                "resting_heart_rate": r_contrib.get("resting_heart_rate"),
+                "resting_heart_rate": r.get("resting_heart_rate"),
                 "sleep_score": s.get("score"),
                 "sleep_duration": sleep_hours,
                 "deep_sleep_minutes": _seconds_to_minutes(s.get("deep_sleep_duration")),

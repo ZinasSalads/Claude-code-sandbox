@@ -76,15 +76,74 @@ class CompleteWorkoutPayload(BaseModel):
 
 # ── Today's Workout ────────────────────────────────────────────────────────
 
+def _plan_session_to_workout(planned: dict) -> dict:
+    """Convert a training plan session to a workout dict."""
+    session_type = planned.get("session_type", "strength")
+    workout_type_map = {
+        "easy_run": "cardio", "tempo_run": "cardio", "long_run": "cardio",
+        "interval_run": "cardio", "strength": "strength", "recovery": "recovery",
+        "rest": "rest", "cross_train": "cardio",
+    }
+    wtype = workout_type_map.get(session_type, "strength")
+    intensity_map = {
+        "easy_run": "low", "recovery": "low", "rest": "low",
+        "long_run": "moderate", "strength": "moderate", "cross_train": "moderate",
+        "tempo_run": "high", "interval_run": "high",
+    }
+    targets = planned.get("targets") or {}
+    run_targets = None
+    if targets.get("distance_km") or "run" in session_type:
+        run_type = session_type.replace("_run", "") if "_run" in session_type else "easy"
+        run_targets = {
+            "distance_km": targets.get("distance_km"),
+            "pace_per_km": targets.get("pace_per_km"),
+            "hr_zone": targets.get("hr_zone"),
+            "run_type": run_type,
+            "notes": planned.get("description", ""),
+        }
+    exercises = targets.get("exercises") or []
+    # Normalize exercises to match Workout Exercise type
+    normalized = [
+        {
+            "name": e.get("name", ""),
+            "sets": e.get("sets", 3),
+            "reps": str(e.get("reps", "8-10")),
+            "rest_seconds": e.get("rest_seconds", 90),
+            "weight_guidance": e.get("notes", ""),
+            "notes": e.get("notes", ""),
+        }
+        for e in exercises
+    ]
+    return {
+        "workout_type": wtype,
+        "title": planned.get("title", "Today's Session"),
+        "intensity": intensity_map.get(session_type, "moderate"),
+        "duration_minutes": planned.get("duration_minutes", 45),
+        "ai_reasoning": planned.get("description", "From your training plan"),
+        "warmup": [],
+        "exercises": normalized,
+        "run_targets": run_targets,
+        "cooldown": [],
+        "coaching_note": planned.get("description", ""),
+        "from_training_plan": True,
+        "session_type": session_type,
+    }
+
+
 @router.get("/today")
 async def get_today_workout():
-    """Get today's workout. Generates one if none exists."""
+    """Get today's workout from training plan, or AI-generated if no plan."""
+    from agents.fitness_agent import _get_todays_planned_session
+
+    today = date.today().isoformat()
+    planned = await _get_todays_planned_session()
+
     if supabase:
         try:
             result = (
                 supabase.table("workouts")
                 .select("*")
-                .eq("date", date.today().isoformat())
+                .eq("date", today)
                 .eq("recommended_by_ai", True)
                 .order("created_at", desc=True)
                 .limit(1)
@@ -97,11 +156,22 @@ async def get_today_workout():
                         workout["exercises"] = json.loads(workout["exercises"])
                     except (json.JSONDecodeError, TypeError):
                         pass
-                return workout
+                # If training plan exists and existing workout doesn't match it, replace it
+                if planned and workout.get("title") != planned.get("title"):
+                    try:
+                        supabase.table("workouts").delete().eq("id", workout["id"]).execute()
+                    except Exception:
+                        pass
+                else:
+                    return workout
         except Exception as e:
             logger.error(f"Failed to fetch today's workout: {e}")
 
-    workout = await generate_workout()
+    if planned:
+        workout = _plan_session_to_workout(planned)
+    else:
+        workout = await generate_workout()
+
     saved = await save_workout(workout)
     return saved
 
@@ -109,12 +179,17 @@ async def get_today_workout():
 @router.post("/today/regenerate")
 async def regenerate_today_workout():
     """Force regenerate today's workout (delete cached and create new)."""
+    from agents.fitness_agent import _get_todays_planned_session
     if supabase:
         try:
             supabase.table("workouts").delete().eq("date", date.today().isoformat()).eq("completed", False).execute()
         except Exception:
             pass
-    workout = await generate_workout()
+    planned = await _get_todays_planned_session()
+    if planned:
+        workout = _plan_session_to_workout(planned)
+    else:
+        workout = await generate_workout()
     return await save_workout(workout)
 
 

@@ -377,9 +377,24 @@ async def save_workout(workout: dict) -> Optional[dict]:
     if not supabase:
         return workout
     try:
+        today = date.today().isoformat()
+        # Check for any existing AI-recommended incomplete workout today to avoid duplicates
+        existing = (
+            supabase.table("workouts")
+            .select("id")
+            .eq("date", today)
+            .eq("recommended_by_ai", True)
+            .eq("completed", False)
+            .limit(1)
+            .execute()
+        )
+        if existing.data:
+            saved = {**workout, "id": existing.data[0]["id"]}
+            return saved
+
         health = await _get_today_health()
         row = {
-            "date": date.today().isoformat(),
+            "date": today,
             "workout_type": workout.get("workout_type"),
             "title": workout.get("title"),
             "description": workout.get("ai_reasoning"),

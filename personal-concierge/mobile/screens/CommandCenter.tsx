@@ -412,10 +412,10 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
               <ScoreRing score={readiness as number | null} label="Readiness" size={120} />
             </>
           )}
-          {!loading && formatLastUpdated(healthDate) && (
-            <Text style={styles.lastUpdated}>{formatLastUpdated(healthDate)}</Text>
-          )}
         </View>
+        {!loading && formatLastUpdated(healthDate) && (
+          <Text style={styles.lastUpdated}>{formatLastUpdated(healthDate)}</Text>
+        )}
 
         {/* No data state */}
         {!loading && readiness == null && (
@@ -593,8 +593,7 @@ const styles = StyleSheet.create({
   ringLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: spacing.xs, fontWeight: font.semibold, letterSpacing: 0.5 },
   sleepHours: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
   lastUpdated: {
-    position: 'absolute', bottom: spacing.sm, right: spacing.sm,
-    fontSize: 9, color: colors.textTertiary,
+    fontSize: 10, color: colors.textTertiary, textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.sm,
   },
 
   syncCard: { ...cardStyle, marginBottom: spacing.lg, alignItems: 'center', padding: spacing['2xl'] },
