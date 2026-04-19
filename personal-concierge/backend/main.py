@@ -196,11 +196,22 @@ def dashboard_summary():
 
         history_resp = (
             supabase.table("health_data")
-            .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps,activity_score")
+            .select("date,readiness_score,sleep_score,hrv,resting_heart_rate,steps,activity_score,sleep_duration,updated_at")
             .gte("date", week_ago)
             .order("date", desc=True)
             .execute()
         )
+
+        # Back-fill null fields in today_data from recent history
+        # (Oura has per-field delays: activity/steps lag 1-2 days)
+        if today_data:
+            fill_fields = ["hrv", "resting_heart_rate", "steps", "activity_score"]
+            for rec in (history_resp.data or []):
+                if all(today_data.get(f) is not None for f in fill_fields):
+                    break
+                for f in fill_fields:
+                    if today_data.get(f) is None and rec.get(f) is not None:
+                        today_data[f] = rec[f]
 
         return {
             "today": today_data,

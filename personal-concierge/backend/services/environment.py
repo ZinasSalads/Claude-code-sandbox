@@ -97,6 +97,12 @@ class EnvironmentService:
                 pollen = await self._fetch_open_meteo_pollen(lat, lon)
                 data.update(pollen)
 
+        # Null out zero values so cache doesn't persist stale 0s
+        if not data.get("aqi"):
+            data["aqi"] = None
+        if not data.get("uv_index_max"):
+            data["uv_index_max"] = None
+
         # Compute safety recommendations
         data["outdoor_exercise_safe"] = self._is_outdoor_safe(data)
         data["sunscreen_required"] = (data.get("uv_index_max") or 0) >= 3

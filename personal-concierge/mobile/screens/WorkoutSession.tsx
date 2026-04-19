@@ -38,6 +38,7 @@ export default function WorkoutSession({ navigation, route }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState('');
+  const [maxHr, setMaxHr] = useState<number | null>(null);
 
   // Sets logging
   const [exerciseSets, setExerciseSets] = useState<Record<string, SetRow[]>>({});
@@ -83,9 +84,11 @@ export default function WorkoutSession({ navigation, route }: Props) {
   });
 
   const load = useCallback(async () => {
-    // Load equipment for all modes that might need it
+    // Load equipment and fitness profile for HR zones
     if (mode !== 'history' && mode !== 'view') {
       getEquipment().catch(() => []).then(eq => setUserEquipment(eq));
+      fetch(`${require('../lib/api').API_URL}/fitness/profile-settings`, { headers: { 'Content-Type': 'application/json' } })
+        .then(r => r.json()).then(p => { if (p?.max_hr) setMaxHr(p.max_hr); }).catch(() => null);
     }
 
     if (mode === 'history') {
@@ -501,6 +504,9 @@ export default function WorkoutSession({ navigation, route }: Props) {
               </View>
             )}
           </View>
+          {plannedSession.targets.hr_zone && (
+            <HrZoneRef zone={plannedSession.targets.hr_zone} maxHr={maxHr} />
+          )}
         </View>
       )}
 
@@ -528,6 +534,9 @@ export default function WorkoutSession({ navigation, route }: Props) {
               </View>
             )}
           </View>
+          {(workout as any).run_targets.hr_zone && (
+            <HrZoneRef zone={(workout as any).run_targets.hr_zone} maxHr={maxHr} />
+          )}
         </View>
       )}
 
@@ -647,6 +656,9 @@ export default function WorkoutSession({ navigation, route }: Props) {
       {showRunSection && (
         <>
           <Text style={styles.sectionLabel}>RUN DATA (enter in miles)</Text>
+          {(plannedSession?.targets?.hr_zone || (workout as any)?.run_targets?.hr_zone) && (
+            <HrZoneRef zone={plannedSession?.targets?.hr_zone || (workout as any)?.run_targets?.hr_zone} maxHr={maxHr} />
+          )}
           <View style={styles.runCard}>
             <View style={styles.runGrid}>
               <View style={styles.runField}>
@@ -818,6 +830,32 @@ export default function WorkoutSession({ navigation, route }: Props) {
         </View>
       </Modal>
     </ScrollView>
+  );
+}
+
+const HR_ZONES = [
+  { z: 1, pctLow: 0.50, pctHigh: 0.60, label: 'Recovery', color: '#6b7280' },
+  { z: 2, pctLow: 0.60, pctHigh: 0.70, label: 'Aerobic Base', color: '#22c55e' },
+  { z: 3, pctLow: 0.70, pctHigh: 0.80, label: 'Aerobic / Tempo', color: '#f97316' },
+  { z: 4, pctLow: 0.80, pctHigh: 0.90, label: 'Lactate Threshold', color: '#ef4444' },
+  { z: 5, pctLow: 0.90, pctHigh: 1.00, label: 'VO₂ Max', color: '#dc2626' },
+];
+
+function HrZoneRef({ zone, maxHr }: { zone: number; maxHr: number | null }) {
+  const mhr = maxHr || 190;
+  const info = HR_ZONES.find(z => z.z === zone);
+  if (!info) return null;
+  const lo = Math.round(mhr * info.pctLow);
+  const hi = Math.round(mhr * info.pctHigh);
+  const estimated = !maxHr;
+  return (
+    <View style={{ marginTop: spacing.md, padding: spacing.md, borderRadius: radii.sm, backgroundColor: info.color + '20', borderLeftWidth: 3, borderLeftColor: info.color }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: font.sm, fontWeight: font.semibold as any, color: info.color }}>Z{zone} · {info.label}</Text>
+        <Text style={{ fontSize: font.lg, fontWeight: font.bold as any, color: info.color }}>{lo}–{hi} bpm</Text>
+      </View>
+      {estimated && <Text style={{ fontSize: font.xs, color: colors.textTertiary, marginTop: 2 }}>Based on estimated max HR of 190. Set yours in Fitness Settings.</Text>}
+    </View>
   );
 }
 

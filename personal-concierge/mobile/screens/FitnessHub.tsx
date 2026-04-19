@@ -9,6 +9,7 @@ import {
 } from '../lib/api';
 import type { FitnessGoal, TrainingPlan, Workout, WeekStats } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, shadow } from '../theme';
+import { useUnits } from '../context/UnitsContext';
 
 const SESSION_COLORS: Record<string, string> = {
   easy_run: '#22c55e', tempo_run: '#f97316', long_run: '#8b5cf6',
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export default function FitnessHub({ navigation }: Props) {
+  const { units } = useUnits();
   const [goals, setGoals] = useState<FitnessGoal[]>([]);
   const [plan, setPlan] = useState<TrainingPlan | null>(null);
   const [workout, setWorkout] = useState<Workout | null>(null);
@@ -105,7 +107,13 @@ export default function FitnessHub({ navigation }: Props) {
     }
   }, [loading, today]);
 
-  const kmToMi = (km: number) => (km * 0.621371).toFixed(1);
+  const fmtDist = (km: number) => units === 'imperial' ? `${(km * 0.621371).toFixed(1)} mi` : `${km.toFixed(1)} km`;
+  const fmtSpeed = (paceMinPerKm: number) => {
+    if (!paceMinPerKm) return null;
+    if (units === 'imperial') return `${(60 / (paceMinPerKm * 1.60934)).toFixed(1)} mph`;
+    return `${(60 / paceMinPerKm).toFixed(1)} km/h`;
+  };
+  const kmToMi = (km: number) => (km * 0.621371).toFixed(1); // legacy for weekly goal display
 
   // Build 3-week scroll strip: prev week + this week + next week
   const scrollDays = get3WeekDays();
@@ -309,13 +317,30 @@ export default function FitnessHub({ navigation }: Props) {
                   {isExpanded && (
                     <View style={styles.expandedCard}>
                       {session.description && <Text style={styles.expandedDesc}>{session.description}</Text>}
-                      <View style={styles.expandedMeta}>
-                        {session.duration_minutes && <Text style={styles.expandedMetaItem}>{session.duration_minutes} min</Text>}
-                        {session.targets?.distance_km && <Text style={styles.expandedMetaItem}>{kmToMi(session.targets.distance_km)} mi</Text>}
-                        {session.targets?.pace_per_km && (
-                          <Text style={styles.expandedMetaItem}>
-                            {(60 / (session.targets.pace_per_km * 1.60934)).toFixed(1)} mph
-                          </Text>
+                      <View style={styles.expandedStats}>
+                        {session.duration_minutes && (
+                          <View style={styles.expandedStat}>
+                            <Text style={styles.expandedStatValue}>{session.duration_minutes}</Text>
+                            <Text style={styles.expandedStatLabel}>min</Text>
+                          </View>
+                        )}
+                        {session.targets?.distance_km && (
+                          <View style={styles.expandedStat}>
+                            <Text style={styles.expandedStatValue}>{fmtDist(session.targets.distance_km).split(' ')[0]}</Text>
+                            <Text style={styles.expandedStatLabel}>{units === 'imperial' ? 'mi' : 'km'}</Text>
+                          </View>
+                        )}
+                        {session.targets?.pace_per_km && fmtSpeed(session.targets.pace_per_km) && (
+                          <View style={styles.expandedStat}>
+                            <Text style={styles.expandedStatValue}>{fmtSpeed(session.targets.pace_per_km)!.split(' ')[0]}</Text>
+                            <Text style={styles.expandedStatLabel}>{units === 'imperial' ? 'mph' : 'km/h'}</Text>
+                          </View>
+                        )}
+                        {session.targets?.hr_zone && (
+                          <View style={styles.expandedStat}>
+                            <Text style={styles.expandedStatValue}>Z{session.targets.hr_zone}</Text>
+                            <Text style={styles.expandedStatLabel}>HR zone</Text>
+                          </View>
                         )}
                       </View>
                       <TouchableOpacity style={styles.logBtn} onPress={() => handleLogSession(session)} activeOpacity={0.8}>
@@ -515,6 +540,13 @@ const styles = StyleSheet.create({
   },
   expandedTitle: { fontSize: font.md, fontWeight: font.bold, color: colors.textPrimary, marginBottom: spacing.xs },
   expandedDesc: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 18, marginBottom: spacing.sm },
+  expandedStats: {
+    flexDirection: 'row', justifyContent: 'space-evenly', marginBottom: spacing.md,
+    paddingVertical: spacing.sm, borderRadius: radii.sm, backgroundColor: colors.bg,
+  },
+  expandedStat: { alignItems: 'center', flex: 1 },
+  expandedStatValue: { fontSize: font.xl, fontWeight: font.bold, color: colors.textPrimary },
+  expandedStatLabel: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.semibold, marginTop: 2 },
   expandedMeta: { flexDirection: 'row', gap: spacing.lg, marginBottom: spacing.md },
   expandedMetaItem: { fontSize: font.sm, color: colors.textAccent, fontWeight: font.semibold },
   logBtn: { backgroundColor: colors.primary, borderRadius: radii.md, padding: spacing.md, alignItems: 'center' },

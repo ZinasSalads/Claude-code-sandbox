@@ -353,8 +353,8 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
   })();
 
   // Env data — use != null to avoid hiding 0 values
-  const aqi = env?.aqi != null ? (env.aqi as number) : null;
-  const uv = env?.uv_index_max != null ? (env.uv_index_max as number) : null;
+  const aqi = (env?.aqi != null && (env.aqi as number) > 0) ? (env.aqi as number) : null;
+  const uv = (env?.uv_index_max != null && (env.uv_index_max as number) > 0) ? (env.uv_index_max as number) : null;
   const pollen = env?.pollen_risk_level as string | undefined;
 
   const formatDate = () => new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -403,22 +403,24 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
           {!loading && formatLastUpdated(healthDate) && (
             <Text style={styles.lastUpdated}>{formatLastUpdated(healthDate)}</Text>
           )}
-          {loading ? (
-            <>
-              <View style={styles.scorePlaceholder}><Text style={styles.placeholderText}>—</Text><Text style={styles.ringLabel}>Sleep</Text></View>
-              <View style={styles.scoreDivider} />
-              <View style={styles.scorePlaceholder}><Text style={styles.placeholderText}>—</Text><Text style={styles.ringLabel}>Readiness</Text></View>
-            </>
-          ) : (
-            <>
-              <View style={{ alignItems: 'center' }}>
-                <ScoreRing score={sleep as number | null} label="Sleep" size={120} />
-                {sleepHours != null && <Text style={styles.sleepHours}>{sleepHours}h</Text>}
-              </View>
-              <View style={styles.scoreDivider} />
-              <ScoreRing score={readiness as number | null} label="Readiness" size={120} />
-            </>
-          )}
+          <View style={styles.scoreRings}>
+            {loading ? (
+              <>
+                <View style={styles.scorePlaceholder}><Text style={styles.placeholderText}>—</Text><Text style={styles.ringLabel}>Sleep</Text></View>
+                <View style={styles.scoreDivider} />
+                <View style={styles.scorePlaceholder}><Text style={styles.placeholderText}>—</Text><Text style={styles.ringLabel}>Readiness</Text></View>
+              </>
+            ) : (
+              <>
+                <View style={{ alignItems: 'center' }}>
+                  <ScoreRing score={sleep as number | null} label="Sleep" size={120} />
+                  {sleepHours != null && <Text style={styles.sleepHours}>{sleepHours}h</Text>}
+                </View>
+                <View style={styles.scoreDivider} />
+                <ScoreRing score={readiness as number | null} label="Readiness" size={120} />
+              </>
+            )}
+          </View>
         </View>
 
         {/* No data state */}
@@ -587,8 +589,13 @@ const styles = StyleSheet.create({
   syncBtnText: { fontSize: font.xl, color: colors.textTertiary },
 
   scoreRow: {
-    flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center',
     ...cardStyle, marginBottom: spacing.lg,
+  },
+  lastUpdated: {
+    fontSize: 10, color: colors.textTertiary, textAlign: 'right', marginBottom: spacing.xs,
+  },
+  scoreRings: {
+    flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center',
   },
   scoreDivider: { width: 1, height: 80, backgroundColor: colors.border },
   scorePlaceholder: { alignItems: 'center' },
@@ -596,9 +603,6 @@ const styles = StyleSheet.create({
   ringScore: { fontSize: font['2xl'], fontWeight: font.bold },
   ringLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: spacing.xs, fontWeight: font.semibold, letterSpacing: 0.5 },
   sleepHours: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
-  lastUpdated: {
-    fontSize: 10, color: colors.textTertiary, position: 'absolute', top: spacing.md, right: spacing.lg,
-  },
 
   syncCard: { ...cardStyle, marginBottom: spacing.lg, alignItems: 'center', padding: spacing['2xl'] },
   syncCardText: { color: colors.textSecondary, fontSize: font.md, marginBottom: spacing.xs },
