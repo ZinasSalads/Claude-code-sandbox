@@ -4,12 +4,14 @@ import {
   RefreshControl, Alert, ActivityIndicator,
 } from 'react-native';
 import {
+  API_URL,
   getFitnessGoals, getCurrentTrainingPlan, getTodayWorkout,
   getWeekStats, generateTrainingPlan, getWorkoutHistory, deleteWorkout,
 } from '../lib/api';
 import type { FitnessGoal, TrainingPlan, Workout, WeekStats } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, shadow } from '../theme';
 import { useUnits } from '../context/UnitsContext';
+import HrZoneRef from '../components/HrZoneRef';
 
 const SESSION_COLORS: Record<string, string> = {
   easy_run: '#22c55e', tempo_run: '#f97316', long_run: '#8b5cf6',
@@ -46,21 +48,27 @@ export default function FitnessHub({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [maxHr, setMaxHr] = useState<number | null>(null);
   const iconScrollRef = useRef<ScrollView>(null);
 
   const load = useCallback(async () => {
-    const [g, p, w, s, h] = await Promise.all([
-      getFitnessGoals(),
-      getCurrentTrainingPlan().catch(() => null),
-      getTodayWorkout().catch(() => null),
-      getWeekStats().catch(() => null),
-      getWorkoutHistory(21).catch(() => []),
+    const [[g, p, w, s, h], profile] = await Promise.all([
+      Promise.all([
+        getFitnessGoals(),
+        getCurrentTrainingPlan().catch(() => null),
+        getTodayWorkout().catch(() => null),
+        getWeekStats().catch(() => null),
+        getWorkoutHistory(21).catch(() => []),
+      ]),
+      fetch(`${API_URL}/fitness/profile-settings`, { headers: { 'Content-Type': 'application/json' } })
+        .then(r => r.json()).catch(() => ({})),
     ]);
     setGoals(g || []);
     setPlan(p);
     setWorkout(w);
     setStats(s);
     setRecentHistory(h || []);
+    if (profile?.max_hr) setMaxHr(profile.max_hr);
     setLoading(false);
   }, []);
 
@@ -336,13 +344,10 @@ export default function FitnessHub({ navigation }: Props) {
                             <Text style={styles.expandedStatLabel}>{units === 'imperial' ? 'mph' : 'km/h'}</Text>
                           </View>
                         )}
-                        {session.targets?.hr_zone && (
-                          <View style={styles.expandedStat}>
-                            <Text style={styles.expandedStatValue}>Z{session.targets.hr_zone}</Text>
-                            <Text style={styles.expandedStatLabel}>HR zone</Text>
-                          </View>
-                        )}
                       </View>
+                      {session.targets?.hr_zone && (
+                        <HrZoneRef zone={session.targets.hr_zone} maxHr={maxHr} />
+                      )}
                       <TouchableOpacity style={styles.logBtn} onPress={() => handleLogSession(session)} activeOpacity={0.8}>
                         <Text style={styles.logBtnText}>{isDone ? 'View Session' : isToday ? 'Log This Session →' : 'Preview'}</Text>
                       </TouchableOpacity>

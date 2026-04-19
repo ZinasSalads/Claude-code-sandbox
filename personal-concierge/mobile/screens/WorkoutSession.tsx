@@ -4,11 +4,13 @@ import {
   TextInput, Alert, ActivityIndicator, Platform, Modal,
 } from 'react-native';
 import {
+  API_URL,
   getTodayWorkout, completeWorkout, logWorkoutSets, logRunResult,
   getWorkoutSets, getRunResult, getWorkoutHistory,
   getTodayAppleWatchWorkouts, linkAppleWatchWorkout,
   getEquipment,
 } from '../lib/api';
+import HrZoneRef from '../components/HrZoneRef';
 import type { Workout, WorkoutSet, RunLog, AppleWatchWorkout, UserEquipment } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, inputStyle } from '../theme';
 
@@ -84,11 +86,14 @@ export default function WorkoutSession({ navigation, route }: Props) {
   });
 
   const load = useCallback(async () => {
-    // Load equipment and fitness profile for HR zones
+    // Fetch max HR first (awaited) so zone refs always show correct bpm ranges on initial render
     if (mode !== 'history' && mode !== 'view') {
+      try {
+        const pResp = await fetch(`${API_URL}/fitness/profile-settings`, { headers: { 'Content-Type': 'application/json' } });
+        const p = await pResp.json();
+        if (p?.max_hr) setMaxHr(p.max_hr);
+      } catch {}
       getEquipment().catch(() => []).then(eq => setUserEquipment(eq));
-      fetch(`${require('../lib/api').API_URL}/fitness/profile-settings`, { headers: { 'Content-Type': 'application/json' } })
-        .then(r => r.json()).then(p => { if (p?.max_hr) setMaxHr(p.max_hr); }).catch(() => null);
     }
 
     if (mode === 'history') {
@@ -833,31 +838,6 @@ export default function WorkoutSession({ navigation, route }: Props) {
   );
 }
 
-const HR_ZONES = [
-  { z: 1, pctLow: 0.50, pctHigh: 0.60, label: 'Recovery', color: '#6b7280' },
-  { z: 2, pctLow: 0.60, pctHigh: 0.70, label: 'Aerobic Base', color: '#22c55e' },
-  { z: 3, pctLow: 0.70, pctHigh: 0.80, label: 'Aerobic / Tempo', color: '#f97316' },
-  { z: 4, pctLow: 0.80, pctHigh: 0.90, label: 'Lactate Threshold', color: '#ef4444' },
-  { z: 5, pctLow: 0.90, pctHigh: 1.00, label: 'VO₂ Max', color: '#dc2626' },
-];
-
-function HrZoneRef({ zone, maxHr }: { zone: number; maxHr: number | null }) {
-  const mhr = maxHr || 190;
-  const info = HR_ZONES.find(z => z.z === zone);
-  if (!info) return null;
-  const lo = Math.round(mhr * info.pctLow);
-  const hi = Math.round(mhr * info.pctHigh);
-  const estimated = !maxHr;
-  return (
-    <View style={{ marginTop: spacing.md, padding: spacing.md, borderRadius: radii.sm, backgroundColor: info.color + '20', borderLeftWidth: 3, borderLeftColor: info.color }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ fontSize: font.sm, fontWeight: font.semibold as any, color: info.color }}>Z{zone} · {info.label}</Text>
-        <Text style={{ fontSize: font.lg, fontWeight: font.bold as any, color: info.color }}>{lo}–{hi} bpm</Text>
-      </View>
-      {estimated && <Text style={{ fontSize: font.xs, color: colors.textTertiary, marginTop: 2 }}>Based on estimated max HR of 190. Set yours in Fitness Settings.</Text>}
-    </View>
-  );
-}
 
 function ManualExercisePicker({
   exerciseSets,
