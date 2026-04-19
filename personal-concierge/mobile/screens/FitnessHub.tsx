@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   RefreshControl, Alert, ActivityIndicator,
@@ -43,6 +43,7 @@ export default function FitnessHub({ navigation }: Props) {
   const [refreshing, setRefreshing] = useState(false);
   const [expandedDay, setExpandedDay] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+  const iconScrollRef = useRef<ScrollView>(null);
 
   const load = useCallback(async () => {
     const [g, p, w, s, h] = await Promise.all([
@@ -76,6 +77,19 @@ export default function FitnessHub({ navigation }: Props) {
   const sessions: any[] = (plan as any)?.planned_sessions || [];
   const completedDates = new Set(recentHistory.filter(w => w.completed).map(w => w.date));
 
+  // Auto-scroll icon strip to center today
+  useEffect(() => {
+    if (!loading && iconScrollRef.current) {
+      // scrollDays has 3 weeks; today is in the middle week (index 7-13 of 21)
+      const todayIdx = scrollDays.findIndex(d => d.date === today);
+      if (todayIdx >= 0) {
+        const cellWidth = 48; // iconCell width + margin
+        const offset = Math.max(0, todayIdx * cellWidth - 100);
+        setTimeout(() => iconScrollRef.current?.scrollTo({ x: offset, animated: false }), 100);
+      }
+    }
+  }, [loading, today]);
+
   const kmToMi = (km: number) => (km * 0.621371).toFixed(1);
 
   // Build 3-week scroll strip: prev week + this week + next week
@@ -85,8 +99,8 @@ export default function FitnessHub({ navigation }: Props) {
   const sessionByDate: Record<string, any> = {};
   for (const s of sessions) { if (s.date) sessionByDate[s.date] = s; }
 
-  // Upcoming = today + future days that have a planned session
-  const upcomingDays = getWeekDays().filter(({ date: d }) => d >= today && sessionByDate[d] && sessionByDate[d].session_type !== 'rest');
+  // Upcoming = today + next 7 days that have a planned session (not just current week)
+  const upcomingDays = scrollDays.filter(({ date: d }) => d >= today && sessionByDate[d] && sessionByDate[d].session_type !== 'rest').slice(0, 7);
 
   const handleDayPress = (date: string) => {
     setExpandedDay(expandedDay === date ? null : date);
@@ -188,7 +202,7 @@ export default function FitnessHub({ navigation }: Props) {
       </View>
 
       {/* 3-week scrollable icon strip */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconRow} contentContainerStyle={{ paddingHorizontal: spacing.xs }}>
+      <ScrollView ref={iconScrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.iconRow} contentContainerStyle={{ paddingHorizontal: spacing.xs }}>
         {scrollDays.map(({ date: d, dayLabel, dateNum, isThisWeek }) => {
           const session = sessionByDate[d];
           const completedW = completedByDate[d];
@@ -334,8 +348,8 @@ export default function FitnessHub({ navigation }: Props) {
         {[
           { label: 'Progress', icon: '📈', screen: 'ExerciseProgress' },
           { label: 'History', icon: '📋', screen: 'WorkoutSession', params: { mode: 'history' } },
-          { label: 'Equipment', icon: '🏋️', screen: 'EquipmentSetup' },
-          { label: 'Flag Issue', icon: '⚑', screen: 'CheckIn' },
+          { label: 'Settings', icon: '⚙️', screen: 'FitnessSettings' },
+          { label: 'How I Feel', icon: '🌡️', screen: 'CheckIn' },
         ].map(tool => (
           <TouchableOpacity
             key={tool.label}

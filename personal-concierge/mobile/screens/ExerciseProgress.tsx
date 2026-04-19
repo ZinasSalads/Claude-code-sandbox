@@ -39,7 +39,7 @@ export default function ExerciseProgress({ navigation }: Props) {
   const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
   const [days, setDays] = useState<ExerciseDay[]>([]);
   const [runWeeks, setRunWeeks] = useState<Array<{ week: string; km: number; runs: number }>>([]);
-  const [tab, setTab] = useState<'strength' | 'running'>('strength');
+  const [tab, setTab] = useState<'strength' | 'running'>('running');
   const [loading, setLoading] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
 

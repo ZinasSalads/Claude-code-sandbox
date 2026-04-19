@@ -57,7 +57,7 @@ export default function HealthDashboard({ navigation }: Props) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} progressViewOffset={20} />}
     >
       {/* Today's vitals summary */}
       {health && (

@@ -313,3 +313,51 @@ async def get_unlinked_apple_watch(date_str: Optional[str] = None):
 @router.post("/apple-watch/link")
 async def link_apple_watch(aw_id: str, workout_id: str):
     return await fitness_goals_service.link_apple_watch_workout(aw_id, workout_id)
+
+
+# ── Fitness Profile Settings ───────────────────────────────────────────────
+
+class FitnessProfileSettings(BaseModel):
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    max_hr: Optional[int] = None
+    weight_kg: Optional[float] = None
+    one_rep_maxes: Optional[dict] = None
+
+
+@router.get("/profile-settings")
+async def get_fitness_profile_settings():
+    """Get fitness profile settings (age, gender, max HR, 1RM)."""
+    if not supabase:
+        return {}
+    try:
+        result = (
+            supabase.table("life_profile")
+            .select("value")
+            .eq("key", "fitness_profile_settings")
+            .limit(1)
+            .execute()
+        )
+        if result.data:
+            return result.data[0].get("value", {})
+        return {}
+    except Exception as e:
+        logger.error(f"Failed to get fitness profile settings: {e}")
+        return {}
+
+
+@router.post("/profile-settings")
+async def save_fitness_profile_settings(settings: FitnessProfileSettings):
+    """Save fitness profile settings."""
+    if not supabase:
+        return {"error": "Supabase not configured"}
+    try:
+        data = {k: v for k, v in settings.model_dump().items() if v is not None}
+        supabase.table("life_profile").upsert(
+            {"key": "fitness_profile_settings", "value": data},
+            on_conflict="key"
+        ).execute()
+        return {"success": True, **data}
+    except Exception as e:
+        logger.error(f"Failed to save fitness profile settings: {e}")
+        return {"error": str(e)}

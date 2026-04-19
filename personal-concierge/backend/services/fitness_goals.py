@@ -128,16 +128,25 @@ Respond in JSON only, no markdown:
     async def get_current_plan(self) -> dict:
         if not supabase:
             return {}
-        week_start = (date.today() - timedelta(days=date.today().weekday())).isoformat()
+        week_start = date.today() - timedelta(days=date.today().weekday())
+        next_week_start = week_start + timedelta(days=7)
         try:
             result = (
                 supabase.table("training_plans")
                 .select("*")
-                .eq("week_start", week_start)
-                .limit(1)
+                .in_("week_start", [week_start.isoformat(), next_week_start.isoformat()])
+                .order("week_start")
                 .execute()
             )
             if result.data:
+                # Merge this week + next week into one plan for the frontend
+                this_week = next((r for r in result.data if r["week_start"] == week_start.isoformat()), None)
+                next_week = next((r for r in result.data if r["week_start"] == next_week_start.isoformat()), None)
+                if this_week:
+                    merged_sessions = list(this_week.get("planned_sessions") or [])
+                    if next_week:
+                        merged_sessions += list(next_week.get("planned_sessions") or [])
+                    return {**this_week, "planned_sessions": merged_sessions}
                 return result.data[0]
             return await self.generate_training_plan()
         except Exception as e:
@@ -177,10 +186,13 @@ Respond in JSON only, no markdown:
         ])
         equip_text = ", ".join(equipment) if equipment else "Standard gym equipment"
         week_start = date.today() - timedelta(days=date.today().weekday())
+        next_week_start = week_start + timedelta(days=7)
 
-        days = [(week_start + timedelta(days=i)).isoformat() for i in range(7)]
+        # Generate 14 days: this week + next week
+        days = [(week_start + timedelta(days=i)).isoformat() for i in range(14)]
+        day_names = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-        prompt = f"""You are an expert coach. Build a 7-day training plan for this week.
+        prompt = f"""You are an expert coach. Build a 14-day training plan covering this week and next week.
 
 Goals:
 {goals_text}
@@ -190,27 +202,28 @@ Available equipment: {equip_text}
 Recent 2-week history (completed workouts):
 {json.dumps([w for w in recent_workouts if w.get('completed')], indent=2)}
 
-Week dates: {days[0]} (Mon) through {days[6]} (Sun)
+Plan dates: {days[0]} through {days[13]}
 Today: {date.today().isoformat()}
 
 CRITICAL RULES:
 - Respect recovery: no hard sessions on back-to-back days
 - Balance running and strength based on goal priorities
 - If primary goal is running_race, max 2 strength sessions/week
-- Include at least 1 rest day
-- EQUIPMENT: For strength sessions, you MUST prescribe exercises that use the available equipment listed above. If the user has dumbbells, barbells, or machines — use them with specific weights. Do NOT default to bodyweight if equipment is available. Only use bodyweight if "no equipment" or equipment list is empty.
-- For each strength session, include 4-6 exercises in targets.exercises with specific sets, reps, and suggested weight ranges based on the available equipment.
+- Include at least 1 rest day per week
+- EQUIPMENT: For strength sessions, prescribe exercises using the available equipment listed. Do NOT default to bodyweight if equipment is available.
+- For each strength session, include 4-6 exercises in targets.exercises with specific sets, reps, and weight guidance.
+- The plan must cover ALL 14 days (including rest days).
 
 Respond in JSON only, no markdown:
 {{
   "phase": "base|build|peak|taper|maintenance",
   "weekly_run_km_target": 35,
   "weekly_strength_sessions_target": 2,
-  "ai_notes": "Brief focus for this week",
+  "ai_notes": "Brief focus for the coming 2 weeks",
   "sessions": [
     {{
       "date": "{days[0]}",
-      "day": "Monday",
+      "day": "{day_names[0]}",
       "session_type": "easy_run|tempo_run|long_run|interval_run|strength|recovery|rest|cross_train",
       "title": "Easy Run",
       "duration_minutes": 45,
@@ -230,7 +243,7 @@ Respond in JSON only, no markdown:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         try:
             response = client.messages.create(
-                model=MODEL, max_tokens=3000,
+                model=MODEL, max_tokens=4000,
                 messages=[{"role": "user", "content": prompt}]
             )
             raw = response.content[0].text.strip()
@@ -238,16 +251,29 @@ Respond in JSON only, no markdown:
                 raw = raw.split("\n", 1)[1].rsplit("```", 1)[0].strip()
             plan_data = json.loads(raw)
 
-            row = {
+            all_sessions = plan_data.get("sessions", [])
+            this_week_sessions = [s for s in all_sessions if s.get("date", "") < next_week_start.isoformat()]
+            next_week_sessions = [s for s in all_sessions if s.get("date", "") >= next_week_start.isoformat()]
+
+            base_row = {
                 "goal_id": goals[0]["id"],
-                "week_start": week_start.isoformat(),
                 "phase": plan_data.get("phase", "base"),
                 "weekly_run_km_target": plan_data.get("weekly_run_km_target"),
                 "weekly_strength_sessions_target": plan_data.get("weekly_strength_sessions_target"),
-                "planned_sessions": plan_data.get("sessions", []),
                 "ai_notes": plan_data.get("ai_notes"),
             }
-            supabase.table("training_plans").upsert(row, on_conflict="week_start").execute()
+
+            supabase.table("training_plans").upsert(
+                {**base_row, "week_start": week_start.isoformat(), "planned_sessions": this_week_sessions},
+                on_conflict="week_start"
+            ).execute()
+
+            if next_week_sessions:
+                supabase.table("training_plans").upsert(
+                    {**base_row, "week_start": next_week_start.isoformat(), "planned_sessions": next_week_sessions},
+                    on_conflict="week_start"
+                ).execute()
+
             return plan_data
         except Exception as e:
             logger.error(f"Training plan generation failed: {e}")

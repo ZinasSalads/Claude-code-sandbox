@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useLayoutEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, RefreshControl, Alert,
@@ -14,6 +14,7 @@ export default function Onboarding({ navigation }: any) {
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [allSteps, setAllSteps] = useState<any[]>([]);
+  const [isRedoing, setIsRedoing] = useState(false);
 
   const loadStatus = useCallback(async () => {
     const s = await getOnboardingStatus();
@@ -79,9 +80,32 @@ export default function Onboarding({ navigation }: any) {
     if (content) {
       setStep(content);
       setFormData({});
-      setStatus({ ...status, is_complete: false, next_step: stepName });
+      setIsRedoing(true);
     }
   };
+
+  const handleBackFromStep = useCallback(() => {
+    setStep(null);
+    setIsRedoing(false);
+    setFormData({});
+    // Reload to reflect any changes
+    loadStatus();
+  }, [loadStatus]);
+
+  // Override native back button when re-doing a step to go back to step list
+  useLayoutEffect(() => {
+    if (isRedoing) {
+      navigation.setOptions({
+        headerLeft: () => (
+          <TouchableOpacity onPress={handleBackFromStep} style={{ marginLeft: 4, padding: 4 }}>
+            <Text style={{ color: colors.primary, fontSize: 16 }}>← Setup</Text>
+          </TouchableOpacity>
+        ),
+      });
+    } else {
+      navigation.setOptions({ headerLeft: undefined });
+    }
+  }, [isRedoing, navigation, handleBackFromStep]);
 
   if (!status || status.is_complete) {
     const displaySteps = allSteps.filter(s => s.step_name !== 'welcome' && s.step_name !== 'complete');
@@ -128,7 +152,10 @@ export default function Onboarding({ navigation }: any) {
         <View style={[styles.progressFill, { width: `${progress}%` }]} />
       </View>
       <Text style={styles.progressText}>
-        Step {(status.completed_steps || 0) + 1} of {status.total_steps} — {Math.round(progress)}% complete
+        {isRedoing
+          ? `Editing: ${step?.title || 'Step'}`
+          : `Step ${Math.min((status.completed_steps || 0) + 1, status.total_steps || 1)} of ${status.total_steps} — ${Math.round(progress)}% complete`
+        }
       </Text>
 
       {step && (

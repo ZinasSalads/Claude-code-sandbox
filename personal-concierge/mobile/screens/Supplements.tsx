@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   ActivityIndicator, TextInput, RefreshControl, Alert, Modal,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { API_URL } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle, sectionLabel, inputStyle } from '../theme';
@@ -95,6 +96,18 @@ export default function Supplements() {
     });
     load();
   }, [load]);
+
+  const markAllTaken = useCallback(async () => {
+    const untaken = logs.filter(l => !l.taken);
+    if (untaken.length === 0) return;
+    await Promise.all(untaken.map(l =>
+      fetchApi('/supplements/log', {
+        method: 'POST',
+        body: JSON.stringify({ supplement_id: l.supplement_id, taken: true }),
+      })
+    ));
+    load();
+  }, [logs, load]);
 
   const resetForm = () => {
     setFormName('');
@@ -190,7 +203,14 @@ export default function Supplements() {
         {/* Today's Progress */}
         {total > 0 && (
           <View style={styles.progressCard}>
-            <Text style={styles.progressText}>{taken}/{total} taken today</Text>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressText}>{taken}/{total} taken today</Text>
+              {taken < total && (
+                <TouchableOpacity onPress={markAllTaken} style={styles.markAllBtn} activeOpacity={0.7}>
+                  <Text style={styles.markAllBtnText}>Mark All Taken</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: `${total > 0 ? (taken / total) * 100 : 0}%` }]} />
             </View>
@@ -285,89 +305,91 @@ export default function Supplements() {
       </TouchableOpacity>
 
       {/* Add/Edit Modal */}
-      <Modal visible={showForm} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{editingSupplement ? 'Edit Supplement' : 'Add Supplement'}</Text>
-              <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Text style={styles.modalClose}>✕</Text>
-              </TouchableOpacity>
+      <Modal visible={showForm} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => { setShowForm(false); resetForm(); }}>
+        <KeyboardAvoidingView style={styles.modalSheet} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{editingSupplement ? 'Edit Supplement' : 'Add Supplement'}</Text>
+            <TouchableOpacity onPress={() => { setShowForm(false); resetForm(); }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Text style={styles.modalClose}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={styles.modalScrollContent}>
+            <Text style={styles.fieldLabel}>Name</Text>
+            <TextInput
+              style={styles.input}
+              value={formName}
+              onChangeText={setFormName}
+              placeholder="e.g. Vitamin D3"
+              placeholderTextColor={colors.textTertiary}
+              autoFocus
+              returnKeyType="next"
+            />
+
+            <View style={styles.fieldRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.fieldLabel}>Dose</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formDose}
+                  onChangeText={setFormDose}
+                  placeholder="5000"
+                  placeholderTextColor={colors.textTertiary}
+                  keyboardType="decimal-pad"
+                  returnKeyType="next"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.fieldLabel}>Unit</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formUnit}
+                  onChangeText={setFormUnit}
+                  placeholder="mg"
+                  placeholderTextColor={colors.textTertiary}
+                  returnKeyType="next"
+                />
+              </View>
             </View>
 
-            <ScrollView keyboardShouldPersistTaps="handled">
-              <Text style={styles.fieldLabel}>Name</Text>
-              <TextInput
-                style={styles.input}
-                value={formName}
-                onChangeText={setFormName}
-                placeholder="e.g. Vitamin D3"
-                placeholderTextColor={colors.textTertiary}
-                autoFocus
-              />
+            <Text style={styles.fieldLabel}>Timing</Text>
+            <View style={styles.chipRow}>
+              {TIMINGS.map(t => (
+                <TouchableOpacity
+                  key={t}
+                  style={[styles.chip, formTiming === t && styles.chipActive]}
+                  onPress={() => setFormTiming(t)}
+                >
+                  <Text style={[styles.chipText, formTiming === t && styles.chipTextActive]}>
+                    {t.replace('_', ' ')}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
-              <View style={styles.fieldRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.fieldLabel}>Dose</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formDose}
-                    onChangeText={setFormDose}
-                    placeholder="5000"
-                    placeholderTextColor={colors.textTertiary}
-                    keyboardType="decimal-pad"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.fieldLabel}>Unit</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={formUnit}
-                    onChangeText={setFormUnit}
-                    placeholder="mg"
-                    placeholderTextColor={colors.textTertiary}
-                  />
-                </View>
-              </View>
+            <Text style={styles.fieldLabel}>Purpose (optional)</Text>
+            <TextInput
+              style={styles.input}
+              value={formPurpose}
+              onChangeText={setFormPurpose}
+              placeholder="e.g. Bone health"
+              placeholderTextColor={colors.textTertiary}
+              returnKeyType="done"
+            />
 
-              <Text style={styles.fieldLabel}>Timing</Text>
-              <View style={styles.chipRow}>
-                {TIMINGS.map(t => (
-                  <TouchableOpacity
-                    key={t}
-                    style={[styles.chip, formTiming === t && styles.chipActive]}
-                    onPress={() => setFormTiming(t)}
-                  >
-                    <Text style={[styles.chipText, formTiming === t && styles.chipTextActive]}>
-                      {t.replace('_', ' ')}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-              <Text style={styles.fieldLabel}>Purpose (optional)</Text>
-              <TextInput
-                style={styles.input}
-                value={formPurpose}
-                onChangeText={setFormPurpose}
-                placeholder="e.g. Bone health"
-                placeholderTextColor={colors.textTertiary}
-              />
-
-              <TouchableOpacity
-                style={[styles.saveBtn, (!formName.trim() || saving) && { opacity: 0.5 }]}
-                onPress={handleSave}
-                disabled={!formName.trim() || saving}
-                activeOpacity={0.8}
-              >
-                {saving
-                  ? <ActivityIndicator color={colors.white} />
-                  : <Text style={styles.saveBtnText}>{editingSupplement ? 'Update' : 'Add to Stack'}</Text>
-                }
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </View>
+            <TouchableOpacity
+              style={[styles.saveBtn, (!formName.trim() || saving) && { opacity: 0.5 }]}
+              onPress={handleSave}
+              disabled={!formName.trim() || saving}
+              activeOpacity={0.8}
+            >
+              {saving
+                ? <ActivityIndicator color={colors.white} />
+                : <Text style={styles.saveBtnText}>{editingSupplement ? 'Update' : 'Add to Stack'}</Text>
+              }
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -379,7 +401,10 @@ const styles = StyleSheet.create({
   sectionLabel: { ...sectionLabel },
 
   progressCard: { ...cardStyle, marginBottom: spacing.lg },
-  progressText: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.bold, marginBottom: spacing.md },
+  progressHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
+  progressText: { color: colors.textPrimary, fontSize: font.lg, fontWeight: font.bold },
+  markAllBtn: { backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderWidth: 1, borderColor: colors.primaryBorder },
+  markAllBtnText: { color: colors.textAccent, fontSize: font.sm, fontWeight: font.semibold },
   progressBar: { height: 6, backgroundColor: colors.border, borderRadius: radii.full },
   progressFill: { height: 6, backgroundColor: colors.success, borderRadius: radii.full },
 
@@ -422,12 +447,9 @@ const styles = StyleSheet.create({
   },
   fabText: { color: colors.white, fontSize: 28, fontWeight: font.bold, marginTop: -2 },
 
-  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
-  modalContent: {
-    backgroundColor: colors.bg, borderTopLeftRadius: radii.xl, borderTopRightRadius: radii.xl,
-    padding: spacing.xl, paddingBottom: spacing['5xl'], maxHeight: '85%',
-  },
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl },
+  modalSheet: { flex: 1, backgroundColor: colors.bg },
+  modalScrollContent: { padding: spacing.xl, paddingBottom: spacing['5xl'] },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: spacing.xl, borderBottomWidth: 1, borderBottomColor: colors.border },
   modalTitle: { fontSize: font.xl, fontWeight: font.bold, color: colors.textPrimary },
   modalClose: { fontSize: 20, color: colors.textTertiary, padding: spacing.sm },
 

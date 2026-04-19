@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, RefreshControl,
   TouchableOpacity, Dimensions, Modal, TextInput,
-  KeyboardAvoidingView, Platform, Animated,
+  KeyboardAvoidingView, Platform, Animated, Alert,
 } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -262,28 +262,55 @@ interface CommandCenterProps {
 export default function CommandCenter({ navigation }: CommandCenterProps) {
   const insets = useSafeAreaInsets();
   const [health, setHealth] = useState<Record<string, number | null> | null>(null);
+  const [healthDate, setHealthDate] = useState<string | null>(null);
   const [env, setEnv] = useState<Record<string, unknown> | null>(null);
+  const [locationName, setLocationName] = useState<string | null>(null);
   const [workout, setWorkout] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showFlag, setShowFlag] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationInput, setLocationInput] = useState('');
+  const [locationSaving, setLocationSaving] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
   const [forecast, setForecast] = useState<any[]>([]);
 
   const fetchAll = useCallback(async () => {
-    const [summary, envData, workoutData, forecastData] = await Promise.all([
-      apiFetch<{ today: Record<string, number | null> }>('/dashboard/summary'),
+    const [summary, envData, workoutData, forecastData, locData] = await Promise.all([
+      apiFetch<{ today: Record<string, number | null>; date?: string }>('/dashboard/summary'),
       apiFetch<Record<string, unknown>>('/environment/today'),
       apiFetch<Record<string, unknown>>('/fitness/today'),
-      apiFetch<{ forecast: any[] }>('/environment/forecast'),
+      apiFetch<{ forecast: any[] }>('/environment/forecast?days=7'),
+      apiFetch<{ configured: boolean; city?: string; admin1?: string; country?: string }>('/environment/location'),
     ]);
     setHealth(summary?.today || null);
+    setHealthDate((summary as any)?.date || null);
     setEnv(envData);
     setWorkout(workoutData);
     setForecast(forecastData?.forecast || []);
+    if (locData?.configured && locData.city) {
+      const parts = [locData.city, locData.admin1, locData.country].filter(Boolean);
+      setLocationName(parts.slice(0, 2).join(', '));
+    }
     setLoading(false);
   }, []);
+
+  const handleSetLocation = useCallback(async () => {
+    if (!locationInput.trim()) return;
+    setLocationSaving(true);
+    const result = await apiPost<Record<string, unknown>>('/environment/set-location', { city: locationInput.trim() });
+    setLocationSaving(false);
+    if (result && !result.error) {
+      const parts = [result.city, result.admin1, result.country].filter(Boolean) as string[];
+      setLocationName(parts.slice(0, 2).join(', '));
+      setShowLocationModal(false);
+      setLocationInput('');
+      await fetchAll();
+    } else {
+      Alert.alert('Not found', (result?.error as string) || 'Could not find that city. Try a more specific name.');
+    }
+  }, [locationInput, fetchAll]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -321,16 +348,29 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
     return base;
   })();
 
-  // Env alerts
-  const aqi = env?.aqi as number | undefined;
-  const uv = env?.uv_index_max as number | undefined;
+  // Env data — use != null to avoid hiding 0 values
+  const aqi = env?.aqi != null ? (env.aqi as number) : null;
+  const uv = env?.uv_index_max != null ? (env.uv_index_max as number) : null;
   const pollen = env?.pollen_risk_level as string | undefined;
-  const showEnvBar = (aqi && aqi > 50) || (uv && uv >= 6) || (pollen && ['Moderate', 'High', 'Very High'].includes(pollen));
 
   const formatDate = () => new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' });
   const greeting = () => {
     const h = new Date().getHours();
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  };
+
+  const formatLastUpdated = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    try {
+      const dt = new Date(dateStr);
+      const now = new Date();
+      const diffMs = now.getTime() - dt.getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 60) return `Updated ${diffMins}m ago`;
+      const diffHrs = Math.floor(diffMins / 60);
+      if (diffHrs < 24) return `Updated ${diffHrs}h ago`;
+      return `Updated ${dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    } catch { return null; }
   };
 
   const workoutTitle = workout ? `${workout.workout_type === 'rest' ? '🧘' : '💪'} ${workout.title}` : null;
@@ -341,7 +381,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
       <ScrollView
         style={styles.container}
         contentContainerStyle={[styles.content, { paddingTop: insets.top + spacing.md }]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} progressViewOffset={insets.top} />}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -372,6 +412,9 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
               <ScoreRing score={readiness as number | null} label="Readiness" size={120} />
             </>
           )}
+          {!loading && formatLastUpdated(healthDate) && (
+            <Text style={styles.lastUpdated}>{formatLastUpdated(healthDate)}</Text>
+          )}
         </View>
 
         {/* No data state */}
@@ -392,41 +435,57 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
         {/* Environment & Weather */}
         {env && !env.error && (
           <View style={styles.envSection}>
+            {/* Location bar */}
+            <View style={styles.envLocationRow}>
+              <Text style={styles.envLocationText}>📍 {locationName || 'Location not set'}</Text>
+              <TouchableOpacity onPress={() => setShowLocationModal(true)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Text style={styles.envLocationChange}>Change</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Current weather + AQI/UV */}
             <View style={styles.envWeatherRow}>
               <Text style={styles.envWeatherEmoji}>{weatherCodeEmoji(env.weather_code as number)}</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.envTemp}>{env.temp_c != null ? `${Math.round(env.temp_c as number)}°` : '—'}</Text>
+                <Text style={styles.envTemp}>{env.temp_c != null ? `${Math.round(env.temp_c as number)}°C` : '—'}</Text>
                 {env.conditions && <Text style={styles.envConditions}>{env.conditions as string}</Text>}
               </View>
               <View style={styles.envMetrics}>
-                <EnvPill emoji="💨" label="AQI" value={aqi ? `${Math.round(aqi)}` : '—'}
-                  level={!aqi ? 'ok' : aqi > 150 ? 'bad' : aqi > 50 ? 'warn' : 'ok'} />
-                <EnvPill emoji="☀️" label="UV" value={uv ? `${uv}` : '—'}
-                  level={!uv ? 'ok' : uv >= 8 ? 'bad' : uv >= 6 ? 'warn' : 'ok'} />
+                <EnvPill emoji="💨" label="AQI" value={aqi != null ? `${Math.round(aqi)}` : '—'}
+                  level={aqi == null ? 'ok' : aqi > 150 ? 'bad' : aqi > 50 ? 'warn' : 'ok'} />
+                <EnvPill emoji="☀️" label="UV" value={uv != null ? `${uv}` : '—'}
+                  level={uv == null ? 'ok' : uv >= 8 ? 'bad' : uv >= 6 ? 'warn' : 'ok'} />
                 {pollen && <EnvPill emoji="🌿" label="Pollen" value={pollen}
                   level={['High', 'Very High'].includes(pollen) ? 'bad' : pollen === 'Moderate' ? 'warn' : 'ok'} />}
               </View>
             </View>
 
-            {/* Forecast strip */}
-            {forecast.length > 1 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastRow}>
-                {forecast.slice(1, 6).map((day: any) => (
-                  <View key={day.date} style={styles.forecastDay}>
-                    <Text style={styles.forecastDayLabel}>
-                      {new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+            {/* Forecast strip — today + next 6 days */}
+            {forecast.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastRow} contentContainerStyle={{ paddingRight: spacing.md }}>
+                {forecast.slice(0, 7).map((day: any, idx: number) => (
+                  <View key={day.date} style={[styles.forecastDay, idx === 0 && styles.forecastDayToday]}>
+                    <Text style={[styles.forecastDayLabel, idx === 0 && styles.forecastDayLabelToday]}>
+                      {idx === 0 ? 'Today' : new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
                     </Text>
                     <Text style={styles.forecastEmoji}>{weatherCodeEmoji(day.weather_code)}</Text>
                     <Text style={styles.forecastHi}>{day.temp_max != null ? `${Math.round(day.temp_max)}°` : '—'}</Text>
                     <Text style={styles.forecastLo}>{day.temp_min != null ? `${Math.round(day.temp_min)}°` : ''}</Text>
                     {day.precip_chance != null && day.precip_chance > 0 && (
-                      <Text style={styles.forecastRain}>{Math.round(day.precip_chance)}%</Text>
+                      <Text style={styles.forecastRain}>💧{Math.round(day.precip_chance)}%</Text>
                     )}
                   </View>
                 ))}
               </ScrollView>
             )}
           </View>
+        )}
+
+        {/* Set location prompt when no env data */}
+        {(!env || env.error) && !loading && (
+          <TouchableOpacity style={styles.locationPromptCard} onPress={() => setShowLocationModal(true)} activeOpacity={0.7}>
+            <Text style={styles.locationPromptText}>📍 Set location for weather & environment</Text>
+          </TouchableOpacity>
         )}
 
         {/* Today's plan */}
@@ -476,6 +535,39 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
       </ScrollView>
 
       <FlagModal visible={showFlag} onClose={() => setShowFlag(false)} />
+
+      {/* Location picker modal */}
+      <Modal visible={showLocationModal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowLocationModal(false)}>
+        <KeyboardAvoidingView style={styles.modalContainer} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Set Location</Text>
+            <TouchableOpacity onPress={() => setShowLocationModal(false)} style={styles.closeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Text style={styles.closeBtnText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalSubtitle}>Enter your city to get weather, AQI, and UV data.</Text>
+            <TextInput
+              style={styles.locationInput}
+              placeholder="e.g. London, New York, Tokyo..."
+              placeholderTextColor={colors.textTertiary}
+              value={locationInput}
+              onChangeText={setLocationInput}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleSetLocation}
+            />
+            <TouchableOpacity
+              style={[styles.submitBtn, (!locationInput.trim() || locationSaving) && { opacity: 0.5 }]}
+              onPress={handleSetLocation}
+              disabled={!locationInput.trim() || locationSaving}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.submitBtnText}>{locationSaving ? 'Searching...' : 'Set Location'}</Text>
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </>
   );
 }
@@ -500,6 +592,10 @@ const styles = StyleSheet.create({
   ringScore: { fontSize: font['2xl'], fontWeight: font.bold },
   ringLabel: { fontSize: font.xs, color: colors.textSecondary, marginTop: spacing.xs, fontWeight: font.semibold, letterSpacing: 0.5 },
   sleepHours: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
+  lastUpdated: {
+    position: 'absolute', bottom: spacing.sm, right: spacing.sm,
+    fontSize: 9, color: colors.textTertiary,
+  },
 
   syncCard: { ...cardStyle, marginBottom: spacing.lg, alignItems: 'center', padding: spacing['2xl'] },
   syncCardText: { color: colors.textSecondary, fontSize: font.md, marginBottom: spacing.xs },
@@ -513,22 +609,39 @@ const styles = StyleSheet.create({
   insightText: { color: colors.textAccent, fontSize: font.md, lineHeight: 22, fontWeight: font.medium },
 
   envSection: { ...cardStyle, marginBottom: spacing.lg },
-  envWeatherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  envWeatherEmoji: { fontSize: 40 },
-  envTemp: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary },
-  envConditions: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize' },
-  envMetrics: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end' },
-  envPill: { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, paddingHorizontal: spacing.sm, paddingVertical: 3, gap: 3 },
-  envEmoji: { fontSize: 12 },
-  envValue: { fontSize: font.xs, fontWeight: font.bold },
-  envLabel: { fontSize: 9, color: colors.textTertiary },
+  envLocationRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+  envLocationText: { fontSize: font.sm, color: colors.textSecondary, flex: 1 },
+  envLocationChange: { fontSize: font.sm, color: colors.primary, fontWeight: font.semibold },
+  envWeatherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginBottom: spacing.sm },
+  envWeatherEmoji: { fontSize: 44 },
+  envTemp: { fontSize: 28, fontWeight: font.bold, color: colors.textPrimary },
+  envConditions: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize', marginTop: 2 },
+  envMetrics: { flexDirection: 'column', gap: 4, alignItems: 'flex-end' },
+  envPill: { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, paddingHorizontal: spacing.sm, paddingVertical: 4, gap: 4, minWidth: 60 },
+  envEmoji: { fontSize: 13 },
+  envValue: { fontSize: font.sm, fontWeight: font.bold },
+  envLabel: { fontSize: 10, color: colors.textTertiary },
   forecastRow: { marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
-  forecastDay: { alignItems: 'center', width: 56, marginRight: spacing.xs },
-  forecastDayLabel: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.semibold, marginBottom: 2 },
-  forecastEmoji: { fontSize: 20, marginBottom: 2 },
-  forecastHi: { fontSize: font.sm, color: colors.textPrimary, fontWeight: font.bold },
-  forecastLo: { fontSize: font.xs, color: colors.textTertiary },
-  forecastRain: { fontSize: 9, color: colors.primary, marginTop: 1 },
+  forecastDay: { alignItems: 'center', width: 60, marginRight: spacing.sm },
+  forecastDayToday: { backgroundColor: colors.primaryGlow, borderRadius: radii.md, paddingVertical: spacing.xs },
+  forecastDayLabel: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.semibold, marginBottom: 4 },
+  forecastDayLabelToday: { color: colors.textAccent },
+  forecastEmoji: { fontSize: 24, marginBottom: 4 },
+  forecastHi: { fontSize: font.md, color: colors.textPrimary, fontWeight: font.bold },
+  forecastLo: { fontSize: font.sm, color: colors.textTertiary },
+  forecastRain: { fontSize: font.xs, color: colors.primary, marginTop: 2 },
+
+  locationPromptCard: {
+    ...cardStyle, marginBottom: spacing.lg, alignItems: 'center', padding: spacing.xl,
+    borderStyle: 'dashed', borderWidth: 1, borderColor: colors.primary,
+  },
+  locationPromptText: { color: colors.textAccent, fontSize: font.md, fontWeight: font.medium },
+  locationInput: {
+    backgroundColor: colors.bgInput, borderRadius: radii.md,
+    borderWidth: 1, borderColor: colors.border,
+    padding: spacing.lg, color: colors.textPrimary,
+    fontSize: font.md, marginBottom: spacing.lg,
+  },
 
   planCard: { ...cardStyle, marginBottom: spacing.md },
   planHeader: { flexDirection: 'row', alignItems: 'center' },

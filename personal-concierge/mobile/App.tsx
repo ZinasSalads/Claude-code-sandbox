@@ -31,6 +31,7 @@ import FitnessGoal from './screens/FitnessGoal';
 import WorkoutSession from './screens/WorkoutSession';
 import ExerciseProgress from './screens/ExerciseProgress';
 import EquipmentSetup from './screens/EquipmentSetup';
+import FitnessSettings from './screens/FitnessSettings';
 
 // Life tab
 import Social from './screens/Social';
@@ -145,10 +146,11 @@ function HealthStackScreen() {
       <HealthStack.Screen name="BloodWork" component={BloodWork} options={{ title: 'Blood Work' }} />
       <HealthStack.Screen name="FitnessHub" component={FitnessHub} options={{ title: 'Fitness' }} />
       <HealthStack.Screen name="FitnessGoal" component={FitnessGoal} options={{ title: 'Goals' }} />
-      <HealthStack.Screen name="WorkoutSession" component={WorkoutSession} options={{ title: 'Session' }} />
-      <HealthStack.Screen name="ExerciseProgress" component={ExerciseProgress} options={{ title: 'Progress' }} />
+      <HealthStack.Screen name="WorkoutSession" component={WorkoutSession} options={{ title: 'Workout Log' }} />
+      <HealthStack.Screen name="ExerciseProgress" component={ExerciseProgress} options={{ title: 'Training Progress' }} />
       <HealthStack.Screen name="EquipmentSetup" component={EquipmentSetup} options={{ title: 'Equipment' }} />
-      <HealthStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Flag Something' }} />
+      <HealthStack.Screen name="FitnessSettings" component={FitnessSettings} options={{ title: 'Fitness Settings' }} />
+      <HealthStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'How I\'m Feeling' }} />
     </HealthStack.Navigator>
   );
 }
