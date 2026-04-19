@@ -27,6 +27,15 @@ class EnvironmentService:
         if not force:
             cached = await self._get_cached(date.today().isoformat())
             if cached:
+                # Supplement cached entry if AQI is missing (stale cache from before fix)
+                if cached.get("aqi") is None:
+                    clat = cached.get("location_lat") or lat
+                    clon = cached.get("location_lon") or lon
+                    if clat and clon:
+                        meteo_aqi = await self._fetch_open_meteo_aqi(clat, clon)
+                        if meteo_aqi.get("aqi"):
+                            cached.update(meteo_aqi)
+                            await self._cache({**cached, **meteo_aqi})
                 return cached
 
         # Need location
@@ -89,6 +98,13 @@ class EnvironmentService:
                 aqi = await self._fetch_open_meteo_aqi(lat, lon)
                 data.update(aqi)
 
+        # If primary source didn't provide AQI (Tomorrow.io epaIndex=0 or OpenWeather missing),
+        # supplement with Open-Meteo Air Quality API (free, no key required)
+        if not data.get("aqi"):
+            meteo_aqi = await self._fetch_open_meteo_aqi(lat, lon)
+            if meteo_aqi.get("aqi"):
+                data.update(meteo_aqi)
+
             # Pollen from Ambee or Open-Meteo fallback
             if AMBEE_API_KEY:
                 pollen = await self._fetch_ambee_pollen(lat, lon)
@@ -128,23 +144,26 @@ class EnvironmentService:
                 if resp.status_code == 200:
                     values = resp.json().get("data", {}).get("values", {})
                     uv = values.get("uvIndex", 0)
-                    aqi = values.get("epaIndex", 0)
+                    # epaIndex is 1-6 scale; 0 means no data available
+                    epa_idx = values.get("epaIndex", 0)
                     aqi_labels = {1: "Good", 2: "Moderate", 3: "Unhealthy for Sensitive", 4: "Unhealthy", 5: "Very Unhealthy", 6: "Hazardous"}
                     wc = values.get("weatherCode", 1000)
-                    result.update({
+                    update = {
                         "temp_c": round(values.get("temperature", 0)),
                         "humidity": round(values.get("humidity", 0)),
                         "wind_kph": round(values.get("windSpeed", 0) * 3.6, 1),
                         "uv_index_current": round(uv, 1),
                         "uv_index_max": round(uv, 1),
                         "uv_risk_level": self._uv_risk(uv),
-                        "aqi": aqi * 50,
                         "pm25": values.get("particulateMatter25"),
                         "pm10": values.get("particulateMatter10"),
-                        "aqi_category": aqi_labels.get(aqi, "Unknown"),
                         "weather_code": wc,
                         "conditions": self._tomorrow_weather_code(wc),
-                    })
+                    }
+                    if epa_idx >= 1:
+                        update["aqi"] = epa_idx * 50
+                        update["aqi_category"] = aqi_labels.get(epa_idx, "Unknown")
+                    result.update(update)
 
                 # Pollen forecast
                 pollen_resp = await client.get(
