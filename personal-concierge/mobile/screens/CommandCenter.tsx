@@ -285,7 +285,7 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
       apiFetch<{ configured: boolean; city?: string; admin1?: string; country?: string }>('/environment/location'),
     ]);
     setHealth(summary?.today || null);
-    setHealthDate((summary as any)?.date || null);
+    setHealthDate((summary?.today as any)?.updated_at || (summary?.today as any)?.date || null);
     setEnv(envData);
     setWorkout(workoutData);
     setForecast(forecastData?.forecast || []);

@@ -107,7 +107,7 @@ export default function Onboarding({ navigation }: any) {
     }
   }, [isRedoing, navigation, handleBackFromStep]);
 
-  if (!status || status.is_complete) {
+  if (!isRedoing && (!status || status.is_complete)) {
     const displaySteps = allSteps.filter(s => s.step_name !== 'welcome' && s.step_name !== 'complete');
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}
