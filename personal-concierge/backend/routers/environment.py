@@ -29,6 +29,12 @@ async def get_today(lat: Optional[float] = None, lon: Optional[float] = None):
     return await environment_service.get_today(lat, lon)
 
 
+@router.get("/forecast")
+async def get_forecast(days: int = 5):
+    """Get daily weather forecast."""
+    return await environment_service.get_forecast(days)
+
+
 @router.get("/location")
 async def get_location():
     """Get saved location."""

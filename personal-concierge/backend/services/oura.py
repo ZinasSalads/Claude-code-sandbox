@@ -20,6 +20,7 @@ BASE_URL = "https://api.ouraring.com/v2/usercollection"
 ENDPOINTS = {
     "readiness": f"{BASE_URL}/daily_readiness",
     "sleep": f"{BASE_URL}/daily_sleep",
+    "sleep_periods": f"{BASE_URL}/sleep",
     "activity": f"{BASE_URL}/daily_activity",
 }
 
@@ -74,15 +75,28 @@ class OuraClient:
     async def fetch_activity(self, start_date: date, end_date: date) -> list:
         return await self._fetch(ENDPOINTS["activity"], start_date, end_date)
 
+    async def fetch_sleep_periods(self, start_date: date, end_date: date) -> list:
+        return await self._fetch(ENDPOINTS["sleep_periods"], start_date, end_date)
+
     async def fetch_all_for_range(self, start_date: date, end_date: date) -> dict:
         """Fetch all data types for a date range. Returns dict keyed by date string."""
         readiness = await self.fetch_readiness(start_date, end_date)
         sleep = await self.fetch_sleep(start_date, end_date)
         activity = await self.fetch_activity(start_date, end_date)
+        sleep_periods = await self.fetch_sleep_periods(start_date, end_date)
 
         readiness_by_day = {r.get("day"): r for r in readiness}
         sleep_by_day = {s.get("day"): s for s in sleep}
         activity_by_day = {a.get("day"): a for a in activity}
+
+        # Build HRV map from sleep periods (actual ms values)
+        hrv_by_day: dict = {}
+        for sp in sleep_periods:
+            sp_day = sp.get("day")
+            avg_hrv = sp.get("average_hrv")
+            if sp_day and avg_hrv is not None:
+                if sp_day not in hrv_by_day or sp.get("type") == "long_sleep":
+                    hrv_by_day[sp_day] = avg_hrv
 
         all_dates = set(readiness_by_day) | set(sleep_by_day) | set(activity_by_day)
         result = {}
@@ -95,7 +109,6 @@ class OuraClient:
             r_contrib = r.get("contributors", {})
             s_contrib = s.get("contributors", {})
 
-            # Sleep duration: Oura v2 returns seconds in the sleep object
             sleep_seconds = s.get("total_sleep_duration")
             sleep_hours = round(sleep_seconds / 3600, 2) if sleep_seconds else None
 
@@ -103,7 +116,7 @@ class OuraClient:
                 "date": day,
                 "readiness_score": r.get("score"),
                 "readiness_temperature": r_contrib.get("body_temperature"),
-                "hrv": r_contrib.get("hrv_balance"),
+                "hrv": hrv_by_day.get(day),
                 "hrv_balance": r_contrib.get("hrv_balance"),
                 "resting_heart_rate": r_contrib.get("resting_heart_rate"),
                 "sleep_score": s.get("score"),

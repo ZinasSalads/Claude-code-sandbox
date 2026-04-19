@@ -335,6 +335,7 @@ export default function FitnessHub({ navigation }: Props) {
           { label: 'Progress', icon: '📈', screen: 'ExerciseProgress' },
           { label: 'History', icon: '📋', screen: 'WorkoutSession', params: { mode: 'history' } },
           { label: 'Equipment', icon: '🏋️', screen: 'EquipmentSetup' },
+          { label: 'Flag Issue', icon: '⚑', screen: 'CheckIn' },
         ].map(tool => (
           <TouchableOpacity
             key={tool.label}

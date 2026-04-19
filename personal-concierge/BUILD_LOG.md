@@ -731,3 +731,92 @@ Full cross-check of all 30 mobile screens against backend routers and specs.
 8. `mobile/screens/Hobbies.tsx` — Path fix + session logging
 9. `mobile/screens/Relationships.tsx` — Path fix
 10. `mobile/screens/Career.tsx` — Profile editor form
+
+---
+
+# Build Log — Session 8: Fitness Hub Overhaul + UX Improvements
+
+## Started: 2026-04-18
+
+### Fitness Hub Overhaul
+- **Merged FitnessHub + TrainingPlan** into a single FitnessHub screen. Removed TrainingPlan from App.tsx
+- **3-week scrollable icon strip**: Shows prev/current/next week with day labels, dates, emoji icons. Past days greyed out, missed sessions marked with X, completed with checkmark
+- **Upcoming sessions only**: Removed past sessions from main view. Shows today + future planned sessions
+- **Inline phase + mileage header**: Replaced stat tiles with "Phase 1/Base" and "Goal: X/Y miles" header
+- **Equipment-aware training plans**: Added CRITICAL RULES to backend prompt requiring equipment-based exercises instead of defaulting to bodyweight
+- **PlannedSession mode**: WorkoutSession now accepts `plannedSession` param to show correct session from training plan
+- **Manual workout mode**: `mode: 'manual'` in WorkoutSession for free-form workout logging with exercise picker
+- **View mode**: `mode: 'view'` in WorkoutSession for read-only completed workout viewing
+- **History edit/delete**: Long-press to delete with confirmation, tap to view details
+- **Imperial units**: All distance/pace converted from km to miles. Added MPH alongside min/mile pace
+
+### Feasibility Assessment Fix
+- Rewritten prompt to default to "realistic" unless baseline is far from target
+- Added required fields: `roadmap`, `explanation`, `phases`
+- UI shows summary text, roadmap box, numbered phase list
+
+### Me Tab Cleanup
+- **Removed**: Contextual Intelligence, Subscriptions, Flag Something, Personality (duplicate) from ProfileDashboard modules
+- **Removed**: ContextualIntel, Financial, CheckIn screens from MeStack navigator
+- **Removed**: Unused imports (ContextualIntelligence, Financial) from App.tsx
+
+### Personality Screen
+- Added "Last taken" date display (from `profile.assessed_at`)
+- Added "Retake Assessment" button at bottom (always visible)
+
+### Onboarding/Setup Fix
+- Fixed navigation error: `navigate('Home')` → `navigation.getParent().navigate('Today')` (Home screen doesn't exist, root is CommandCenter in TodayStack)
+- When setup is complete: shows tappable list of all steps (completed/skipped status) so user can review or redo any step
+- Added `getAllOnboardingSteps()` API function
+
+### Privacy & Data Enhancement
+- Categories are now tappable to browse individual records
+- Added record detail view with date and formatted preview
+- Added per-record delete button with confirmation
+- Backend: Added `GET /privacy/category/{category}/records` endpoint
+- Backend: Added `DELETE /privacy/record/{table}/{record_id}` endpoint
+- Frontend: Added `getCategoryRecords()` and `deleteRecord()` API functions
+
+### Health Vitals
+- Replaced "Sleep Hrs" (always showing dash) with "Steps" in HealthDashboard vitals
+- **HRV fix**: Was using `hrv_balance` (readiness contributor score 0-100), now uses actual HRV from sleep periods via `/v2/usercollection/sleep` endpoint (`average_hrv` in ms)
+
+### Environment & Weather
+- **Moved to Today tab**: Environment data (weather, AQI, UV, pollen) now shows on CommandCenter with weather forecast
+- **Removed** Environment from HealthDashboard modules list (still accessible via direct navigation)
+- **Weather forecast**: Added `GET /environment/forecast` endpoint using Open-Meteo daily forecast
+- **Forecast UI**: Scrollable 5-day forecast strip on Today tab showing emoji, high/low temps, rain chance
+- **Cache fix**: Changed stale cache check from AND to OR (re-fetches if either AQI or conditions missing)
+
+### Fitness Flag Feature
+- Added "Flag Issue" tool to FitnessHub tools grid (navigates to CheckIn screen)
+- Moved CheckIn screen from MeStack to HealthStack so it's accessible from fitness
+
+### Files Modified (15+)
+1. `mobile/screens/ProfileDashboard.tsx` — Removed 4 modules from menu
+2. `mobile/screens/Onboarding.tsx` — Fixed navigation, added settings review view
+3. `mobile/screens/HealthDashboard.tsx` — Replaced Sleep Hrs with Steps, removed Environment module
+4. `mobile/screens/Personality.tsx` — Added last taken date + retake button
+5. `mobile/screens/Privacy.tsx` — Clickable categories with record browsing + individual delete
+6. `mobile/screens/FitnessHub.tsx` — Added Flag Issue to tools grid
+7. `mobile/screens/CommandCenter.tsx` — Added environment section with weather + forecast
+8. `mobile/App.tsx` — Removed ContextualIntel/Financial from MeStack, added CheckIn to HealthStack
+9. `mobile/lib/api.ts` — Added getCategoryRecords, deleteRecord, getAllOnboardingSteps
+10. `backend/services/oura.py` — Fixed HRV to use sleep periods, added fetch_sleep_periods
+11. `backend/services/privacy.py` — Added get_category_records, delete_single_record
+12. `backend/services/environment.py` — Added get_forecast, fixed stale cache check
+13. `backend/routers/privacy.py` — Added browse records + delete record endpoints
+14. `backend/routers/environment.py` — Added forecast endpoint
+
+### Status of Planned Features
+Features planned but not yet implemented (from original scope):
+- **Contextual Intelligence**: Removed from Me tab (purpose unclear). Backend service exists at `/context/*`
+- **Subscriptions/Financial**: Removed from Me tab. Backend service exists at `/financial/*`
+- **Blood work Apple Health connection**: Planned, not yet implemented
+- **Blood work quarterly reminder**: Planned, not yet implemented
+- **Blood work reminder settings**: Planned, not yet implemented
+- **Digital Identity**: Screen exists in codebase but not in current navigation
+- **Skincare**: Screen exists in codebase but not in HealthDashboard modules
+- **Longevity**: Screen exists in codebase but not in HealthDashboard modules
+
+---

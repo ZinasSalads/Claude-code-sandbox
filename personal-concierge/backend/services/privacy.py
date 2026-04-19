@@ -189,6 +189,50 @@ class PrivacyService:
 
         return {"categories": summary}
 
+    async def get_category_records(self, category: str, limit: int = 50) -> dict:
+        """Browse individual records within a category."""
+        tables = CATEGORY_TABLES.get(category)
+        if not tables:
+            return {"error": f"Unknown category: {category}"}
+        if not supabase:
+            return {"error": "Database not configured"}
+
+        result = {}
+        for table in tables:
+            try:
+                data = (
+                    supabase.table(table)
+                    .select("*")
+                    .order("created_at", desc=True)
+                    .limit(limit)
+                    .execute()
+                )
+                result[table] = data.data or []
+            except Exception:
+                try:
+                    data = supabase.table(table).select("*").limit(limit).execute()
+                    result[table] = data.data or []
+                except Exception as e:
+                    logger.error(f"Browse failed for {table}: {e}")
+                    result[table] = []
+        return {"category": category, "tables": result}
+
+    async def delete_single_record(self, table: str, record_id: str) -> dict:
+        """Delete a single record by ID from a specified table."""
+        all_known = set()
+        for tables in CATEGORY_TABLES.values():
+            all_known.update(tables)
+        if table not in all_known:
+            return {"error": f"Unknown table: {table}"}
+        if not supabase:
+            return {"error": "Database not configured"}
+        try:
+            supabase.table(table).delete().eq("id", record_id).execute()
+            return {"status": "deleted", "table": table, "id": record_id}
+        except Exception as e:
+            logger.error(f"Delete record failed for {table}/{record_id}: {e}")
+            return {"error": str(e)}
+
     async def amnesia(self, category: str, confirm: bool = False) -> dict:
         """Forget a category entirely — delete data and stop collecting."""
         if not confirm:

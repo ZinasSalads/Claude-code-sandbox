@@ -83,6 +83,21 @@ function EnvPill({ emoji, label, value, level }: { emoji: string; label: string;
   );
 }
 
+function weatherCodeEmoji(code?: number | null): string {
+  if (code == null) return '🌡️';
+  if (code === 0 || code === 1000) return '☀️';
+  if (code <= 2 || code === 1100 || code === 1101) return '⛅';
+  if (code === 3 || code === 1001 || code === 1102) return '☁️';
+  if (code <= 48 || code === 2000 || code === 2100) return '🌫️';
+  if (code <= 57 || code === 4000 || code === 4200) return '🌦️';
+  if (code <= 65 || code === 4001 || code === 4201) return '🌧️';
+  if (code <= 67 || code === 6000 || code === 6001) return '🧊';
+  if (code <= 77 || code === 5000 || code === 5001 || code === 5100 || code === 5101) return '🌨️';
+  if (code <= 82) return '🌧️';
+  if (code <= 86) return '🌨️';
+  return '⛈️';
+}
+
 const SYMPTOMS = [
   { id: 'tired', emoji: '😴', label: 'Unusually tired' },
   { id: 'stress', emoji: '😤', label: 'High stress' },
@@ -254,16 +269,19 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
   const [syncing, setSyncing] = useState(false);
   const [showFlag, setShowFlag] = useState(false);
   const [planExpanded, setPlanExpanded] = useState(false);
+  const [forecast, setForecast] = useState<any[]>([]);
 
   const fetchAll = useCallback(async () => {
-    const [summary, envData, workoutData] = await Promise.all([
+    const [summary, envData, workoutData, forecastData] = await Promise.all([
       apiFetch<{ today: Record<string, number | null> }>('/dashboard/summary'),
       apiFetch<Record<string, unknown>>('/environment/today'),
       apiFetch<Record<string, unknown>>('/fitness/today'),
+      apiFetch<{ forecast: any[] }>('/environment/forecast'),
     ]);
     setHealth(summary?.today || null);
     setEnv(envData);
     setWorkout(workoutData);
+    setForecast(forecastData?.forecast || []);
     setLoading(false);
   }, []);
 
@@ -371,20 +389,42 @@ export default function CommandCenter({ navigation }: CommandCenterProps) {
           </View>
         )}
 
-        {/* Environmental alerts */}
-        {showEnvBar && (
-          <View style={styles.envBar}>
-            {aqi && aqi > 50 && (
-              <EnvPill emoji="💨" label="AQI" value={`${Math.round(aqi)}`}
-                level={aqi > 150 ? 'bad' : 'warn'} />
-            )}
-            {uv && uv >= 6 && (
-              <EnvPill emoji="☀️" label="UV" value={`${uv}`}
-                level={uv >= 8 ? 'bad' : 'warn'} />
-            )}
-            {pollen && ['Moderate', 'High', 'Very High'].includes(pollen) && (
-              <EnvPill emoji="🌿" label="Pollen" value={pollen}
-                level={['High', 'Very High'].includes(pollen) ? 'bad' : 'warn'} />
+        {/* Environment & Weather */}
+        {env && !env.error && (
+          <View style={styles.envSection}>
+            <View style={styles.envWeatherRow}>
+              <Text style={styles.envWeatherEmoji}>{weatherCodeEmoji(env.weather_code as number)}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.envTemp}>{env.temp_c != null ? `${Math.round(env.temp_c as number)}°` : '—'}</Text>
+                {env.conditions && <Text style={styles.envConditions}>{env.conditions as string}</Text>}
+              </View>
+              <View style={styles.envMetrics}>
+                <EnvPill emoji="💨" label="AQI" value={aqi ? `${Math.round(aqi)}` : '—'}
+                  level={!aqi ? 'ok' : aqi > 150 ? 'bad' : aqi > 50 ? 'warn' : 'ok'} />
+                <EnvPill emoji="☀️" label="UV" value={uv ? `${uv}` : '—'}
+                  level={!uv ? 'ok' : uv >= 8 ? 'bad' : uv >= 6 ? 'warn' : 'ok'} />
+                {pollen && <EnvPill emoji="🌿" label="Pollen" value={pollen}
+                  level={['High', 'Very High'].includes(pollen) ? 'bad' : pollen === 'Moderate' ? 'warn' : 'ok'} />}
+              </View>
+            </View>
+
+            {/* Forecast strip */}
+            {forecast.length > 1 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.forecastRow}>
+                {forecast.slice(1, 6).map((day: any) => (
+                  <View key={day.date} style={styles.forecastDay}>
+                    <Text style={styles.forecastDayLabel}>
+                      {new Date(day.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+                    </Text>
+                    <Text style={styles.forecastEmoji}>{weatherCodeEmoji(day.weather_code)}</Text>
+                    <Text style={styles.forecastHi}>{day.temp_max != null ? `${Math.round(day.temp_max)}°` : '—'}</Text>
+                    <Text style={styles.forecastLo}>{day.temp_min != null ? `${Math.round(day.temp_min)}°` : ''}</Text>
+                    {day.precip_chance != null && day.precip_chance > 0 && (
+                      <Text style={styles.forecastRain}>{Math.round(day.precip_chance)}%</Text>
+                    )}
+                  </View>
+                ))}
+              </ScrollView>
             )}
           </View>
         )}
@@ -472,11 +512,23 @@ const styles = StyleSheet.create({
   },
   insightText: { color: colors.textAccent, fontSize: font.md, lineHeight: 22, fontWeight: font.medium },
 
-  envBar: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg, flexWrap: 'wrap' },
-  envPill: { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, gap: spacing.xs },
-  envEmoji: { fontSize: 16 },
-  envValue: { fontSize: font.sm, fontWeight: font.bold },
-  envLabel: { fontSize: font.xs, color: colors.textTertiary },
+  envSection: { ...cardStyle, marginBottom: spacing.lg },
+  envWeatherRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  envWeatherEmoji: { fontSize: 40 },
+  envTemp: { fontSize: font['2xl'], fontWeight: font.bold, color: colors.textPrimary },
+  envConditions: { fontSize: font.sm, color: colors.textSecondary, textTransform: 'capitalize' },
+  envMetrics: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end' },
+  envPill: { flexDirection: 'row', alignItems: 'center', borderRadius: radii.lg, paddingHorizontal: spacing.sm, paddingVertical: 3, gap: 3 },
+  envEmoji: { fontSize: 12 },
+  envValue: { fontSize: font.xs, fontWeight: font.bold },
+  envLabel: { fontSize: 9, color: colors.textTertiary },
+  forecastRow: { marginTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.md },
+  forecastDay: { alignItems: 'center', width: 56, marginRight: spacing.xs },
+  forecastDayLabel: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.semibold, marginBottom: 2 },
+  forecastEmoji: { fontSize: 20, marginBottom: 2 },
+  forecastHi: { fontSize: font.sm, color: colors.textPrimary, fontWeight: font.bold },
+  forecastLo: { fontSize: font.xs, color: colors.textTertiary },
+  forecastRain: { fontSize: 9, color: colors.primary, marginTop: 1 },
 
   planCard: { ...cardStyle, marginBottom: spacing.md },
   planHeader: { flexDirection: 'row', alignItems: 'center' },

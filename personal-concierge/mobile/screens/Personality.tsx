@@ -272,11 +272,17 @@ export default function Personality() {
         </View>
       )}
 
-      {canReassess && (
-        <TouchableOpacity style={styles.secondaryBtn} onPress={startAssessment}>
-          <Text style={styles.secondaryBtnText}>Reassess</Text>
+      {/* Last taken + retake */}
+      <View style={styles.retakeSection}>
+        {profile?.assessed_at && (
+          <Text style={styles.lastTakenText}>
+            Last taken: {new Date(profile.assessed_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </Text>
+        )}
+        <TouchableOpacity style={styles.retakeBtn} onPress={startAssessment}>
+          <Text style={styles.retakeBtnText}>Retake Assessment</Text>
         </TouchableOpacity>
-      )}
+      </View>
     </ScrollView>
   );
 }
@@ -304,6 +310,13 @@ const styles = StyleSheet.create({
     borderColor: colors.primary, borderWidth: 1, borderRadius: radii.md, padding: spacing.lg, alignItems: 'center', marginTop: spacing.lg,
   },
   secondaryBtnText: { color: colors.primary, fontSize: font.md, fontWeight: font.semibold },
+  retakeSection: { marginTop: spacing.xl, alignItems: 'center', paddingBottom: spacing.lg },
+  lastTakenText: { fontSize: font.sm, color: colors.textTertiary, marginBottom: spacing.md },
+  retakeBtn: {
+    borderColor: colors.primary, borderWidth: 1, borderRadius: radii.md,
+    paddingHorizontal: spacing['2xl'], paddingVertical: spacing.md, alignItems: 'center',
+  },
+  retakeBtnText: { color: colors.primary, fontSize: font.md, fontWeight: font.semibold },
   progressBar: {
     height: 4, backgroundColor: colors.border, borderRadius: 2, marginBottom: spacing.sm,
   },

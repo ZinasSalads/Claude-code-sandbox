@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   TextInput, ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
-import { getOnboardingStatus, getStepContent, completeOnboardingStep, skipOnboardingStep } from '../lib/api';
+import { getOnboardingStatus, getStepContent, completeOnboardingStep, skipOnboardingStep, getAllOnboardingSteps } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 export default function Onboarding({ navigation }: any) {
@@ -13,6 +13,7 @@ export default function Onboarding({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [allSteps, setAllSteps] = useState<any[]>([]);
 
   const loadStatus = useCallback(async () => {
     const s = await getOnboardingStatus();
@@ -23,6 +24,8 @@ export default function Onboarding({ navigation }: any) {
       setFormData({});
     } else {
       setStep(null);
+      const steps = await getAllOnboardingSteps();
+      setAllSteps(steps);
     }
     setLoading(false);
   }, []);
@@ -71,21 +74,43 @@ export default function Onboarding({ navigation }: any) {
     );
   }
 
+  const handleRedoStep = async (stepName: string) => {
+    const content = await getStepContent(stepName);
+    if (content) {
+      setStep(content);
+      setFormData({});
+      setStatus({ ...status, is_complete: false, next_step: stepName });
+    }
+  };
+
   if (!status || status.is_complete) {
+    const displaySteps = allSteps.filter(s => s.step_name !== 'welcome' && s.step_name !== 'complete');
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
-        <Text style={styles.bigTitle}>All Set!</Text>
-        <Text style={styles.subtitle}>Your app is fully personalized</Text>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Setup Complete</Text>
-          <Text style={styles.desc}>
-            Every recommendation is now tailored to your personality, goals, and preferences.
-            Explore your Command Center to see what's new today.
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation?.navigate?.('Home')}>
+        <Text style={styles.bigTitle}>Setup Complete</Text>
+        <Text style={styles.subtitle}>Tap any step to review or update</Text>
+
+        {displaySteps.map((s: any) => (
+          <TouchableOpacity
+            key={s.step_name}
+            style={styles.stepRow}
+            onPress={() => handleRedoStep(s.step_name)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.stepIcon}>{s.completed ? '✓' : s.skipped ? '—' : '○'}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.stepTitle}>{s.title}</Text>
+              <Text style={styles.stepStatus}>
+                {s.completed ? 'Completed' : s.skipped ? 'Skipped' : 'Not started'}
+              </Text>
+            </View>
+            <Text style={styles.stepChevron}>›</Text>
+          </TouchableOpacity>
+        ))}
+
+        <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation?.getParent?.()?.navigate('Today')}>
           <Text style={styles.primaryBtnText}>Go to Command Center</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -280,4 +305,12 @@ const styles = StyleSheet.create({
   primaryBtnText: { color: colors.white, fontSize: font.lg, fontWeight: font.bold },
   skipBtn: { alignItems: 'center', padding: spacing.lg, marginTop: spacing.sm },
   skipBtnText: { color: colors.textSecondary, fontSize: font.sm },
+  stepRow: {
+    ...cardStyle, flexDirection: 'row', alignItems: 'center',
+    marginBottom: spacing.sm, gap: spacing.md,
+  },
+  stepIcon: { fontSize: font.lg, color: colors.success, width: 24, textAlign: 'center' },
+  stepTitle: { fontSize: font.md, fontWeight: font.semibold, color: colors.textPrimary },
+  stepStatus: { fontSize: font.xs, color: colors.textTertiary, marginTop: 2 },
+  stepChevron: { color: colors.textTertiary, fontSize: 22, fontWeight: '300' },
 });

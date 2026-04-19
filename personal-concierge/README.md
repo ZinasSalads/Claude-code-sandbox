@@ -42,12 +42,20 @@ personal-concierge/
 
 ## Modules
 
-| Domain | Modules |
+| Domain | Active Modules |
 |---|---|
-| **Health** | Fitness, Nutrition, Sleep, Blood Work, Supplements, Skincare, Longevity, GP, Environmental |
+| **Health** | Fitness (goals, training plan, workout logging, progress), Supplements, Apple Health, Blood Work |
 | **Life** | Social, Relationships, Growth, Career, Travel, Wardrobe, Hobbies, Learning, Legacy, Home |
-| **Intelligence** | Voice, Conversation, Contextual Engine, Personality, Feedback Learning, Reviews |
-| **Admin** | Onboarding, Privacy, Financial, Digital Identity, Notifications |
+| **Intelligence** | Voice, Conversation, Personality, Feedback Learning, Reviews |
+| **Admin** | Onboarding, Privacy, Notifications |
+| **Today Tab** | Command Center (readiness/sleep scores, AI insight, environment/weather/forecast, workout plan, flag) |
+
+### Planned (not yet active in UI)
+- Skincare, Longevity, GP, Research (backend services exist)
+- Contextual Intelligence Engine (backend exists at `/context/*`, removed from UI pending clearer purpose)
+- Subscriptions/Financial (backend exists at `/financial/*`, removed from UI)
+- Digital Identity (backend exists at `/digital/*`)
+- Blood work Apple Health connection + quarterly reminders
 
 ## API Endpoints (210+)
 
@@ -159,3 +167,5 @@ npx expo start
 - **Session 4:** Life intelligence (voice, travel, social, financial, growth, career, wardrobe, notifications)
 - **Session 5:** Personality layer (MBTI, onboarding, Apple Health, calendar, feedback, legacy, home, learning, privacy)
 - **Session 6:** Final session (skincare, relationships, digital identity, financial planning, hobbies, contextual intelligence, conversation, reviews, 10-agent council)
+- **Session 7:** Mobile audit (API path fixes, crash fixes, dashboard hubs, navigation restructure)
+- **Session 8:** Fitness hub overhaul (training plan merge, 3-week icon strip, imperial units, equipment-aware plans, manual/view modes, workout history edit/delete, feasibility fix). UX improvements (Me tab cleanup, privacy record browsing, personality retake, onboarding review, HRV fix, environment on Today tab with forecast, flag something in fitness)

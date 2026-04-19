@@ -19,11 +19,7 @@ interface Props {
 
 const modules = [
   { key: 'Chat', title: 'AI Chat', emoji: '💬', desc: 'Ask your concierge anything' },
-  { key: 'CheckIn', title: 'Flag Something', emoji: '⚑', desc: 'Something feels off? Flag it' },
-  { key: 'Personality', title: 'Personality Profile', emoji: '🧠', desc: 'MBTI assessment & coaching style' },
   { key: 'VoiceCommands', title: 'Voice & Briefings', emoji: '🎙️', desc: 'Morning briefing & commands' },
-  { key: 'ContextualIntel', title: 'Contextual Intelligence', emoji: '🧩', desc: 'Signals & anomaly detection' },
-  { key: 'Financial', title: 'Subscriptions', emoji: '💳', desc: 'Subscriptions & budget audit' },
   { key: 'Privacy', title: 'Privacy & Data', emoji: '🔒', desc: 'Export, delete & manage data' },
   { key: 'Onboarding', title: 'Setup', emoji: '🚀', desc: 'Configure your concierge' },
 ];

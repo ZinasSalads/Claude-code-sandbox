@@ -454,8 +454,8 @@ class EnvironmentService:
             )
             if result.data:
                 cached = result.data[0]
-                # Re-fetch if AQI or conditions are missing (stale cache)
-                if cached.get("aqi") is None and cached.get("conditions") is None:
+                # Re-fetch if key fields are missing (stale/partial cache)
+                if cached.get("aqi") is None or cached.get("conditions") is None:
                     return None
                 return cached
             return None
@@ -471,6 +471,44 @@ class EnvironmentService:
             supabase.table("environmental_data").upsert(data, on_conflict="date").execute()
         except Exception as e:
             logger.error(f"Cache write error: {e}")
+
+
+    async def get_forecast(self, days: int = 5) -> dict:
+        """Get daily weather forecast from Open-Meteo (free, no key)."""
+        loc = await self._get_user_location()
+        if not loc:
+            return {"error": "No location configured"}
+        lat, lon = loc
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(
+                    "https://api.open-meteo.com/v1/forecast",
+                    params={
+                        "latitude": lat,
+                        "longitude": lon,
+                        "daily": "weather_code,temperature_2m_max,temperature_2m_min,uv_index_max,precipitation_probability_max",
+                        "timezone": "auto",
+                        "forecast_days": days,
+                    },
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    daily = data.get("daily", {})
+                    dates = daily.get("time", [])
+                    forecast = []
+                    for i, d in enumerate(dates):
+                        forecast.append({
+                            "date": d,
+                            "weather_code": (daily.get("weather_code") or [])[i] if i < len(daily.get("weather_code") or []) else None,
+                            "temp_max": (daily.get("temperature_2m_max") or [])[i] if i < len(daily.get("temperature_2m_max") or []) else None,
+                            "temp_min": (daily.get("temperature_2m_min") or [])[i] if i < len(daily.get("temperature_2m_min") or []) else None,
+                            "uv_max": (daily.get("uv_index_max") or [])[i] if i < len(daily.get("uv_index_max") or []) else None,
+                            "precip_chance": (daily.get("precipitation_probability_max") or [])[i] if i < len(daily.get("precipitation_probability_max") or []) else None,
+                        })
+                    return {"forecast": forecast}
+        except Exception as e:
+            logger.error(f"Forecast fetch error: {e}")
+        return {"forecast": []}
 
 
 environment_service = EnvironmentService()

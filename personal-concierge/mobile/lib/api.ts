@@ -843,6 +843,10 @@ export async function getOnboardingStatus(): Promise<OnboardingStatus | null> {
   return fetchApi('/onboarding/status');
 }
 
+export async function getAllOnboardingSteps(): Promise<any[]> {
+  return (await fetchApi<any[]>('/onboarding/steps')) || [];
+}
+
 export async function getStepContent(name: string): Promise<any | null> {
   return fetchApi(`/onboarding/step/${name}`);
 }
@@ -986,6 +990,14 @@ export async function deleteCategory(category: string, confirm: boolean = false)
 
 export async function amnesia(category: string, confirm: boolean = false): Promise<any | null> {
   return fetchApi('/privacy/amnesia', { method: 'POST', body: JSON.stringify({ category, confirm }) });
+}
+
+export async function getCategoryRecords(category: string): Promise<any | null> {
+  return fetchApi(`/privacy/category/${category}/records`);
+}
+
+export async function deleteRecord(table: string, recordId: string): Promise<any | null> {
+  return fetchApi(`/privacy/record/${table}/${recordId}`, { method: 'DELETE' });
 }
 
 // --- Notifications ---

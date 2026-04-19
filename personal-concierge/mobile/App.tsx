@@ -49,10 +49,8 @@ import CheckIn from './screens/CheckIn';
 import Personality from './screens/Personality';
 import Onboarding from './screens/Onboarding';
 import HomeEnvironment from './screens/HomeEnvironment';
-import Financial from './screens/Financial';
 import Privacy from './screens/Privacy';
 import Voice from './screens/Voice';
-import ContextualIntelligence from './screens/ContextualIntelligence';
 import Conversation from './screens/Conversation';
 
 const DarkTheme = {
@@ -150,6 +148,7 @@ function HealthStackScreen() {
       <HealthStack.Screen name="WorkoutSession" component={WorkoutSession} options={{ title: 'Session' }} />
       <HealthStack.Screen name="ExerciseProgress" component={ExerciseProgress} options={{ title: 'Progress' }} />
       <HealthStack.Screen name="EquipmentSetup" component={EquipmentSetup} options={{ title: 'Equipment' }} />
+      <HealthStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Flag Something' }} />
     </HealthStack.Navigator>
   );
 }
@@ -184,11 +183,8 @@ function MeStackScreen() {
       <MeStack.Screen name="MeHub" component={ProfileDashboard} options={{ title: 'Me' }} />
       <MeStack.Screen name="Chat" component={Conversation} options={{ title: 'AI Chat' }} />
       <MeStack.Screen name="VoiceCommands" component={Voice} options={{ title: 'Voice & Briefings' }} />
-      <MeStack.Screen name="CheckIn" component={CheckIn} options={{ title: 'Flag Something' }} />
       <MeStack.Screen name="Personality" component={Personality} options={{ title: 'Personality' }} />
       <MeStack.Screen name="Onboarding" component={Onboarding} options={{ title: 'Setup' }} />
-      <MeStack.Screen name="Financial" component={Financial} options={{ title: 'Financial' }} />
-      <MeStack.Screen name="ContextualIntel" component={ContextualIntelligence} options={{ title: 'Contextual Intel' }} />
       <MeStack.Screen name="Privacy" component={Privacy} options={{ title: 'Privacy & Data' }} />
     </MeStack.Navigator>
   );

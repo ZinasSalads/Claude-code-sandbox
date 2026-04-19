@@ -22,7 +22,6 @@ const modules = [
   { key: 'FitnessHub', title: 'Fitness', emoji: '🏋️', desc: 'Goals, training plan & workouts' },
   { key: 'Supplements', title: 'Supplements', emoji: '💊', desc: 'Stack & daily tracking' },
   { key: 'AppleHealth', title: 'Apple Health', emoji: '📱', desc: 'Sync wearable data' },
-  { key: 'Environment', title: 'Environment', emoji: '🌍', desc: 'Air quality, UV & pollen' },
   { key: 'BloodWork', title: 'Blood Work', emoji: '🩸', desc: 'Quarterly lab results & biomarkers' },
 ];
 
@@ -67,7 +66,7 @@ export default function HealthDashboard({ navigation }: Props) {
           <View style={styles.vitalsRow}>
             <VitalPill label="HRV" value={health.hrv != null ? `${health.hrv} ms` : '—'} />
             <VitalPill label="RHR" value={health.resting_heart_rate != null ? `${health.resting_heart_rate} bpm` : '—'} />
-            <VitalPill label="Sleep Hrs" value={health.sleep_duration != null ? `${health.sleep_duration}h` : '—'} />
+            <VitalPill label="Steps" value={health.steps != null ? `${(health.steps / 1000).toFixed(1)}k` : '—'} />
           </View>
           <View style={styles.vitalsRow}>
             <VitalPill label="Readiness" value={health.readiness_score != null ? `${health.readiness_score}` : '—'} />

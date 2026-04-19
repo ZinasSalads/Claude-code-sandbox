@@ -44,6 +44,18 @@ async def delete_category(category: str, confirm: bool = False):
     return await privacy_service.delete_category(category, confirm)
 
 
+@router.get("/category/{category}/records")
+async def get_category_records(category: str, limit: int = 50):
+    """Browse records within a category."""
+    return await privacy_service.get_category_records(category, limit)
+
+
+@router.delete("/record/{table}/{record_id}")
+async def delete_record(table: str, record_id: str):
+    """Delete a single record from a table."""
+    return await privacy_service.delete_single_record(table, record_id)
+
+
 @router.put("/sensitivity")
 async def set_sensitivity(data: SensitivityUpdate):
     """Set sensitivity tier for a data key."""

@@ -3,7 +3,8 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
-import { getDataSummary, exportData, deleteCategory, amnesia } from '../lib/api';
+import type { ViewStyle } from 'react-native';
+import { getDataSummary, exportData, deleteCategory, amnesia, getCategoryRecords, deleteRecord } from '../lib/api';
 import { colors, spacing, radii, font, shadow, cardStyle } from '../theme';
 
 export default function Privacy() {
@@ -12,6 +13,9 @@ export default function Privacy() {
   const [refreshing, setRefreshing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportResult, setExportResult] = useState<string | null>(null);
+  const [expandedCat, setExpandedCat] = useState<string | null>(null);
+  const [catRecords, setCatRecords] = useState<Record<string, any[]>>({});
+  const [loadingRecords, setLoadingRecords] = useState(false);
 
   const load = useCallback(async () => {
     const s = await getDataSummary();
@@ -34,6 +38,43 @@ export default function Privacy() {
       setExportResult(`Exported ${result.tables_exported} tables, ${result.total_records} records`);
     }
     setExporting(false);
+  };
+
+  const handleExpandCat = async (cat: string) => {
+    if (expandedCat === cat) { setExpandedCat(null); return; }
+    setExpandedCat(cat);
+    setLoadingRecords(true);
+    const data = await getCategoryRecords(cat);
+    if (data?.tables) setCatRecords(data.tables);
+    else setCatRecords({});
+    setLoadingRecords(false);
+  };
+
+  const handleDeleteRecord = (table: string, recordId: string) => {
+    Alert.alert('Delete record?', 'This record will be permanently deleted.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete', style: 'destructive',
+        onPress: async () => {
+          await deleteRecord(table, recordId);
+          if (expandedCat) handleExpandCat(expandedCat);
+          await load();
+        },
+      },
+    ]);
+  };
+
+  const formatRecordPreview = (record: any): string => {
+    const skip = new Set(['id', 'created_at', 'updated_at', 'user_id']);
+    const parts: string[] = [];
+    for (const [k, v] of Object.entries(record)) {
+      if (skip.has(k) || v == null || v === '') continue;
+      if (typeof v === 'object') continue;
+      const label = k.replace(/_/g, ' ');
+      parts.push(`${label}: ${v}`);
+      if (parts.length >= 3) break;
+    }
+    return parts.join(' | ') || 'Record';
   };
 
   const handleDelete = (category: string) => {
@@ -136,22 +177,66 @@ export default function Privacy() {
         <Text style={styles.cardTitle}>What I Know About You</Text>
 
         {Object.entries(categories).map(([cat, info]: [string, any]) => (
-          <View key={cat} style={styles.catRow}>
-            <View style={styles.catInfo}>
-              <Text style={styles.catName}>{cat}</Text>
-              <Text style={styles.catCount}>
-                {info.data_points} record{info.data_points !== 1 ? 's' : ''}
-                {info.type ? ` · ${info.type}` : ''}
-                {info.date_range ? ` · ${info.date_range.oldest} to ${info.date_range.newest}` : ''}
-              </Text>
-            </View>
-            {info.data_points > 0 && (
-              <TouchableOpacity
-                style={styles.deleteBtn}
-                onPress={() => handleDelete(cat)}
-              >
-                <Text style={styles.deleteBtnText}>Delete</Text>
-              </TouchableOpacity>
+          <View key={cat}>
+            <TouchableOpacity
+              style={[styles.catRow, expandedCat === cat && styles.catRowActive]}
+              onPress={() => info.data_points > 0 ? handleExpandCat(cat) : null}
+              activeOpacity={info.data_points > 0 ? 0.7 : 1}
+            >
+              <View style={styles.catInfo}>
+                <Text style={styles.catName}>{cat}</Text>
+                <Text style={styles.catCount}>
+                  {info.data_points} record{info.data_points !== 1 ? 's' : ''}
+                  {info.type ? ` · ${info.type}` : ''}
+                  {info.date_range ? ` · ${info.date_range.oldest} to ${info.date_range.newest}` : ''}
+                </Text>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                {info.data_points > 0 && (
+                  <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(cat)}>
+                    <Text style={styles.deleteBtnText}>Delete All</Text>
+                  </TouchableOpacity>
+                )}
+                {info.data_points > 0 && (
+                  <Text style={styles.chevron}>{expandedCat === cat ? '▲' : '›'}</Text>
+                )}
+              </View>
+            </TouchableOpacity>
+            {expandedCat === cat && (
+              <View style={styles.recordsContainer}>
+                {loadingRecords ? (
+                  <ActivityIndicator color={colors.primary} style={{ padding: spacing.md }} />
+                ) : Object.entries(catRecords).map(([table, records]: [string, any[]]) => (
+                  <View key={table}>
+                    {records.length > 0 && (
+                      <Text style={styles.tableLabel}>{table.replace(/_/g, ' ')}</Text>
+                    )}
+                    {records.map((rec: any) => (
+                      <View key={rec.id} style={styles.recordRow}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.recordText} numberOfLines={2}>
+                            {formatRecordPreview(rec)}
+                          </Text>
+                          {rec.created_at && (
+                            <Text style={styles.recordDate}>
+                              {new Date(rec.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </Text>
+                          )}
+                        </View>
+                        <TouchableOpacity
+                          style={styles.recordDeleteBtn}
+                          onPress={() => handleDeleteRecord(table, rec.id)}
+                        >
+                          <Text style={styles.deleteBtnText}>X</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                    {records.length === 0 && (
+                      <Text style={styles.emptyRecords}>No records</Text>
+                    )}
+                  </View>
+                ))}
+              </View>
             )}
           </View>
         ))}
@@ -218,4 +303,28 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm, borderWidth: 1, borderColor: 'rgba(248, 113, 113, 0.2)',
   },
   amnesiaBtnText: { color: colors.error, fontSize: font.sm, fontWeight: font.medium, textTransform: 'capitalize' },
+  chevron: { color: colors.textTertiary, fontSize: 14 },
+  catRowActive: { borderBottomWidth: 0 },
+  recordsContainer: {
+    backgroundColor: colors.bgCard, borderRadius: radii.sm,
+    marginBottom: spacing.sm, paddingHorizontal: spacing.md,
+    borderWidth: 1, borderColor: colors.borderSubtle,
+  },
+  tableLabel: {
+    fontSize: font.xs, color: colors.textTertiary, fontWeight: font.bold,
+    textTransform: 'uppercase', letterSpacing: 0.5,
+    paddingTop: spacing.md, paddingBottom: spacing.xs,
+  },
+  recordRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.borderSubtle,
+  },
+  recordText: { fontSize: font.xs, color: colors.textSecondary, lineHeight: 16 },
+  recordDate: { fontSize: 10, color: colors.textTertiary, marginTop: 2 },
+  recordDeleteBtn: {
+    backgroundColor: colors.errorMuted, borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm, paddingVertical: 4,
+    marginLeft: spacing.sm,
+  },
+  emptyRecords: { fontSize: font.xs, color: colors.textTertiary, padding: spacing.md, textAlign: 'center' },
 });
