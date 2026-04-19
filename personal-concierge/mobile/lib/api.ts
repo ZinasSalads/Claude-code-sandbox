@@ -158,6 +158,10 @@ export async function getWorkoutHistory(days = 30): Promise<Workout[]> {
   return (await fetchApi<Workout[]>(`/fitness/history?days=${days}`)) || [];
 }
 
+export async function deleteWorkout(workoutId: string): Promise<void> {
+  await fetchApi(`/fitness/${workoutId}`, { method: 'DELETE' });
+}
+
 // --- Fitness Goals ---
 
 export interface FitnessGoal {

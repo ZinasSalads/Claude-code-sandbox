@@ -217,7 +217,7 @@ export default function ExerciseProgress({ navigation }: Props) {
               <View key={i} style={styles.runWeekCard}>
                 <View style={styles.runWeekHeader}>
                   <Text style={styles.runWeekLabel}>Week of {week.week}</Text>
-                  <Text style={styles.runWeekKm}>{week.km ?? 0} km</Text>
+                  <Text style={styles.runWeekKm}>{((week.km ?? 0) * 0.621371).toFixed(1)} mi</Text>
                 </View>
                 <View style={styles.runWeekStats}>
                   <View>
@@ -225,8 +225,8 @@ export default function ExerciseProgress({ navigation }: Props) {
                     <Text style={styles.runStatLabel}>Runs</Text>
                   </View>
                   <View>
-                    <Text style={styles.runStatValue}>{week.km > 0 && week.runs > 0 ? `${(week.km / week.runs).toFixed(1)}` : '—'}</Text>
-                    <Text style={styles.runStatLabel}>Avg km/run</Text>
+                    <Text style={styles.runStatValue}>{week.km > 0 && week.runs > 0 ? `${(week.km * 0.621371 / week.runs).toFixed(1)}` : '—'}</Text>
+                    <Text style={styles.runStatLabel}>Avg mi/run</Text>
                   </View>
                 </View>
               </View>

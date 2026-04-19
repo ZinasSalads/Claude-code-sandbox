@@ -156,6 +156,23 @@ async def complete_workout(payload: CompleteWorkoutPayload):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ── Delete ─────────────────────────────────────────────────────────────
+
+@router.delete("/{workout_id}")
+async def delete_workout(workout_id: str):
+    """Delete a workout and its associated sets and run data."""
+    if not supabase:
+        raise HTTPException(status_code=503, detail="Supabase not configured")
+    try:
+        supabase.table("workout_sets").delete().eq("workout_id", workout_id).execute()
+        supabase.table("run_log").delete().eq("workout_id", workout_id).execute()
+        supabase.table("workouts").delete().eq("id", workout_id).execute()
+        return {"status": "deleted"}
+    except Exception as e:
+        logger.error(f"Failed to delete workout: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ── History ────────────────────────────────────────────────────────────────
 
 @router.get("/history")

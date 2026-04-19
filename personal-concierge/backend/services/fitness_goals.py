@@ -50,16 +50,17 @@ class FitnessGoalsService:
                 weeks_available = max(1, (td - date.today()).days // 7)
             except Exception:
                 pass
-        prompt = f"""You are an expert running and strength coach assessing a fitness goal. Be encouraging but honest.
+        prompt = f"""You are an expert running and strength coach assessing a fitness goal. Be encouraging and supportive.
 
-IMPORTANT GUIDELINES:
-- If the user's baseline is within 10-15% of the target, verdict should be "realistic" or "ambitious" at most.
-- Example: a 2:03 half marathon runner aiming for sub-2:00 is REALISTIC with proper training, NOT unrealistic.
-- Reserve "unrealistic" only for truly impossible goals (e.g., couch to marathon in 2 weeks).
-- Reserve "very_ambitious" for goals requiring major transformation (e.g., 30min 5K to sub-18min in 6 months).
-- "ambitious" means doable but needs serious commitment.
-- "realistic" means achievable with consistent training.
-- Always consider the user's baseline carefully. They provided it for a reason.
+CRITICAL RULES:
+- Default to "realistic" unless there is a very strong reason otherwise.
+- If the user has already completed the distance before (e.g., ran a half marathon before), improving their time is REALISTIC with enough training time.
+- A 3-5 minute improvement on a half marathon over 20+ weeks is REALISTIC.
+- A 5-10% improvement from baseline is REALISTIC.
+- A 10-20% improvement with 20+ weeks is AMBITIOUS at most.
+- "unrealistic" is ONLY for physically impossible goals (e.g., sub-60min marathon, couch to ultra in 4 weeks).
+- "very_ambitious" is ONLY for extreme transformations (e.g., 2:30 to sub-1:30 half marathon).
+- When in doubt, lean toward "realistic" or "ambitious".
 
 Goal: {target}
 Baseline: {baseline or 'Not specified'}
@@ -69,17 +70,18 @@ Weeks available: {weeks_available or 'Unlimited'}
 Respond in JSON only, no markdown:
 {{
   "verdict": "realistic|ambitious|very_ambitious|unrealistic",
-  "summary": "One encouraging sentence about their goal",
-  "conditions": ["condition 1 for success", "condition 2 for success"],
+  "summary": "2-3 encouraging sentences explaining WHY this verdict and what it takes. Be specific about the path forward.",
+  "conditions": ["specific condition 1", "specific condition 2", "specific condition 3"],
   "timeline_weeks_needed": 20,
-  "weekly_requirements": {{"run_km": 45, "strength_sessions": 2, "key_workouts": ["long run", "tempo"]}},
-  "phases": ["Base (weeks 1-6): build aerobic base", "Build (weeks 7-12): increase intensity"],
-  "risk_factors": ["injury if ramping too fast"]
+  "weekly_requirements": {{"run_km": 50, "strength_sessions": 2, "key_workouts": ["long run", "tempo run", "intervals"]}},
+  "phases": ["Phase 1 - Base (weeks 1-6): description", "Phase 2 - Build (weeks 7-14): description", "Phase 3 - Peak (weeks 15-20): description"],
+  "risk_factors": ["specific risk 1"],
+  "roadmap": "A concise 3-4 sentence training roadmap explaining the progression from current fitness to goal. Be specific about weekly mileage targets, key workouts, and race-week strategy."
 }}"""
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         try:
             response = client.messages.create(
-                model=MODEL, max_tokens=600,
+                model=MODEL, max_tokens=1200,
                 messages=[{"role": "user", "content": prompt}]
             )
             raw = response.content[0].text.strip()

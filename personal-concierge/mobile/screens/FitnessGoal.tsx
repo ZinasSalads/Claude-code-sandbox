@@ -152,19 +152,30 @@ export default function FitnessGoal({ navigation, route }: Props) {
                       <Text style={styles.feasibilityTimeline}>{g.ai_feasibility.timeline_weeks_needed} wks needed</Text>
                     )}
                   </View>
-                  {g.ai_feasibility.conditions?.length > 0 && (
-                    <View style={styles.conditionsList}>
-                      {g.ai_feasibility.conditions.slice(0, 3).map((c: string, i: number) => (
-                        <Text key={i} style={styles.conditionItem}>• {c}</Text>
-                      ))}
+                  {g.ai_feasibility.summary && (
+                    <Text style={styles.feasibilitySummary}>{g.ai_feasibility.summary}</Text>
+                  )}
+                  {(g.ai_feasibility as any).roadmap && (
+                    <View style={styles.roadmapBox}>
+                      <Text style={styles.roadmapLabel}>ROADMAP</Text>
+                      <Text style={styles.roadmapText}>{(g.ai_feasibility as any).roadmap}</Text>
                     </View>
                   )}
                   {g.ai_feasibility.phases?.length > 0 && (
-                    <View style={styles.phaseRow}>
+                    <View style={styles.phaseList}>
                       {g.ai_feasibility.phases.map((p: string, i: number) => (
-                        <View key={i} style={styles.phaseBadge}>
-                          <Text style={styles.phaseText}>{p}</Text>
+                        <View key={i} style={styles.phaseItem}>
+                          <View style={styles.phaseNum}><Text style={styles.phaseNumText}>{i + 1}</Text></View>
+                          <Text style={styles.phaseItemText}>{p}</Text>
                         </View>
+                      ))}
+                    </View>
+                  )}
+                  {g.ai_feasibility.conditions?.length > 0 && (
+                    <View style={styles.conditionsList}>
+                      <Text style={styles.conditionsTitle}>Key conditions</Text>
+                      {g.ai_feasibility.conditions.slice(0, 4).map((c: string, i: number) => (
+                        <Text key={i} style={styles.conditionItem}>• {c}</Text>
                       ))}
                     </View>
                   )}
@@ -275,11 +286,18 @@ const styles = StyleSheet.create({
   verdictBadge: { borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 3 },
   verdictText: { fontSize: font.xs, fontWeight: font.bold },
   feasibilityTimeline: { fontSize: font.xs, color: colors.textSecondary },
+  feasibilitySummary: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 20, marginBottom: spacing.md },
+  roadmapBox: { backgroundColor: colors.primaryGlow, borderRadius: radii.sm, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.primaryBorder },
+  roadmapLabel: { fontSize: font.xs, fontWeight: font.bold, color: colors.textAccent, letterSpacing: 0.5, marginBottom: spacing.xs },
+  roadmapText: { fontSize: font.sm, color: colors.textPrimary, lineHeight: 20 },
+  phaseList: { gap: spacing.sm, marginBottom: spacing.md },
+  phaseItem: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  phaseNum: { width: 20, height: 20, borderRadius: 10, backgroundColor: colors.primaryMuted, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
+  phaseNumText: { fontSize: font.xs, fontWeight: font.bold, color: colors.textAccent },
+  phaseItemText: { flex: 1, fontSize: font.sm, color: colors.textSecondary, lineHeight: 18 },
   conditionsList: { gap: 3, marginBottom: spacing.sm },
+  conditionsTitle: { fontSize: font.xs, fontWeight: font.bold, color: colors.textTertiary, letterSpacing: 0.5, marginBottom: spacing.xs },
   conditionItem: { fontSize: font.sm, color: colors.textSecondary, lineHeight: 18 },
-  phaseRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs },
-  phaseBadge: { backgroundColor: colors.primaryMuted, borderRadius: radii.sm, paddingHorizontal: spacing.sm, paddingVertical: 2 },
-  phaseText: { fontSize: font.xs, color: colors.textAccent, fontWeight: font.semibold },
 
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.sm },
   chip: {

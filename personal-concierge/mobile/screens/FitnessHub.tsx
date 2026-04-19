@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import {
   getFitnessGoals, getCurrentTrainingPlan, getTodayWorkout,
-  getWeekStats, generateTrainingPlan, getWorkoutHistory,
+  getWeekStats, generateTrainingPlan, getWorkoutHistory, deleteWorkout,
 } from '../lib/api';
 import type { FitnessGoal, TrainingPlan, Workout, WeekStats } from '../lib/api';
 import { colors, spacing, radii, font, cardStyle, sectionLabel, shadow } from '../theme';
@@ -75,7 +75,22 @@ export default function FitnessHub({ navigation }: Props) {
   const today = new Date().toISOString().split('T')[0];
   const sessions: any[] = (plan as any)?.planned_sessions || [];
   const completedDates = new Set(recentHistory.filter(w => w.completed).map(w => w.date));
-  const weekDays = getWeekDays();
+
+  const kmToMi = (km: number) => (km * 0.621371).toFixed(1);
+
+  // Reorder: today first, then upcoming, skip past days without sessions
+  const getOrderedDays = () => {
+    const allDays = getWeekDays();
+    const todayIdx = allDays.findIndex(d => d.date === today);
+    if (todayIdx < 0) return allDays;
+    const fromToday = allDays.slice(todayIdx);
+    const beforeToday = allDays.slice(0, todayIdx).filter(d => {
+      const s = sessions.find((s: any) => s.date === d.date);
+      return s && (completedDates.has(d.date) || s.session_type !== 'rest');
+    });
+    return [...fromToday, ...beforeToday];
+  };
+  const orderedDays = getOrderedDays();
 
   const handleDayPress = (date: string) => {
     setExpandedDay(expandedDay === date ? null : date);
@@ -167,8 +182,8 @@ export default function FitnessHub({ navigation }: Props) {
       {stats && (
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>{stats.run_km}</Text>
-            <Text style={styles.statUnit}>km</Text>
+            <Text style={styles.statValue}>{kmToMi(stats.run_km)}</Text>
+            <Text style={styles.statUnit}>miles</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>{stats.strength_sessions}</Text>
@@ -187,90 +202,89 @@ export default function FitnessHub({ navigation }: Props) {
         {plan && (
           <Text style={styles.planPhase}>
             {((plan as any).phase || 'base').toUpperCase()}
-            {(plan as any).weekly_run_km_target ? ` · ${(plan as any).weekly_run_km_target}km` : ''}
+            {(plan as any).weekly_run_km_target ? ` · ${kmToMi((plan as any).weekly_run_km_target)}mi` : ''}
           </Text>
         )}
       </View>
 
       {sessions.length > 0 ? (
-        <View style={styles.weekGrid}>
-          {weekDays.map(({ date: d, dayLabel, dateNum }) => {
-            const session = sessions.find((s: any) => s.date === d);
-            const isToday = d === today;
-            const isDone = completedDates.has(d);
-            const isPast = d < today;
-            const isExpanded = expandedDay === d;
-            const color = session ? (SESSION_COLORS[session.session_type] || colors.primary) : colors.border;
-
-            return (
-              <View key={d}>
+        <>
+          {/* Compact icon row */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconRow}>
+            {getWeekDays().map(({ date: d, dayLabel }) => {
+              const session = sessions.find((s: any) => s.date === d);
+              const isToday = d === today;
+              const isDone = completedDates.has(d);
+              const color = session ? (SESSION_COLORS[session.session_type] || colors.primary) : colors.border;
+              return (
                 <TouchableOpacity
-                  style={[
-                    styles.dayCard,
-                    isToday && styles.dayCardToday,
-                    isExpanded && styles.dayCardExpanded,
-                  ]}
+                  key={d}
+                  style={[styles.iconCell, isToday && styles.iconCellToday, expandedDay === d && styles.iconCellActive]}
                   onPress={() => session && handleDayPress(d)}
                   activeOpacity={session ? 0.7 : 1}
                 >
-                  <View style={styles.dayTopRow}>
-                    <View>
-                      <Text style={[styles.dayLabel, isToday && styles.dayLabelToday]}>{dayLabel}</Text>
-                      <Text style={[styles.dayDate, isToday && styles.dayDateToday]}>{dateNum}</Text>
-                    </View>
-                    <View style={styles.dayRight}>
-                      {isDone && <Text style={styles.doneCheck}>✓</Text>}
-                      {session && !isDone && isPast && <Text style={styles.missedMark}>—</Text>}
-                      <View style={[styles.dayDot, { backgroundColor: color }]} />
-                    </View>
-                  </View>
-                  {session && (
-                    <View style={styles.dayBottom}>
-                      <Text style={styles.dayIcon}>{SESSION_ICONS[session.session_type] || '💪'}</Text>
-                      <Text style={[styles.dayType, { color }]} numberOfLines={1}>
-                        {session.title || session.session_type.replace('_', ' ')}
-                      </Text>
-                      <Text style={styles.dayDuration}>{session.duration_minutes}m</Text>
-                    </View>
-                  )}
-                  {!session && (
-                    <Text style={styles.dayRestLabel}>Rest</Text>
-                  )}
+                  <Text style={[styles.iconDayLabel, isToday && styles.iconDayLabelToday]}>{dayLabel}</Text>
+                  <Text style={styles.iconEmoji}>{session ? (SESSION_ICONS[session.session_type] || '💪') : '😴'}</Text>
+                  {isDone && <View style={styles.iconDoneDot} />}
+                  <View style={[styles.iconBar, { backgroundColor: color }]} />
                 </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
 
-                {/* Expanded session detail */}
-                {isExpanded && session && (
-                  <View style={styles.expandedCard}>
-                    <Text style={styles.expandedTitle}>{session.title}</Text>
-                    {session.description && (
-                      <Text style={styles.expandedDesc}>{session.description}</Text>
-                    )}
-                    <View style={styles.expandedMeta}>
-                      {session.duration_minutes && (
-                        <Text style={styles.expandedMetaItem}>{session.duration_minutes} min</Text>
-                      )}
-                      {session.targets?.distance_km && (
-                        <Text style={styles.expandedMetaItem}>{session.targets.distance_km} km</Text>
-                      )}
-                      {session.targets?.pace_per_km && (
-                        <Text style={styles.expandedMetaItem}>{session.targets.pace_per_km}'/km</Text>
-                      )}
+          {/* Expanded detail for selected day */}
+          <View style={styles.weekGrid}>
+            {orderedDays.map(({ date: d, dayLabel, dateNum }) => {
+              const session = sessions.find((s: any) => s.date === d);
+              if (!session) return null;
+              const isToday = d === today;
+              const isDone = completedDates.has(d);
+              const isPast = d < today;
+              const isExpanded = expandedDay === d;
+              const color = SESSION_COLORS[session.session_type] || colors.primary;
+
+              return (
+                <View key={d}>
+                  <TouchableOpacity
+                    style={[styles.dayCard, isToday && styles.dayCardToday, isExpanded && styles.dayCardExpanded]}
+                    onPress={() => handleDayPress(d)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.dayTopRow}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                        <Text style={styles.dayIcon}>{SESSION_ICONS[session.session_type] || '💪'}</Text>
+                        <View>
+                          <Text style={[styles.dayLabel, isToday && styles.dayLabelToday]}>{isToday ? 'Today' : dayLabel} {dateNum}</Text>
+                          <Text style={[styles.dayType, { color }]} numberOfLines={1}>{session.title}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.dayRight}>
+                        {isDone && <Text style={styles.doneCheck}>✓</Text>}
+                        <Text style={styles.dayDuration}>{session.duration_minutes}m</Text>
+                      </View>
                     </View>
-                    <TouchableOpacity
-                      style={styles.logBtn}
-                      onPress={() => handleLogSession(session)}
-                      activeOpacity={0.8}
-                    >
-                      <Text style={styles.logBtnText}>
-                        {isDone ? 'View Session' : isToday ? 'Log This Session →' : isPast ? 'Log Retroactively' : 'Preview'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            );
-          })}
-        </View>
+                  </TouchableOpacity>
+
+                  {isExpanded && (
+                    <View style={styles.expandedCard}>
+                      {session.description && <Text style={styles.expandedDesc}>{session.description}</Text>}
+                      <View style={styles.expandedMeta}>
+                        {session.duration_minutes && <Text style={styles.expandedMetaItem}>{session.duration_minutes} min</Text>}
+                        {session.targets?.distance_km && <Text style={styles.expandedMetaItem}>{kmToMi(session.targets.distance_km)} mi</Text>}
+                        {session.targets?.pace_per_km && <Text style={styles.expandedMetaItem}>{(session.targets.pace_per_km * 1.60934).toFixed(1)}'/mi</Text>}
+                      </View>
+                      <TouchableOpacity style={styles.logBtn} onPress={() => handleLogSession(session)} activeOpacity={0.8}>
+                        <Text style={styles.logBtnText}>
+                          {isDone ? 'View Session' : isToday ? 'Log This Session →' : isPast ? 'Log Retroactively' : 'Preview'}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </>
       ) : (
         <View style={styles.emptyPlanCard}>
           <Text style={styles.emptyPlanText}>No training plan yet.</Text>
@@ -363,11 +377,32 @@ export default function FitnessHub({ navigation }: Props) {
       {recentHistory.filter(w => w.completed).length > 0 && (
         <>
           <Text style={styles.sectionLabel}>RECENT ACTIVITY</Text>
-          {recentHistory.filter(w => w.completed).slice(0, 3).map(w => (
+          {recentHistory.filter(w => w.completed).slice(0, 5).map(w => (
             <TouchableOpacity
               key={w.id}
               style={styles.historyCard}
               onPress={() => navigation.navigate('WorkoutSession', { workoutId: w.id, mode: 'view' })}
+              onLongPress={() => {
+                Alert.alert(
+                  w.title || 'Workout',
+                  'What would you like to do?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Edit', onPress: () => navigation.navigate('WorkoutSession', { workoutId: w.id }) },
+                    {
+                      text: 'Delete', style: 'destructive',
+                      onPress: () => {
+                        Alert.alert('Delete Workout', 'Are you sure? This cannot be undone.', [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Delete', style: 'destructive', onPress: async () => {
+                            if (w.id) { await deleteWorkout(w.id).catch(() => null); load(); }
+                          }},
+                        ]);
+                      },
+                    },
+                  ]
+                );
+              }}
               activeOpacity={0.7}
             >
               <View style={styles.historyRow}>
@@ -377,6 +412,7 @@ export default function FitnessHub({ navigation }: Props) {
                 <View style={styles.historyDone}><Text style={styles.historyDoneText}>Done</Text></View>
               </View>
               <Text style={styles.historyTitle}>{w.title}</Text>
+              <Text style={styles.historyHint}>Tap to view · Hold for options</Text>
             </TouchableOpacity>
           ))}
         </>
@@ -441,6 +477,16 @@ const styles = StyleSheet.create({
   // Week
   weekHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   planPhase: { fontSize: font.xs, color: colors.textTertiary, fontWeight: font.semibold, marginBottom: spacing.md },
+
+  iconRow: { marginBottom: spacing.md },
+  iconCell: { alignItems: 'center', width: 48, marginRight: spacing.xs, paddingVertical: spacing.sm, borderRadius: radii.md },
+  iconCellToday: { backgroundColor: colors.primaryMuted },
+  iconCellActive: { borderWidth: 1, borderColor: colors.primary },
+  iconDayLabel: { fontSize: 10, color: colors.textTertiary, fontWeight: font.bold, marginBottom: 2 },
+  iconDayLabelToday: { color: colors.textAccent },
+  iconEmoji: { fontSize: 20, marginBottom: 2 },
+  iconDoneDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.success, marginBottom: 2 },
+  iconBar: { width: 24, height: 3, borderRadius: 1.5 },
 
   weekGrid: { gap: spacing.xs, marginBottom: spacing.sm },
   dayCard: {
@@ -511,4 +557,5 @@ const styles = StyleSheet.create({
   historyTitle: { fontSize: font.sm, fontWeight: font.semibold, color: colors.textPrimary },
   historyDone: { backgroundColor: colors.successMuted, borderRadius: radii.full, paddingHorizontal: spacing.sm, paddingVertical: 2 },
   historyDoneText: { fontSize: font.xs, color: colors.success, fontWeight: font.bold },
+  historyHint: { fontSize: 10, color: colors.textTertiary, marginTop: 2 },
 });

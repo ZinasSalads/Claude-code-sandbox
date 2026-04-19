@@ -324,7 +324,7 @@ export default function WorkoutSession({ navigation, route }: Props) {
             <Text style={styles.sectionLabel}>RUN DATA</Text>
             <View style={styles.runCard}>
               <View style={styles.runGrid}>
-                {viewRun.distance_km != null && <View style={styles.runField}><Text style={styles.runLabel}>Distance</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.distance_km} km</Text></View>}
+                {viewRun.distance_km != null && <View style={styles.runField}><Text style={styles.runLabel}>Distance</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{(viewRun.distance_km * 0.621371).toFixed(1)} mi</Text></View>}
                 {viewRun.duration_minutes != null && <View style={styles.runField}><Text style={styles.runLabel}>Duration</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.duration_minutes} min</Text></View>}
                 {viewRun.avg_hr != null && <View style={styles.runField}><Text style={styles.runLabel}>Avg HR</Text><Text style={[styles.runInput, { textAlign: 'center', color: colors.textPrimary, paddingTop: 8 }]}>{viewRun.avg_hr} bpm</Text></View>}
               </View>
@@ -422,13 +422,13 @@ export default function WorkoutSession({ navigation, route }: Props) {
           <View style={styles.targetRow}>
             {plannedSession.targets.distance_km && (
               <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{plannedSession.targets.distance_km}km</Text>
+                <Text style={styles.targetValue}>{(plannedSession.targets.distance_km * 0.621371).toFixed(1)} mi</Text>
                 <Text style={styles.targetLabel}>Distance</Text>
               </View>
             )}
             {plannedSession.targets.pace_per_km && (
               <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{plannedSession.targets.pace_per_km}'/km</Text>
+                <Text style={styles.targetValue}>{(plannedSession.targets.pace_per_km * 1.60934).toFixed(1)}'/mi</Text>
                 <Text style={styles.targetLabel}>Pace</Text>
               </View>
             )}
@@ -449,13 +449,13 @@ export default function WorkoutSession({ navigation, route }: Props) {
           <View style={styles.targetRow}>
             {(workout as any).run_targets.distance_km && (
               <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{(workout as any).run_targets.distance_km}km</Text>
+                <Text style={styles.targetValue}>{((workout as any).run_targets.distance_km * 0.621371).toFixed(1)} mi</Text>
                 <Text style={styles.targetLabel}>Distance</Text>
               </View>
             )}
             {(workout as any).run_targets.pace_per_km && (
               <View style={styles.targetItem}>
-                <Text style={styles.targetValue}>{(workout as any).run_targets.pace_per_km}'/km</Text>
+                <Text style={styles.targetValue}>{((workout as any).run_targets.pace_per_km * 1.60934).toFixed(1)}'/mi</Text>
                 <Text style={styles.targetLabel}>Pace</Text>
               </View>
             )}
@@ -540,7 +540,7 @@ export default function WorkoutSession({ navigation, route }: Props) {
           <View style={styles.runCard}>
             <View style={styles.runGrid}>
               <View style={styles.runField}>
-                <Text style={styles.runLabel}>Distance (km)</Text>
+                <Text style={styles.runLabel}>Distance (miles)</Text>
                 <TextInput style={styles.runInput} value={runData.distance_km} onChangeText={v => setRunData(p => ({ ...p, distance_km: v }))} placeholder="—" placeholderTextColor={colors.textTertiary} keyboardType="decimal-pad" />
               </View>
               <View style={styles.runField}>
