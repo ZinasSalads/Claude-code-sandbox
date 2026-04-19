@@ -1,20 +1,15 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 export type UnitSystem = 'imperial' | 'metric';
 
-const UNITS_KEY = '@units_preference';
+// In-memory preference — defaults to imperial (mph, lbs, ft).
+// Persists within the app session; resets on restart.
+let _current: UnitSystem = 'imperial';
 
 export async function getUnitSystem(): Promise<UnitSystem> {
-  try {
-    const val = await AsyncStorage.getItem(UNITS_KEY);
-    return (val as UnitSystem) || 'imperial';
-  } catch {
-    return 'imperial';
-  }
+  return _current;
 }
 
 export async function setUnitSystem(system: UnitSystem): Promise<void> {
-  await AsyncStorage.setItem(UNITS_KEY, system);
+  _current = system;
 }
 
 // Weight: kg ↔ lbs
