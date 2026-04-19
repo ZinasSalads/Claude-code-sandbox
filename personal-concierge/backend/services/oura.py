@@ -6,7 +6,7 @@ and normalizing it into our health_data schema.
 
 import asyncio
 import logging
-from datetime import date
+from datetime import date, timedelta
 from typing import Optional
 
 import httpx
@@ -121,13 +121,17 @@ class OuraClient:
             sleep_seconds = s.get("total_sleep_duration")
             sleep_hours = round(sleep_seconds / 3600, 2) if sleep_seconds else None
 
+            # Oura sleep periods use day = sleep START date; daily_readiness uses wake-up date.
+            # HRV/RHR for "today" readiness come from the sleep period that started yesterday.
+            prev_day = (date.fromisoformat(day) - timedelta(days=1)).isoformat()
+
             result[day] = {
                 "date": day,
                 "readiness_score": r.get("score"),
                 "readiness_temperature": r_contrib.get("body_temperature"),
-                "hrv": hrv_by_day.get(day),
+                "hrv": hrv_by_day.get(prev_day) or hrv_by_day.get(day),
                 "hrv_balance": r_contrib.get("hrv_balance"),
-                "resting_heart_rate": r.get("resting_heart_rate") or rhr_by_day.get(day),
+                "resting_heart_rate": r.get("resting_heart_rate") or rhr_by_day.get(prev_day) or rhr_by_day.get(day),
                 "sleep_score": s.get("score"),
                 "sleep_duration": sleep_hours,
                 "deep_sleep_minutes": _seconds_to_minutes(s.get("deep_sleep_duration")),
