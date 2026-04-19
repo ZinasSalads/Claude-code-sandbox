@@ -89,14 +89,23 @@ class OuraClient:
         sleep_by_day = {s.get("day"): s for s in sleep}
         activity_by_day = {a.get("day"): a for a in activity}
 
-        # Build HRV map from sleep periods (actual ms values)
+        # Build HRV and RHR maps from sleep periods
+        # lowest_heart_rate is the true RHR metric Oura uses in their own app;
+        # daily_readiness.resting_heart_rate is often null until data is fully processed.
         hrv_by_day: dict = {}
+        rhr_by_day: dict = {}
         for sp in sleep_periods:
             sp_day = sp.get("day")
             avg_hrv = sp.get("average_hrv")
-            if sp_day and avg_hrv is not None:
-                if sp_day not in hrv_by_day or sp.get("type") == "long_sleep":
-                    hrv_by_day[sp_day] = avg_hrv
+            lowest_hr = sp.get("lowest_heart_rate")
+            is_long = sp.get("type") == "long_sleep"
+            if sp_day:
+                if avg_hrv is not None:
+                    if sp_day not in hrv_by_day or is_long:
+                        hrv_by_day[sp_day] = avg_hrv
+                if lowest_hr is not None:
+                    if sp_day not in rhr_by_day or is_long:
+                        rhr_by_day[sp_day] = lowest_hr
 
         all_dates = set(readiness_by_day) | set(sleep_by_day) | set(activity_by_day)
         result = {}
@@ -118,7 +127,7 @@ class OuraClient:
                 "readiness_temperature": r_contrib.get("body_temperature"),
                 "hrv": hrv_by_day.get(day),
                 "hrv_balance": r_contrib.get("hrv_balance"),
-                "resting_heart_rate": r.get("resting_heart_rate"),
+                "resting_heart_rate": r.get("resting_heart_rate") or rhr_by_day.get(day),
                 "sleep_score": s.get("score"),
                 "sleep_duration": sleep_hours,
                 "deep_sleep_minutes": _seconds_to_minutes(s.get("deep_sleep_duration")),
